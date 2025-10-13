@@ -1,10 +1,10 @@
 import {
-  runOnJS,
   useAnimatedReaction,
   useSharedValue,
   type SharedValue,
 } from 'react-native-reanimated'
 import useLatestCallback from 'use-latest-callback'
+import { scheduleOnRN } from 'react-native-worklets'
 
 export function useInitialScrollToEnd(
   blankSize: SharedValue<number>,
@@ -42,7 +42,7 @@ export function useInitialScrollToEnd(
     (current) => {
       if (current >= 0) {
         hasStartedScrolledToEnd.set(true)
-        runOnJS(scrollToEndJS)()
+        scheduleOnRN(scrollToEndJS)
       }
     }
   )
