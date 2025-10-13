@@ -96,13 +96,6 @@ function Composer() {
             { type: 'user', content: 'Hello' },
             { type: 'system', content: 'How are you?' },
           ])
-          // setTimeout(() => {
-          //   setIsMessageSendAnimating(false)
-          //   setMessages((messages) => [
-          //     ...messages,
-          //     { type: 'system', content: 'How are you?' },
-          //   ])
-          // }, 1000)
         }}
       />
       <Button
@@ -205,7 +198,7 @@ function FirstUserMessageFrame({
   messageIndex: number
 }) {
   const { style, ref, onLayout } = useFirstMessageAnimation({
-    disabled: messageIndex !== 0,
+    disabled: messageIndex > 0,
   })
 
   return (
@@ -242,7 +235,7 @@ function SystemMessagePlaceholder({
     bottomInset: 0,
   })
 
-  const { translateY } = useFirstMessageEntrance({
+  const { isComplete } = useFirstMessageEntrance({
     itemHeight: renderedSize,
     disabled: messageIndex !== 1,
   })
@@ -250,7 +243,7 @@ function SystemMessagePlaceholder({
   const style = useAnimatedStyle(() => ({
     // show once the user message has animated in
     // TODO this needs to be more "abstractable"
-    opacity: translateY.get() === 0 ? withTiming(1, { duration: 350 }) : 0,
+    opacity: isComplete.get() ? withTiming(1, { duration: 350 }) : 0,
   }))
 
   return (

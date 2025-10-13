@@ -1,4 +1,3 @@
-'use memo'
 import {
   Easing,
   useAnimatedReaction,
@@ -6,6 +5,7 @@ import {
   withTiming,
   withSpring,
   type SharedValue,
+  useDerivedValue,
 } from 'react-native-reanimated'
 import { useKeyboardContextState } from '../../keyboard/provider'
 import { useMessageListContext } from '../context'
@@ -110,5 +110,9 @@ export function useFirstMessageEntrance({ disabled, itemHeight }: Params) {
     }
   )
 
-  return { progress, translateY }
+  const isComplete = useDerivedValue(() => {
+    return translateY.get() === 0
+  })
+
+  return { progress, translateY, isComplete }
 }

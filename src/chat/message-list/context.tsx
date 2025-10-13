@@ -99,8 +99,7 @@ function useScrollToEnd(
       if (listRef.current) {
         listRef.current.scrollToEnd({
           animated: params.animated,
-          viewOffset: -bottomInset.get(), // TODO figure out why this scrolls over too much
-          // viewOffset: 0, // this fixes it for the first message...
+          viewOffset: -bottomInset.get(),
         })
       }
     },
@@ -182,6 +181,9 @@ export const MessageListContextProvider = ({
   const listRef = useRef<LegendListRef | null>(null)
 
   const bottomInset = useDerivedValue(() => {
+    console.log('[bottomInset][blankSize]', blankSize.get())
+    console.log('[bottomInset][composerHeight]', composerHeight.get())
+    console.log('[bottomInset][translateY]', translateY.get())
     return blankSize.get() + composerHeight.get() + translateY.get()
   })
 
