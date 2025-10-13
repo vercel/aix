@@ -1,19 +1,10 @@
 'use memo'
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
-import { useSyncLayoutHandler } from '../../use-sync-layout'
-import { useCallback } from 'react'
+import { useAnimatedStyle } from 'react-native-reanimated'
 import { useFirstMessageEntrance } from './use-first-message-entrance'
+import { useMessageRenderedHeight } from './use-message-rendered-size'
 
 export function useFirstMessageAnimation() {
-  const renderedSize = useSharedValue(0)
-  const { ref: refToMeasure, onLayout } = useSyncLayoutHandler(
-    useCallback(
-      (layout) => {
-        renderedSize.set(layout.height)
-      },
-      [renderedSize]
-    )
-  )
+  const { renderedSize, refToMeasure, onLayout } = useMessageRenderedHeight()
 
   const { progress, translateY } = useFirstMessageEntrance({
     itemHeight: renderedSize,

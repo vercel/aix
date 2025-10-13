@@ -1,3 +1,4 @@
+'use memo'
 import {
   Easing,
   useAnimatedReaction,

@@ -6,17 +6,17 @@ import {
 import { ViewStyle } from 'react-native'
 
 export function useMessageListContainerStyle({
-  hasScrolledToEnd,
+  ready,
   styleWorklet,
 }: {
-  hasScrolledToEnd: SharedValue<boolean>
+  ready: SharedValue<boolean>
   styleWorklet: ({ ready }: { ready: boolean }) => ViewStyle
 }) {
   return useAnimatedStyle(() => {
-    const ready = hasScrolledToEnd.get()
+    const isReady = ready.get()
     if (!styleWorklet) {
-      return { opacity: withTiming(ready ? 1 : 0, { duration: 150 }) }
+      return { opacity: withTiming(isReady ? 1 : 0, { duration: 150 }) }
     }
-    return styleWorklet({ ready })
+    return styleWorklet({ ready: isReady })
   })
 }

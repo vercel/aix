@@ -36,6 +36,7 @@ export function useInitialScrollToEnd(
       if (hasStartedScrolledToEnd.get() || !hasMessages) {
         return -1
       }
+      console.log('[blankSize]', blankSize.get())
       return blankSize.get()
     },
     (current) => {

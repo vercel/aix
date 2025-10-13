@@ -2,10 +2,6 @@ import { AnimatedLegendList } from '@legendapp/list/reanimated'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 
 import {
-  ChatAnimationProvider,
-  KeyboardStateProvider,
-  ComposerHeightContextProvider,
-  MessageListContextProvider,
   useMessageListContainerProps,
   useMessageListProps,
   useUpdateLastMessageIndex,
@@ -19,14 +15,24 @@ import {
   useMessageBlankSize,
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
+import { Text, View } from 'react-native'
+import { ListProvider } from './ListProvider'
+import { useEffect, useState } from 'react'
 
 export default function App() {
-  const messages = [
-    { type: 'user', content: 'Hello' },
-    { type: 'system', content: 'How are you?' },
-  ]
+  const [messages, setMessages] = useState<
+    { type: 'user' | 'system'; content: string }[]
+  >([{ type: 'user', content: 'Hello' }])
+
+  useEffect(() => {
+    setTimeout(() => {
+      setMessages([...messages, { type: 'system', content: 'How are you?' }])
+    }, 1000)
+  }, [])
+
   return (
-    <ListProvider initialComposerHeight={100}>
+    <ListProvider initialComposerHeight={0}>
+      <View style={{ height: 60, backgroundColor: 'blue' }} />
       <ListContainer
         length={messages.length}
         style={({ ready }) => {
@@ -34,27 +40,19 @@ export default function App() {
           return { opacity: withTiming(ready ? 1 : 0, { duration: 150 }) }
         }}
       >
-        <List data={messages} />
+        <List
+          data={messages}
+          renderItem={({ item, index }) => {
+            if (item.type === 'user') {
+              // return <Text>{item.content}</Text>
+              return <UserMessage message={item.content} messageIndex={index} />
+            }
+            return <SystemMessage message={item.content} messageIndex={index} />
+          }}
+          keyExtractor={(item, index) => `${item.type}-${index}`}
+        />
       </ListContainer>
     </ListProvider>
-  )
-}
-
-function ListProvider({
-  children,
-  initialComposerHeight,
-}: {
-  children: React.ReactNode
-  initialComposerHeight: number
-}) {
-  return (
-    <MessageListContextProvider>
-      <ChatAnimationProvider>
-        <ComposerHeightContextProvider initialHeight={initialComposerHeight}>
-          <KeyboardStateProvider>{children}</KeyboardStateProvider>
-        </ComposerHeightContextProvider>
-      </ChatAnimationProvider>
-    </MessageListContextProvider>
   )
 }
 
@@ -70,7 +68,7 @@ function ListContainer({
   const containerProps = useMessageListContainerProps()
   const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
   const containerStyle = useMessageListContainerStyle({
-    hasScrolledToEnd,
+    ready: hasScrolledToEnd,
     styleWorklet,
   })
   return (
@@ -80,11 +78,11 @@ function ListContainer({
   )
 }
 
-function List(
-  parentProps: React.ComponentPropsWithRef<typeof AnimatedLegendList>
+function List<Data>(
+  parentProps: React.ComponentPropsWithRef<typeof AnimatedLegendList<Data>>
 ) {
   const numMessages = parentProps.data?.length ?? 0
-  const props = useMessageListProps()
+  const props = useMessageListProps({ bottomInsetPadding: 0 })
 
   useKeyboardAwareMessageList({
     numMessages,
@@ -104,12 +102,14 @@ function UserMessage({
   messageIndex: number
 }) {
   useSetLastAnimatableMessage({ messageIndex })
-  const content = <></>
+  const content = <Text>{message}</Text>
+
+  // return content
 
   if (messageIndex === 0) {
     return <FirstUserMessageFrame>{content}</FirstUserMessageFrame>
   }
-  return null
+  return content
 }
 
 function FirstUserMessageFrame({ children }: { children: React.ReactNode }) {
@@ -131,7 +131,7 @@ function FirstSystemMessagePlaceholder({
 }) {
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
-    messageMinimumHeight: 0,
+    messageMinimumHeight: 20,
     bottomInset: 0,
   })
 
@@ -178,12 +178,12 @@ function SystemMessage({
 }) {
   const { onLayout, refToMeasure } = useMessageBlankSize({
     messageIndex,
-    messageMinimumHeight: 0,
+    messageMinimumHeight: 20,
     bottomInset: 0,
   })
   return (
     <Animated.View ref={refToMeasure} onLayout={onLayout}>
-      {message}
+      <Text>{message}</Text>
     </Animated.View>
   )
 }
