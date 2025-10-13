@@ -12,8 +12,7 @@ import { useWindowDimensions } from 'react-native-keyboard-controller'
 import { useChatAnimation } from '../../animation/chat-animation-context'
 
 type Params = {
-  index: number
-  type: 'user' | 'system'
+  disabled?: boolean
   itemHeight: SharedValue<number>
 }
 
@@ -70,7 +69,7 @@ function getAnimatedValues({
 
 // TODO remove "type" and abstract it better. hook should only run on proper message in the container
 // TODO make the styles adaptible / dependency injected
-export function useFirstMessageEntrance({ index, type, itemHeight }: Params) {
+export function useFirstMessageEntrance({ disabled, itemHeight }: Params) {
   const { startedWithOneMessage } = useMessageListContext()
   const { keyboardHeight } = useKeyboardContextState()
   const { isMessageSendAnimating } = useChatAnimation()
@@ -82,12 +81,10 @@ export function useFirstMessageEntrance({ index, type, itemHeight }: Params) {
     () => itemHeight.get(),
     (height) => {
       if (height > 0 && progress.get() === -1) {
-        const isFirstOfType =
-          (type === 'user' && index === 0) || (type === 'system' && index === 1)
         const eligible =
           isMessageSendAnimating.get() &&
           startedWithOneMessage.get() &&
-          isFirstOfType
+          !disabled
 
         if (eligible) {
           const kbHeight = keyboardHeight.get()
