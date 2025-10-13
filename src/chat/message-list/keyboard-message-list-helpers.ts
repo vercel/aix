@@ -1,4 +1,4 @@
-import type { SharedValue } from '@/ds/animated'
+import type { SharedValue } from 'react-native-reanimated'
 
 const DIST_FROM_END_BOTTOM_THRESHOLD = 12
 
@@ -127,7 +127,7 @@ export function getValuesOnMove(
     vContentHeight: number
     vDoScrollToEnd: boolean
   },
-  interactive: boolean, // true when user is interactively dismissing keyboard
+  interactive: boolean // true when user is interactively dismissing keyboard
 ):
   | {
       offsetY: number | undefined
@@ -161,7 +161,10 @@ export function getValuesOnMove(
       !vDoScrollToEnd &&
       !vIsOpening &&
       (vLastUserMessagePosition < 0 ||
-        isScrollFarAway({ contentHeight: vContentHeight, scrollOffset: vScrollOffset }))
+        isScrollFarAway({
+          contentHeight: vContentHeight,
+          scrollOffset: vScrollOffset,
+        }))
     ) {
       return { scrollToEnd: true }
     }
@@ -181,7 +184,9 @@ export function getValuesOnMove(
     // Apply the calculated offset gradually during keyboard animation. When opening we move content up,
     // and when closing we undo that movement so the list settles back into place.
     const appliedDelta = totalOffsetDelta * progress
-    offsetY = vIsOpening ? vScrollAtStart + appliedDelta : vScrollAtStart - appliedDelta
+    offsetY = vIsOpening
+      ? vScrollAtStart + appliedDelta
+      : vScrollAtStart - appliedDelta
   } else if (interactive) {
     // Pin scroll position during interactive keyboard dismissal
     // The scroll position needs to change slightly for reanimated to register the update,

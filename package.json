@@ -1,5 +1,5 @@
 {
-  "name": "ai-chat",
+  "name": "@vercel/ai-chat",
   "version": "0.1.0",
   "description": "My new module",
   "main": "build/index.js",

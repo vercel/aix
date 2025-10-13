@@ -1,5 +1,6 @@
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
 import Animated, { withTiming } from 'react-native-reanimated'
+
 import {
   ChatAnimationProvider,
   KeyboardStateProvider,
@@ -13,79 +14,61 @@ import {
   useStartedWithOneMessage,
   useMessageListContainerStyle,
   useMessageListInitialScrollToEnd,
+  useSetLastAnimatableMessage,
 } from 'ai-chat'
-import { useMessageListContext } from 'ai-chat/chat/message-list/context'
 
 export default function App() {
+  const messages = [
+    { type: 'user', content: 'Hello' },
+    { type: 'system', content: 'How are you?' },
+  ]
   return (
-    <ChatAnimationProvider>
-      <ComposerHeightContextProvider initialHeight={100}>
-        <KeyboardStateProvider>
-          <MessageListContextProvider>
-            <ListMonolith />
-          </MessageListContextProvider>
-        </KeyboardStateProvider>
-      </ComposerHeightContextProvider>
-    </ChatAnimationProvider>
+    <ListProvider initialComposerHeight={100}>
+      <ListContainer
+        length={messages.length}
+        style={({ ready }) => {
+          'worklet'
+          return { opacity: withTiming(ready ? 1 : 0, { duration: 150 }) }
+        }}
+      >
+        <List data={messages} />
+      </ListContainer>
+    </ListProvider>
   )
 }
 
-function ListSplit() {
-  const messages = [1]
-  const numMessages = messages.length
-  return (
-    <ContainerView numMessages={numMessages}>
-      <ListView data={messages} />
-    </ContainerView>
-  )
-}
-
-function ListMonolith() {
-  const messages = []
-  const numMessages = messages.length
-  const containerProps = useMessageListContainerProps()
-  const props = useMessageListProps()
-
-  useKeyboardAwareMessageList({
-    numMessages,
-  })
-  useStartedWithOneMessage({ numMessages })
-  useUpdateLastMessageIndex({ numMessages })
-  useScrollMessageListFromComposerSizeUpdates()
-
-  const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
-  const containerStyle = useMessageListContainerStyle({
-    hasScrolledToEnd,
-    styleWorklet: ({ ready }) => {
-      'worklet'
-      return {
-        opacity: withTiming(ready ? 1 : 0, { duration: 150 }),
-      }
-    },
-  })
-
-  return (
-    <Animated.View {...containerProps} style={[{ flex: 1 }, containerStyle]}>
-      <AnimatedLegendList {...props} />
-    </Animated.View>
-  )
-}
-
-function ContainerView({
+function ListProvider({
   children,
-  numMessages,
+  initialComposerHeight,
 }: {
   children: React.ReactNode
-  numMessages: number
+  initialComposerHeight: number
+}) {
+  return (
+    <MessageListContextProvider>
+      <ChatAnimationProvider>
+        <ComposerHeightContextProvider initialHeight={initialComposerHeight}>
+          <KeyboardStateProvider>{children}</KeyboardStateProvider>
+        </ComposerHeightContextProvider>
+      </ChatAnimationProvider>
+    </MessageListContextProvider>
+  )
+}
+
+function ListContainer({
+  children,
+  length: numMessages,
+  style: styleWorklet,
+}: {
+  children: React.ReactNode
+  length: number
+  style: Parameters<typeof useMessageListContainerStyle>[0]['styleWorklet']
 }) {
   const containerProps = useMessageListContainerProps()
   const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
   const containerStyle = useMessageListContainerStyle({
     hasScrolledToEnd,
-    styleWorklet: ({ ready }) => {
-      'worklet'
-      return { opacity: withTiming(ready ? 1 : 0, { duration: 150 }) }
-    },
+    styleWorklet,
   })
   return (
     <Animated.View {...containerProps} style={[{ flex: 1 }, containerStyle]}>
@@ -94,7 +77,7 @@ function ContainerView({
   )
 }
 
-function ListView(
+function List(
   parentProps: React.ComponentPropsWithRef<typeof AnimatedLegendList>
 ) {
   const numMessages = parentProps.data?.length ?? 0
@@ -108,4 +91,15 @@ function ListView(
   useScrollMessageListFromComposerSizeUpdates()
 
   return <AnimatedLegendList {...parentProps} {...props} />
+}
+
+function UserMessage({
+  message,
+  messageIndex,
+}: {
+  message: string
+  messageIndex: number
+}) {
+  useSetLastAnimatableMessage({ messageIndex })
+  return null
 }

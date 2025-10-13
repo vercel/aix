@@ -28,9 +28,11 @@ import { useComposerHeightContext } from '../composer/composer-height-context'
 export function useKeyboardAwareMessageList({
   numMessages: numMessagesProp,
   chatPaddingBottom = 0,
+  bottomInset = 0,
 }: {
   numMessages: number
   chatPaddingBottom?: number
+  bottomInset?: number
 }) {
   const {
     blankSize,
@@ -52,8 +54,6 @@ export function useKeyboardAwareMessageList({
     keyboardState,
   } = useKeyboardContextState()
   const { isMessageSendAnimating } = useChatAnimation()
-
-  const { bottom: bottomInset } = useUnistyles().rt.insets
 
   // Tracks whether we used interactive keyboard dismissal (swipe down to close)
   const didInteractive = useSharedValue(false)

@@ -11,3 +11,4 @@ export { useUpdateLastMessageIndex } from './chat/message-list/use-update-last-m
 export { useKeyboardAwareMessageList } from './chat/message-list/use-keyboard-aware-message-list'
 export { useStartedWithOneMessage } from './chat/message-list/use-started-with-one-message'
 export { useMessageListInitialScrollToEnd } from './chat/use-message-list-initial-scroll-to-end'
+export { useSetLastAnimatableMessage } from './chat/message-list/item/use-set-last-animatable-message'
