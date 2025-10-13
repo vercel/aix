@@ -28,30 +28,47 @@ export default function App() {
     <ListProvider initialComposerHeight={0}>
       <MessagesContext value={[messages, setMessages]}>
         <View style={{ height: 60 }} />
-        {messages.length > 0 && (
-          <ListContainer
-            length={messages.length}
-            style={({ ready }) => {
-              'worklet'
-              return { opacity: withTiming(ready ? 1 : 0, { duration: 200 }) }
-            }}
-          >
-            <List
-              data={messages}
-              renderItem={({ item, index }) => {
-                if (item.type === 'user') {
-                  return (
-                    <UserMessage message={item.content} messageIndex={index} />
-                  )
-                }
-                return (
-                  <SystemMessage message={item.content} messageIndex={index} />
-                )
+
+        <View style={{ flex: 1 }}>
+          {messages.length > 0 && (
+            <ListContainer
+              length={messages.length}
+              style={({ ready }) => {
+                'worklet'
+                return { opacity: withTiming(ready ? 1 : 0, { duration: 200 }) }
               }}
-              keyExtractor={(item, index) => `${item.type}-${index}`}
-            />
-          </ListContainer>
-        )}
+            >
+              <List
+                data={messages}
+                renderItem={({ item, index }) => {
+                  if (item.type === 'user') {
+                    return (
+                      <UserMessage
+                        message={item.content}
+                        messageIndex={index}
+                      />
+                    )
+                  }
+                  if (item.type === 'system' && index === 1) {
+                    return (
+                      <SystemMessagePlaceholder messageIndex={index}>
+                        <Text>Thinking...</Text>
+                      </SystemMessagePlaceholder>
+                    )
+                  }
+
+                  return (
+                    <SystemMessage
+                      message={item.content}
+                      messageIndex={index}
+                    />
+                  )
+                }}
+                keyExtractor={(item, index) => `${item.type}-${index}`}
+              />
+            </ListContainer>
+          )}
+        </View>
         <Composer />
       </MessagesContext>
     </ListProvider>
@@ -74,14 +91,18 @@ function Composer() {
         title='Add'
         onPress={() => {
           setIsMessageSendAnimating(true)
-          setMessages((m) => [...m, { type: 'user', content: 'Hello' }])
-          setTimeout(() => {
-            setIsMessageSendAnimating(false)
-            setMessages((messages) => [
-              ...messages,
-              { type: 'system', content: 'How are you?' },
-            ])
-          }, 1000)
+          setMessages((m) => [
+            ...m,
+            { type: 'user', content: 'Hello' },
+            { type: 'system', content: 'How are you?' },
+          ])
+          // setTimeout(() => {
+          //   setIsMessageSendAnimating(false)
+          //   setMessages((messages) => [
+          //     ...messages,
+          //     { type: 'system', content: 'How are you?' },
+          //   ])
+          // }, 1000)
         }}
       />
       <Button

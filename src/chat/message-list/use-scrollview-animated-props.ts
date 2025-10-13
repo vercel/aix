@@ -14,7 +14,6 @@ export function useScrollViewAnimatedProps({
   return useAnimatedProps(() => {
     const scrollIndicatorInsetsBottom =
       composerHeight.get() + translateY.get() + bottomInsetPadding
-    console.log('[scrollIndicatorInsetsBottom]', scrollIndicatorInsetsBottom)
     return {
       contentOffset: {
         x: 0,

@@ -99,7 +99,8 @@ function useScrollToEnd(
       if (listRef.current) {
         listRef.current.scrollToEnd({
           animated: params.animated,
-          viewOffset: -bottomInset.get(),
+          viewOffset: -bottomInset.get(), // TODO figure out why this scrolls over too much
+          // viewOffset: 0, // this fixes it for the first message...
         })
       }
     },
