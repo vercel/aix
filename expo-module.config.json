@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["AiChatModule"]
+  },
+  "android": {
+    "modules": ["com.vercel.ai-chat.AiChatModule"]
+  }
+}

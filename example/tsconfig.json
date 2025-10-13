@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "ai-chat": ["../src/index"],
+      "ai-chat/*": ["../src/*"]
+    }
+  }
+}

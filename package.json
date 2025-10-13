@@ -1,0 +1,48 @@
+{
+  "name": "ai-chat",
+  "version": "0.1.0",
+  "description": "My new module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "expo-module": "expo-module",
+    "open:ios": "xed example/ios",
+    "open:android": "open -a \"Android Studio\" example/android"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "ai-chat",
+    "AiChat"
+  ],
+  "repository": "https://github.com/nandorojo/ai-chat/ai-chat",
+  "bugs": {
+    "url": "https://github.com/nandorojo/ai-chat/ai-chat/issues"
+  },
+  "author": "Fernando Rojo <fernando.rojo@vercel.com> (https://github.com/nandorojo/ai-chat)",
+  "license": "MIT",
+  "homepage": "https://github.com/nandorojo/ai-chat/ai-chat#readme",
+  "dependencies": {
+    "@legendapp/list": "^2.0.12",
+    "react-native-keyboard-controller": "^1.19.0",
+    "use-latest-callback": "^0.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "expo": "^54.0.12",
+    "expo-module-scripts": "^5.0.7",
+    "react-native": "0.81.4",
+    "react-native-reanimated": "^4.1.3"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}
