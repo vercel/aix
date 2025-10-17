@@ -286,10 +286,27 @@ export function useKeyboardAwareMessageList({
     }
   }
 
+  const appState = useSharedValue(AppState.currentState)
+  useEffect(
+    function subscribeToAppState() {
+      const subscription = AppState.addEventListener('change', (state) => {
+        appState.set(state)
+      })
+      return () => {
+        subscription.remove()
+      }
+    },
+    [appState]
+  )
+
   const onEnd = (e: NativeEvent, skipOffset?: boolean) => {
     'worklet'
 
-    console.log('[onEnd]')
+    if (appState.get() !== 'active') {
+      // for some reason, iOS fires onEnd multiple times for inactive and background states
+      // and this can cause weird behavior.
+      return
+    }
 
     const wasInteractive = didInteractive.get()
     if (wasInteractive && e.progress === 0 && e.target > 0) {
