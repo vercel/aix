@@ -20,6 +20,7 @@ import {
 import { useChatAnimation } from '../animation/chat-animation-context'
 import { useMessageListContext } from './context'
 import { useComposerHeightContext } from '../composer/composer-height-context'
+import { AppState } from 'react-native'
 
 /**
  * Hook that manages the message list behavior when the keyboard opens/closes.
@@ -287,6 +288,8 @@ export function useKeyboardAwareMessageList({
 
   const onEnd = (e: NativeEvent, skipOffset?: boolean) => {
     'worklet'
+
+    console.log('[onEnd]')
 
     const wasInteractive = didInteractive.get()
     if (wasInteractive && e.progress === 0 && e.target > 0) {

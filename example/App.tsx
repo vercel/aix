@@ -17,65 +17,79 @@ import {
   useChatAnimation,
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
-import { Button, Text, View } from 'react-native'
+import { Button, Text, TextInput, View } from 'react-native'
 import { ListProvider } from './ListProvider'
 import { createContext, use, useEffect, useState } from 'react'
+import { KeyboardStickyView } from 'react-native-keyboard-controller'
+import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
+import { useSyncLayout } from '@legendapp/list'
+import {
+  useSyncLayoutHandler,
+  useSyncLayoutHeight,
+} from 'ai-chat/chat/use-sync-layout'
+
+const bottomInsetPadding = 16
 
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([])
 
   return (
-    <ListProvider initialComposerHeight={0}>
-      <MessagesContext value={[messages, setMessages]}>
-        <View style={{ height: 60 }} />
+    <View style={{ flex: 1, backgroundColor: 'black' }}>
+      <ListProvider initialComposerHeight={0}>
+        <MessagesContext value={[messages, setMessages]}>
+          <View style={{ height: 60 }} />
+          <Actions />
 
-        <View style={{ flex: 1 }}>
-          {messages.length > 0 && (
-            <ListContainer
-              length={messages.length}
-              style={({ ready }) => {
-                'worklet'
-                return { opacity: withTiming(ready ? 1 : 0, { duration: 200 }) }
-              }}
-            >
-              <List
-                data={messages}
-                renderItem={({ item, index }) => {
-                  if (item.type === 'user') {
+          <View style={{ flex: 1, overflow: 'hidden' }}>
+            {messages.length > 0 && (
+              <ListContainer
+                length={messages.length}
+                style={({ ready }) => {
+                  'worklet'
+                  return {
+                    opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+                  }
+                }}
+              >
+                <List
+                  data={messages}
+                  renderItem={({ item, index }) => {
+                    if (item.type === 'user') {
+                      return (
+                        <UserMessage
+                          message={item.content}
+                          messageIndex={index}
+                        />
+                      )
+                    }
+                    if (item.type === 'system' && index === 1) {
+                      return (
+                        <SystemMessagePlaceholder messageIndex={index}>
+                          <Text>Thinking...</Text>
+                        </SystemMessagePlaceholder>
+                      )
+                    }
+
                     return (
-                      <UserMessage
+                      <SystemMessage
                         message={item.content}
                         messageIndex={index}
                       />
                     )
-                  }
-                  if (item.type === 'system' && index === 1) {
-                    return (
-                      <SystemMessagePlaceholder messageIndex={index}>
-                        <Text>Thinking...</Text>
-                      </SystemMessagePlaceholder>
-                    )
-                  }
-
-                  return (
-                    <SystemMessage
-                      message={item.content}
-                      messageIndex={index}
-                    />
-                  )
-                }}
-                keyExtractor={(item, index) => `${item.type}-${index}`}
-              />
-            </ListContainer>
-          )}
-        </View>
-        <Composer />
-      </MessagesContext>
-    </ListProvider>
+                  }}
+                  keyExtractor={(item, index) => `${item.type}-${index}`}
+                />
+              </ListContainer>
+            )}
+          </View>
+          <Composer />
+        </MessagesContext>
+      </ListProvider>
+    </View>
   )
 }
 
-function Composer() {
+function Actions() {
   const [messages, setMessages] = use(MessagesContext)
   const { setIsMessageSendAnimating } = useChatAnimation()
   return (
@@ -94,7 +108,7 @@ function Composer() {
           setMessages((m) => [
             ...m,
             { type: 'user', content: 'Hello' },
-            { type: 'system', content: 'How are you?' },
+            { type: 'system', content: 'How are you?\n'.repeat(100) },
           ])
         }}
       />
@@ -154,6 +168,44 @@ function ListContainer({
   )
 }
 
+function Composer() {
+  const [text, setText] = useState('Hello')
+  const { composerHeight } = useComposerHeightContext()
+  const { onLayout, ref } = useSyncLayoutHandler((layout) => {
+    composerHeight.set(layout.height)
+  })
+  return (
+    <View
+      style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+      ref={ref}
+      onLayout={onLayout}
+    >
+      <KeyboardStickyView
+        offset={{ opened: 0, closed: -bottomInsetPadding }}
+        style={{
+          zIndex: 2,
+          padding: 8,
+          paddingHorizontal: 16,
+        }}
+      >
+        <View>
+          <TextInput
+            style={{
+              padding: 12,
+              backgroundColor: '#222',
+              borderRadius: 20,
+              borderCurve: 'continuous',
+              paddingHorizontal: 16,
+              color: 'white',
+            }}
+            defaultValue='Hello'
+          />
+        </View>
+      </KeyboardStickyView>
+    </View>
+  )
+}
+
 function List<Data>(
   parentProps: Omit<
     React.ComponentPropsWithRef<typeof AnimatedLegendList<Data>>,
@@ -168,7 +220,7 @@ function List<Data>(
   })
   useScrollMessageListFromComposerSizeUpdates()
   useUpdateLastMessageIndex({ numMessages })
-  const props = useMessageListProps({ bottomInsetPadding: 0 })
+  const props = useMessageListProps({ bottomInsetPadding })
 
   return <AnimatedLegendList {...parentProps} {...props} />
 }
@@ -181,7 +233,7 @@ function UserMessage({
   messageIndex: number
 }) {
   useSetLastAnimatableMessage({ messageIndex })
-  const content = <Text>{message}</Text>
+  const content = <Text style={{ color: 'white' }}>{message}</Text>
 
   return (
     <FirstUserMessageFrame messageIndex={messageIndex}>
@@ -267,7 +319,7 @@ function SystemMessage({
   })
   return (
     <Animated.View ref={refToMeasure} onLayout={onLayout}>
-      <Text>{message}</Text>
+      <Text style={{ color: 'white' }}>{message}</Text>
     </Animated.View>
   )
 }
