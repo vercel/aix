@@ -172,6 +172,8 @@ export function useKeyboardAwareMessageList({
     []
   )
 
+  const appState = useAppState()
+
   /**
    * Called when keyboard animation starts. Calculates initial offset values
    * and determines how the message list should behave during the animation.
@@ -286,19 +288,6 @@ export function useKeyboardAwareMessageList({
     }
   }
 
-  const appState = useSharedValue(AppState.currentState)
-  useEffect(
-    function subscribeToAppState() {
-      const subscription = AppState.addEventListener('change', (state) => {
-        appState.set(state)
-      })
-      return () => {
-        subscription.remove()
-      }
-    },
-    [appState]
-  )
-
   const onEnd = (e: NativeEvent, skipOffset?: boolean) => {
     'worklet'
 
@@ -358,7 +347,10 @@ export function useKeyboardAwareMessageList({
         onMove(e, true, /*skipOffset*/ true)
       },
       onMove,
-      onEnd,
+      onEnd: (e) => {
+        'worklet'
+        onEnd(e)
+      },
     },
     []
   )
@@ -454,4 +446,20 @@ export function useKeyboardAwareMessageList({
     },
     []
   )
+}
+
+function useAppState() {
+  const appState = useSharedValue(AppState.currentState)
+  useEffect(
+    function subscribeToAppState() {
+      const subscription = AppState.addEventListener('change', (state) => {
+        appState.set(state)
+      })
+      return () => {
+        subscription.remove()
+      }
+    },
+    [appState]
+  )
+  return appState
 }

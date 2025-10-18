@@ -222,7 +222,13 @@ function List<Data>(
   useUpdateLastMessageIndex({ numMessages })
   const props = useMessageListProps({ bottomInsetPadding })
 
-  return <AnimatedLegendList {...parentProps} {...props} />
+  return (
+    <AnimatedLegendList
+      keyboardDismissMode='interactive'
+      {...parentProps}
+      {...props}
+    />
+  )
 }
 
 function UserMessage({
