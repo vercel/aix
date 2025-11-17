@@ -17,12 +17,13 @@ import {
   useChatAnimation,
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
-import { Button, Text, TextInput, View } from 'react-native'
+import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ListProvider } from './ListProvider'
 import { createContext, use, useEffect, useState } from 'react'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
 import { useSyncLayoutHandler } from 'ai-chat/chat/use-sync-layout'
+import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 
 const bottomInsetPadding = 16
 
@@ -95,19 +96,10 @@ function Actions() {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
       }}
     >
-      <Button
-        title='Add'
-        onPress={() => {
-          setIsMessageSendAnimating(true)
-          setMessages((m) => [
-            ...m,
-            { type: 'user', content: 'Hello' },
-            { type: 'system', content: 'How are you?\n'.repeat(20) },
-          ])
-        }}
-      />
       <Button
         title='Clear'
         onPress={() => {
@@ -165,11 +157,15 @@ function ListContainer({
 }
 
 function Composer() {
-  const [text, setText] = useState('Hello')
+  const [text, setText] = useState('')
   const { composerHeight } = useComposerHeightContext()
   const { onLayout, ref } = useSyncLayoutHandler((layout) => {
     composerHeight.set(layout.height)
   })
+  const { setIsMessageSendAnimating } = useChatAnimation()
+  const [, setMessages] = use(MessagesContext)
+  const { setKeyboardState, shouldOffsetCloseKeyboard } =
+    useKeyboardContextState()
   return (
     <View
       style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
@@ -182,21 +178,38 @@ function Composer() {
           zIndex: 2,
           padding: 8,
           paddingHorizontal: 16,
+          flexDirection: 'row',
         }}
       >
-        <View>
-          <TextInput
-            style={{
-              padding: 12,
-              backgroundColor: '#222',
-              borderRadius: 20,
-              borderCurve: 'continuous',
-              paddingHorizontal: 16,
-              color: 'white',
-            }}
-            defaultValue='Hello'
-          />
-        </View>
+        <TextInput
+          style={{
+            padding: 12,
+            backgroundColor: '#222',
+            borderRadius: 20,
+            borderCurve: 'continuous',
+            paddingHorizontal: 16,
+            color: 'white',
+            flex: 1,
+          }}
+          onChangeText={setText}
+        />
+        <Button
+          title='Add'
+          onPress={() => {
+            setMessages((m) => [
+              ...m,
+              { type: 'user', content: text },
+              { type: 'system', content: 'How are you?\n'.repeat(20) },
+            ])
+
+            // this is horrifying, fix it
+            setKeyboardState('didHide')
+            shouldOffsetCloseKeyboard.set(false)
+            setIsMessageSendAnimating(true)
+
+            Keyboard.dismiss()
+          }}
+        />
       </KeyboardStickyView>
     </View>
   )

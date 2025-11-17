@@ -181,9 +181,6 @@ export const MessageListContextProvider = ({
   const listRef = useRef<LegendListRef | null>(null)
 
   const bottomInset = useDerivedValue(() => {
-    console.log('[bottomInset][blankSize]', blankSize.get())
-    console.log('[bottomInset][composerHeight]', composerHeight.get())
-    console.log('[bottomInset][translateY]', translateY.get())
     return blankSize.get() + composerHeight.get() + translateY.get()
   })
 
