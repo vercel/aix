@@ -22,11 +22,7 @@ import { ListProvider } from './ListProvider'
 import { createContext, use, useEffect, useState } from 'react'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
-import { useSyncLayout } from '@legendapp/list'
-import {
-  useSyncLayoutHandler,
-  useSyncLayoutHeight,
-} from 'ai-chat/chat/use-sync-layout'
+import { useSyncLayoutHandler } from 'ai-chat/chat/use-sync-layout'
 
 const bottomInsetPadding = 16
 
@@ -62,13 +58,13 @@ export default function App() {
                         />
                       )
                     }
-                    if (item.type === 'system' && index === 1) {
-                      return (
-                        <SystemMessagePlaceholder messageIndex={index}>
-                          <Text>Thinking...</Text>
-                        </SystemMessagePlaceholder>
-                      )
-                    }
+                    // if (item.type === 'system' && index === 1) {
+                    //   return (
+                    //     <SystemMessagePlaceholder messageIndex={index}>
+                    //       <Text style={{ color: 'white' }}>Thinking...</Text>
+                    //     </SystemMessagePlaceholder>
+                    //   )
+                    // }
 
                     return (
                       <SystemMessage
@@ -108,7 +104,7 @@ function Actions() {
           setMessages((m) => [
             ...m,
             { type: 'user', content: 'Hello' },
-            { type: 'system', content: 'How are you?\n'.repeat(100) },
+            { type: 'system', content: 'How are you?\n'.repeat(20) },
           ])
         }}
       />
@@ -280,19 +276,18 @@ function FirstUserMessageFrame({
   )
 }
 
-function SystemMessagePlaceholder({
-  messageIndex,
+function FirstSystemMessageAnimatedFrame({
   children,
+  messageIndex,
 }: {
-  messageIndex: number
   children: React.ReactNode
+  messageIndex: number
 }) {
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
     messageMinimumHeight: 20,
     bottomInset: 0,
   })
-
   const { isComplete } = useFirstMessageEntrance({
     itemHeight: renderedSize,
     disabled: messageIndex !== 1,
@@ -311,6 +306,23 @@ function SystemMessagePlaceholder({
   )
 }
 
+function SystemMessagePlaceholder({
+  messageIndex,
+  children,
+}: {
+  messageIndex: number
+  children: React.ReactNode
+}) {
+  if (messageIndex !== 1) {
+    return children
+  }
+  return (
+    <FirstSystemMessageAnimatedFrame messageIndex={messageIndex}>
+      {children}
+    </FirstSystemMessageAnimatedFrame>
+  )
+}
+
 function SystemMessage({
   message,
   messageIndex,
@@ -318,14 +330,14 @@ function SystemMessage({
   message: string
   messageIndex: number
 }) {
-  const { onLayout, refToMeasure } = useMessageBlankSize({
-    messageIndex,
-    messageMinimumHeight: 20,
-    bottomInset: 0,
-  })
+  const content = <Text style={{ color: 'white' }}>{message}</Text>
+  if (messageIndex !== 1) {
+    return content
+  }
+
   return (
-    <Animated.View ref={refToMeasure} onLayout={onLayout}>
-      <Text style={{ color: 'white' }}>{message}</Text>
-    </Animated.View>
+    <FirstSystemMessageAnimatedFrame messageIndex={messageIndex}>
+      {content}
+    </FirstSystemMessageAnimatedFrame>
   )
 }
