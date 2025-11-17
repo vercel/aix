@@ -89,12 +89,12 @@ export function useFirstMessageEntrance({ disabled, itemHeight }: Params) {
 
         if (eligible) {
           const kbHeight = keyboardHeight.get()
-          const { from, to, duration, easing, springConfig } =
-            getAnimatedValues({
-              itemHeight: height,
-              windowHeight,
-              keyboardHeight: kbHeight,
-            })
+          const animatedValues = getAnimatedValues({
+            itemHeight: height,
+            windowHeight,
+            keyboardHeight: kbHeight,
+          })
+          const { from, to, duration, easing, springConfig } = animatedValues
           translateY.set(
             withTiming(from.translateY, { duration: 0 }, () => {
               translateY.set(withSpring(to.translateY, springConfig as any))
