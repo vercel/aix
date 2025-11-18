@@ -38,16 +38,16 @@ export default function App() {
           <Actions />
 
           <View style={{ flex: 1, overflow: 'hidden' }}>
-            {messages.length > 0 && (
-              <ListContainer
-                length={messages.length}
-                style={({ ready }) => {
-                  'worklet'
-                  return {
-                    opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
-                  }
-                }}
-              >
+            <ListContainer
+              length={messages.length}
+              style={({ ready }) => {
+                'worklet'
+                return {
+                  opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+                }
+              }}
+            >
+              {messages.length > 0 && (
                 <List
                   data={messages}
                   renderItem={({ item, index }) => {
@@ -76,8 +76,8 @@ export default function App() {
                   }}
                   keyExtractor={(item, index) => `${item.type}-${index}`}
                 />
-              </ListContainer>
-            )}
+              )}
+            </ListContainer>
           </View>
           <Composer />
         </MessagesContext>
