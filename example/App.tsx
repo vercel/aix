@@ -157,7 +157,8 @@ function ListContainer({
 }
 
 function Composer() {
-  const [text, setText] = useState('')
+  const defaultText = 'Hi'
+  const [text, setText] = useState(defaultText)
   const { composerHeight } = useComposerHeightContext()
   const { onLayout, ref } = useSyncLayoutHandler((layout) => {
     composerHeight.set(layout.height)
@@ -192,6 +193,7 @@ function Composer() {
             flex: 1,
           }}
           onChangeText={setText}
+          value={text}
         />
         <Button
           title='Add'
@@ -289,7 +291,7 @@ function FirstUserMessageFrame({
   )
 }
 
-function FirstSystemMessageAnimatedFrame({
+function SystemMessageAnimatedFrame({
   children,
   messageIndex,
 }: {
@@ -326,13 +328,10 @@ function SystemMessagePlaceholder({
   messageIndex: number
   children: React.ReactNode
 }) {
-  if (messageIndex !== 1) {
-    return children
-  }
   return (
-    <FirstSystemMessageAnimatedFrame messageIndex={messageIndex}>
+    <SystemMessageAnimatedFrame messageIndex={messageIndex}>
       {children}
-    </FirstSystemMessageAnimatedFrame>
+    </SystemMessageAnimatedFrame>
   )
 }
 
@@ -343,14 +342,9 @@ function SystemMessage({
   message: string
   messageIndex: number
 }) {
-  const content = <Text style={{ color: 'white' }}>{message}</Text>
-  if (messageIndex !== 1) {
-    return content
-  }
-
   return (
-    <FirstSystemMessageAnimatedFrame messageIndex={messageIndex}>
-      {content}
-    </FirstSystemMessageAnimatedFrame>
+    <SystemMessageAnimatedFrame messageIndex={messageIndex}>
+      <Text style={{ color: 'white' }}>{message}</Text>
+    </SystemMessageAnimatedFrame>
   )
 }
