@@ -17,16 +17,13 @@ import {
   useChatAnimation,
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
-import { Button, Text, TextInput, View } from 'react-native'
+import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ListProvider } from './ListProvider'
 import { createContext, use, useEffect, useState } from 'react'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
-import { useSyncLayout } from '@legendapp/list'
-import {
-  useSyncLayoutHandler,
-  useSyncLayoutHeight,
-} from 'ai-chat/chat/use-sync-layout'
+import { useSyncLayoutHandler } from 'ai-chat/chat/use-sync-layout'
+import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 
 const bottomInsetPadding = 16
 
@@ -41,16 +38,16 @@ export default function App() {
           <Actions />
 
           <View style={{ flex: 1, overflow: 'hidden' }}>
-            {messages.length > 0 && (
-              <ListContainer
-                length={messages.length}
-                style={({ ready }) => {
-                  'worklet'
-                  return {
-                    opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
-                  }
-                }}
-              >
+            <ListContainer
+              length={messages.length}
+              style={({ ready }) => {
+                'worklet'
+                return {
+                  opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+                }
+              }}
+            >
+              {messages.length > 0 && (
                 <List
                   data={messages}
                   renderItem={({ item, index }) => {
@@ -62,13 +59,13 @@ export default function App() {
                         />
                       )
                     }
-                    if (item.type === 'system' && index === 1) {
-                      return (
-                        <SystemMessagePlaceholder messageIndex={index}>
-                          <Text>Thinking...</Text>
-                        </SystemMessagePlaceholder>
-                      )
-                    }
+                    // if (item.type === 'system' && index === 1) {
+                    //   return (
+                    //     <SystemMessagePlaceholder messageIndex={index}>
+                    //       <Text style={{ color: 'white' }}>Thinking...</Text>
+                    //     </SystemMessagePlaceholder>
+                    //   )
+                    // }
 
                     return (
                       <SystemMessage
@@ -79,8 +76,8 @@ export default function App() {
                   }}
                   keyExtractor={(item, index) => `${item.type}-${index}`}
                 />
-              </ListContainer>
-            )}
+              )}
+            </ListContainer>
           </View>
           <Composer />
         </MessagesContext>
@@ -90,34 +87,18 @@ export default function App() {
 }
 
 function Actions() {
-  const [messages, setMessages] = use(MessagesContext)
-  const { setIsMessageSendAnimating } = useChatAnimation()
+  const [, setMessages] = use(MessagesContext)
   return (
     <View
       style={{
-        height: 60,
+        height: 40,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
       }}
     >
-      <Button
-        title='Add'
-        onPress={() => {
-          setIsMessageSendAnimating(true)
-          setMessages((m) => [
-            ...m,
-            { type: 'user', content: 'Hello' },
-            { type: 'system', content: 'How are you?\n'.repeat(100) },
-          ])
-        }}
-      />
-      <Button
-        title='Clear'
-        onPress={() => {
-          setMessages([])
-        }}
-      />
       <ScrollToEndButton />
     </View>
   )
@@ -169,11 +150,16 @@ function ListContainer({
 }
 
 function Composer() {
-  const [text, setText] = useState('Hello')
+  const defaultText = 'Hi'
+  const [text, setText] = useState(defaultText)
   const { composerHeight } = useComposerHeightContext()
   const { onLayout, ref } = useSyncLayoutHandler((layout) => {
     composerHeight.set(layout.height)
   })
+  const { setIsMessageSendAnimating } = useChatAnimation()
+  const [, setMessages] = use(MessagesContext)
+  const { setKeyboardState, shouldOffsetCloseKeyboard } =
+    useKeyboardContextState()
   return (
     <View
       style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
@@ -185,22 +171,41 @@ function Composer() {
         style={{
           zIndex: 2,
           padding: 8,
+          paddingTop: 0,
           paddingHorizontal: 16,
+          flexDirection: 'row',
         }}
       >
-        <View>
-          <TextInput
-            style={{
-              padding: 12,
-              backgroundColor: '#222',
-              borderRadius: 20,
-              borderCurve: 'continuous',
-              paddingHorizontal: 16,
-              color: 'white',
-            }}
-            defaultValue='Hello'
-          />
-        </View>
+        <TextInput
+          style={{
+            padding: 12,
+            backgroundColor: '#222',
+            borderRadius: 20,
+            borderCurve: 'continuous',
+            paddingHorizontal: 16,
+            color: 'white',
+            flex: 1,
+          }}
+          onChangeText={setText}
+          value={text}
+        />
+        <Button
+          title='Add'
+          onPress={() => {
+            setMessages((m) => [
+              ...m,
+              { type: 'user', content: text },
+              { type: 'system', content: 'How are you?\n'.repeat(20) },
+            ])
+
+            // this is horrifying, fix it
+            setKeyboardState('didHide')
+            shouldOffsetCloseKeyboard.set(false)
+            setIsMessageSendAnimating(true)
+
+            Keyboard.dismiss()
+          }}
+        />
       </KeyboardStickyView>
     </View>
   )
@@ -280,19 +285,18 @@ function FirstUserMessageFrame({
   )
 }
 
-function SystemMessagePlaceholder({
-  messageIndex,
+function SystemMessageAnimatedFrame({
   children,
+  messageIndex,
 }: {
-  messageIndex: number
   children: React.ReactNode
+  messageIndex: number
 }) {
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
     messageMinimumHeight: 20,
     bottomInset: 0,
   })
-
   const { isComplete } = useFirstMessageEntrance({
     itemHeight: renderedSize,
     disabled: messageIndex !== 1,
@@ -311,6 +315,20 @@ function SystemMessagePlaceholder({
   )
 }
 
+function SystemMessagePlaceholder({
+  messageIndex,
+  children,
+}: {
+  messageIndex: number
+  children: React.ReactNode
+}) {
+  return (
+    <SystemMessageAnimatedFrame messageIndex={messageIndex}>
+      {children}
+    </SystemMessageAnimatedFrame>
+  )
+}
+
 function SystemMessage({
   message,
   messageIndex,
@@ -318,14 +336,9 @@ function SystemMessage({
   message: string
   messageIndex: number
 }) {
-  const { onLayout, refToMeasure } = useMessageBlankSize({
-    messageIndex,
-    messageMinimumHeight: 20,
-    bottomInset: 0,
-  })
   return (
-    <Animated.View ref={refToMeasure} onLayout={onLayout}>
+    <SystemMessageAnimatedFrame messageIndex={messageIndex}>
       <Text style={{ color: 'white' }}>{message}</Text>
-    </Animated.View>
+    </SystemMessageAnimatedFrame>
   )
 }
