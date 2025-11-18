@@ -87,12 +87,11 @@ export default function App() {
 }
 
 function Actions() {
-  const [messages, setMessages] = use(MessagesContext)
-  const { setIsMessageSendAnimating } = useChatAnimation()
+  const [, setMessages] = use(MessagesContext)
   return (
     <View
       style={{
-        height: 60,
+        height: 40,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -100,12 +99,6 @@ function Actions() {
         borderBottomColor: '#333',
       }}
     >
-      <Button
-        title='Clear'
-        onPress={() => {
-          setMessages([])
-        }}
-      />
       <ScrollToEndButton />
     </View>
   )
@@ -178,6 +171,7 @@ function Composer() {
         style={{
           zIndex: 2,
           padding: 8,
+          paddingTop: 0,
           paddingHorizontal: 16,
           flexDirection: 'row',
         }}
