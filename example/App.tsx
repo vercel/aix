@@ -198,6 +198,7 @@ function Composer() {
             }}
             onChangeText={setText}
             value={text}
+            multiline
           />
           <Button
             title='Add'
@@ -205,8 +206,14 @@ function Composer() {
               setMessages((m) => [
                 ...m,
                 { type: 'user', content: text },
-                { type: 'system', content: 'How are you?\n'.repeat(20) },
+                {
+                  type: 'system',
+                  content: 'How are you?\n'.repeat(
+                    Math.ceil((Math.random() * 100) / 2)
+                  ),
+                },
               ])
+              setText('')
 
               // this is horrifying, fix it
               setKeyboardState('didHide')
