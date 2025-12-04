@@ -1,5 +1,9 @@
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated'
 
 import {
   useMessageListContainerProps,
@@ -20,7 +24,11 @@ import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-firs
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ListProvider } from './ListProvider'
 import { createContext, use, useEffect, useState } from 'react'
-import { KeyboardStickyView } from 'react-native-keyboard-controller'
+import {
+  KeyboardStickyView,
+  useReanimatedKeyboardAnimation,
+  KeyboardProvider,
+} from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
 import { useSyncLayoutHandler } from 'ai-chat/chat/use-sync-layout'
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
@@ -31,58 +39,60 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([])
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'black' }}>
-      <ListProvider initialComposerHeight={0}>
-        <MessagesContext value={[messages, setMessages]}>
-          <View style={{ height: 60 }} />
-          <Actions />
+    <KeyboardProvider>
+      <View style={{ flex: 1, backgroundColor: 'black' }}>
+        <ListProvider initialComposerHeight={0}>
+          <MessagesContext value={[messages, setMessages]}>
+            <View style={{ height: 60 }} />
+            <Actions />
 
-          <View style={{ flex: 1, overflow: 'hidden' }}>
-            <ListContainer
-              length={messages.length}
-              style={({ ready }) => {
-                'worklet'
-                return {
-                  opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
-                }
-              }}
-            >
-              {messages.length > 0 && (
-                <List
-                  data={messages}
-                  renderItem={({ item, index }) => {
-                    if (item.type === 'user') {
+            <View style={{ flex: 1, overflow: 'hidden' }}>
+              <ListContainer
+                length={messages.length}
+                style={({ ready }) => {
+                  'worklet'
+                  return {
+                    opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+                  }
+                }}
+              >
+                {messages.length > 0 && (
+                  <List
+                    data={messages}
+                    renderItem={({ item, index }) => {
+                      if (item.type === 'user') {
+                        return (
+                          <UserMessage
+                            message={item.content}
+                            messageIndex={index}
+                          />
+                        )
+                      }
+                      // if (item.type === 'system' && index === 1) {
+                      //   return (
+                      //     <SystemMessagePlaceholder messageIndex={index}>
+                      //       <Text style={{ color: 'white' }}>Thinking...</Text>
+                      //     </SystemMessagePlaceholder>
+                      //   )
+                      // }
+
                       return (
-                        <UserMessage
+                        <SystemMessage
                           message={item.content}
                           messageIndex={index}
                         />
                       )
-                    }
-                    // if (item.type === 'system' && index === 1) {
-                    //   return (
-                    //     <SystemMessagePlaceholder messageIndex={index}>
-                    //       <Text style={{ color: 'white' }}>Thinking...</Text>
-                    //     </SystemMessagePlaceholder>
-                    //   )
-                    // }
-
-                    return (
-                      <SystemMessage
-                        message={item.content}
-                        messageIndex={index}
-                      />
-                    )
-                  }}
-                  keyExtractor={(item, index) => `${item.type}-${index}`}
-                />
-              )}
-            </ListContainer>
-          </View>
-          <Composer />
-        </MessagesContext>
-      </ListProvider>
-    </View>
+                    }}
+                    keyExtractor={(item, index) => `${item.type}-${index}`}
+                  />
+                )}
+              </ListContainer>
+            </View>
+            <Composer />
+          </MessagesContext>
+        </ListProvider>
+      </View>
+    </KeyboardProvider>
   )
 }
 
@@ -160,55 +170,93 @@ function Composer() {
   const [, setMessages] = use(MessagesContext)
   const { setKeyboardState, shouldOffsetCloseKeyboard } =
     useKeyboardContextState()
+
   return (
     <View
       style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
       ref={ref}
       onLayout={onLayout}
     >
-      <KeyboardStickyView
-        offset={{ opened: 0, closed: -bottomInsetPadding }}
-        style={{
-          zIndex: 2,
-          padding: 8,
-          paddingTop: 0,
-          paddingHorizontal: 16,
-          flexDirection: 'row',
-        }}
-      >
-        <TextInput
+      <StickyView offset={{ opened: 0, closed: -bottomInsetPadding }}>
+        <View
           style={{
-            padding: 12,
-            backgroundColor: '#222',
-            borderRadius: 20,
-            borderCurve: 'continuous',
+            padding: 8,
+            paddingTop: 0,
             paddingHorizontal: 16,
-            color: 'white',
-            flex: 1,
+            flexDirection: 'row',
           }}
-          onChangeText={setText}
-          value={text}
-        />
-        <Button
-          title='Add'
-          onPress={() => {
-            setMessages((m) => [
-              ...m,
-              { type: 'user', content: text },
-              { type: 'system', content: 'How are you?\n'.repeat(20) },
-            ])
+        >
+          <TextInput
+            style={{
+              padding: 12,
+              backgroundColor: '#222',
+              borderRadius: 20,
+              borderCurve: 'continuous',
+              paddingHorizontal: 16,
+              color: 'white',
+              flex: 1,
+            }}
+            onChangeText={setText}
+            value={text}
+            multiline
+          />
+          <Button
+            title='Add'
+            onPress={() => {
+              setMessages((m) => [
+                ...m,
+                { type: 'user', content: text },
+                {
+                  type: 'system',
+                  content: 'How are you?\n'.repeat(
+                    Math.ceil((Math.random() * 100) / 2)
+                  ),
+                },
+              ])
+              setText('')
 
-            // this is horrifying, fix it
-            setKeyboardState('didHide')
-            shouldOffsetCloseKeyboard.set(false)
-            setIsMessageSendAnimating(true)
+              // this is horrifying, fix it
+              setKeyboardState('didHide')
+              shouldOffsetCloseKeyboard.set(false)
+              setIsMessageSendAnimating(true)
 
-            Keyboard.dismiss()
-          }}
-        />
-      </KeyboardStickyView>
+              Keyboard.dismiss()
+            }}
+          />
+        </View>
+      </StickyView>
     </View>
   )
+}
+
+function StickyView(
+  props: React.ComponentProps<typeof Animated.View> & {
+    offset?: { opened?: number; closed?: number }
+  }
+) {
+  const { height, progress } = useReanimatedKeyboardAnimation()
+
+  const style = useAnimatedStyle(() => {
+    console.log('[kb][progress]', progress.get())
+    console.log('[kb][height]', height.get())
+    const y =
+      height.get() +
+      interpolate(
+        progress.get(),
+        [0, 1],
+        [props.offset?.closed ?? 0, props.offset?.opened ?? 0]
+      )
+    console.log('[kb][y]', y)
+    return {
+      transform: [
+        {
+          translateY: y,
+        },
+      ],
+    }
+  })
+
+  return <Animated.View style={[style]} {...props} />
 }
 
 function List<Data>(

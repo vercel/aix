@@ -14,7 +14,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vercel.ai-chat.example"
+      "bundleIdentifier": "com.vercel.ai-chat.example",
+      "appleTeamId": "JW6Y669B67"
     },
     "android": {
       "adaptiveIcon": {
