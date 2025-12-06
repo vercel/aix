@@ -256,7 +256,7 @@ function StickyView(
     }
   })
 
-  return <Animated.View style={[style]} {...props} />
+  return <Animated.View {...props} style={[style, props.style]} />
 }
 
 function List<Data>(
