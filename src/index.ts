@@ -15,3 +15,5 @@ export { useSetLastAnimatableMessage } from './chat/message-list/item/use-set-la
 export { useFirstMessageAnimation } from './chat/message-list/item/use-first-message-animation'
 export { useMessageListContext } from './chat/message-list/context'
 export { useChatAnimation } from './chat/animation/chat-animation-context'
+export { useComposerHeightContext } from './chat/composer/composer-height-context'
+export { useFirstMessageEntrance } from './chat/message-list/item/use-first-message-entrance'

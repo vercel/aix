@@ -68,13 +68,6 @@ export default function App() {
                           />
                         )
                       }
-                      // if (item.type === 'system' && index === 1) {
-                      //   return (
-                      //     <SystemMessagePlaceholder messageIndex={index}>
-                      //       <Text style={{ color: 'white' }}>Thinking...</Text>
-                      //     </SystemMessagePlaceholder>
-                      //   )
-                      // }
 
                       return (
                         <SystemMessage
