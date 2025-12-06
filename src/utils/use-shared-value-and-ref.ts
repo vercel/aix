@@ -1,5 +1,5 @@
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 export interface SharedValueAndRef<T> {
   ref: React.RefObject<T>
@@ -19,5 +19,5 @@ export function useSharedValueAndRef<T>(value: T): SharedValueAndRef<T> {
     [sharedValue, ref]
   )
 
-  return { ref, set, sharedValue }
+  return useMemo(() => ({ ref, set, sharedValue }), [ref, set, sharedValue])
 }
