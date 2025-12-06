@@ -7,6 +7,7 @@ export { useScrollMessageListFromComposerSizeUpdates } from './chat/message-list
 export { ChatAnimationProvider } from './chat/animation/chat-animation-context'
 export { ComposerHeightContextProvider } from './chat/composer/composer-height-context'
 export { KeyboardStateProvider } from './chat/keyboard/provider'
+export { useKeyboardContextState } from './chat/keyboard/provider'
 export { useUpdateLastMessageIndex } from './chat/message-list/use-update-last-message-index'
 export { useKeyboardAwareMessageList } from './chat/message-list/use-keyboard-aware-message-list'
 export { useStartedWithOneMessage } from './chat/message-list/use-started-with-one-message'
