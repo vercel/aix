@@ -1,0 +1,129 @@
+---
+title: useMessageListProps
+description: Get props for your message list component
+---
+
+`useMessageListProps` returns the props you need to pass to your
+`AnimatedLegendList` (or similar scrollable list component).
+
+## Usage
+
+```tsx
+import { useMessageListProps } from 'aix'
+import { AnimatedLegendList } from '@legendapp/list/reanimated'
+
+function MessageList({ messages }) {
+  const props = useMessageListProps({ bottomInsetPadding: 12 })
+
+  return (
+    <AnimatedLegendList
+      data={messages}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <Message message={item} />}
+      keyboardDismissMode='interactive'
+      {...props}
+    />
+  )
+}
+```
+
+## Parameters
+
+| Parameter            | Type     | Default | Description                                      |
+| -------------------- | -------- | ------- | ------------------------------------------------ |
+| `bottomInsetPadding` | `number` | `12`    | Extra padding at the bottom of scroll indicators |
+
+## Return Value
+
+The hook returns an object with these properties:
+
+| Property              | Type                       | Description                                                              |
+| --------------------- | -------------------------- | ------------------------------------------------------------------------ |
+| `animatedProps`       | `AnimatedProps`            | Animated props for content insets, scroll indicators, and content offset |
+| `ref`                 | `RefObject<LegendListRef>` | Ref to pass to the list                                                  |
+| `onContentSizeChange` | `(w, h) => void`           | Callback when content size changes                                       |
+| `onScroll`            | `ScrollHandler`            | Animated scroll handler                                                  |
+| `enableAverages`      | `false`                    | Disables LegendList's average item size calculation                      |
+
+## What It Does
+
+### Content Insets
+
+The `animatedProps` include dynamic `contentInset` that accounts for:
+
+- The blank space at the bottom (for keyboard handling)
+- The composer height
+- Any transform applied during keyboard animations
+
+### Scroll Indicators
+
+The scroll indicator insets are adjusted to stay visible above the composer and
+keyboard.
+
+### Content Offset
+
+During keyboard animations, the `contentOffset` is animated to keep the content
+in the right position.
+
+## Example with All Hooks
+
+For a complete message list, you'll typically use several hooks together:
+
+```tsx
+import {
+  useMessageListProps,
+  useKeyboardAwareMessageList,
+  useScrollMessageListFromComposerSizeUpdates,
+  useUpdateLastMessageIndex,
+  useStartedWithOneMessage,
+} from 'aix'
+import { AnimatedLegendList } from '@legendapp/list/reanimated'
+
+function MessageList({ messages }) {
+  const numMessages = messages.length
+  const didStartWithOneMessage = numMessages === 1
+
+  // Track if this is a new chat (started with one message)
+  useStartedWithOneMessage({ didStartWithOneMessage })
+
+  // Enable keyboard-aware scrolling
+  useKeyboardAwareMessageList({
+    numMessages,
+    bottomInset: 34, // Safe area bottom
+    chatPaddingBottom: 16,
+  })
+
+  // Auto-scroll when composer grows
+  useScrollMessageListFromComposerSizeUpdates()
+
+  // Track the last message index
+  useUpdateLastMessageIndex({ numMessages })
+
+  // Get list props
+  const props = useMessageListProps({ bottomInsetPadding: 12 })
+
+  return (
+    <AnimatedLegendList
+      data={messages}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item, index }) => (
+        <MessageItem message={item} index={index} />
+      )}
+      keyboardDismissMode='interactive'
+      keyboardShouldPersistTaps='handled'
+      estimatedItemSize={100}
+      maintainVisibleContentPosition
+      {...props}
+    />
+  )
+}
+```
+
+## Related Hooks
+
+- [useMessageListContainerProps](/docs/use-message-list-container-props) – Props
+  for the list container
+- [useKeyboardAwareMessageList](/docs/use-keyboard-aware-message-list) –
+  Keyboard handling
+- [useScrollMessageListFromComposerSizeUpdates](/docs/use-scroll-from-composer)
+  – Auto-scroll on composer resize

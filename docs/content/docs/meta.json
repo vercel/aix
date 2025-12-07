@@ -1,0 +1,18 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "start",
+    "---Providers---",
+    "providers",
+    "---Message List---",
+    "use-message-list-props",
+    "use-keyboard-aware-message-list",
+    "use-initial-scroll-to-end",
+    "use-scroll-from-composer",
+    "---Messages---",
+    "use-first-message-animation",
+    "use-message-blank-size"
+  ]
+}
+

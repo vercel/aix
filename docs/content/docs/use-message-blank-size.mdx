@@ -1,0 +1,161 @@
+---
+title: useMessageBlankSize
+description: Calculate blank space for keyboard-aware message positioning
+---
+
+`useMessageBlankSize` calculates the blank space needed at the bottom of the message list to properly position messages when the keyboard opens. This is what allows the last message to scroll to the top of the visible area.
+
+## Usage
+
+```tsx
+import { useMessageBlankSize } from 'aix'
+
+function SystemMessage({ message, index }) {
+  const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
+    messageIndex: index,
+    messageMinimumHeight: 20,
+    bottomInset: 0,
+  })
+
+  return (
+    <View ref={refToMeasure} onLayout={onLayout}>
+      <Text>{message.content}</Text>
+    </View>
+  )
+}
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `messageIndex` | `number` | Index of this message in the list |
+| `messageMinimumHeight` | `number` | Minimum height of a message (line height + padding) |
+| `bottomInset` | `number` | Safe area bottom inset |
+
+## Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `onLayout` | `LayoutHandler` | Pass to your message View's `onLayout` |
+| `refToMeasure` | `RefObject<View>` | Pass to your message View's `ref` |
+| `renderedSize` | `SharedValue<number>` | The measured height of this message |
+
+## How It Works
+
+The hook calculates the blank space needed so that when the keyboard opens, the last message can scroll to a comfortable position at the top of the visible area.
+
+### Calculation
+
+For the last message in the list:
+
+```
+blankSize = scrollViewHeight - spacingAtTop - composerHeight - messageHeight
+```
+
+Where:
+- `scrollViewHeight` is the visible scroll area
+- `spacingAtTop` is based on the previous message's height (capped at 2× minimum height)
+- `composerHeight` is the current composer height
+- `messageHeight` is this message's rendered height
+
+### Keyboard Adjustment
+
+When the keyboard is visible, the blank size is further reduced by the keyboard height:
+
+```
+blankSizeWithKeyboard = blankSize - keyboardHeight
+```
+
+This ensures the message stays visible above the keyboard.
+
+## When to Use
+
+Use this hook on your **last message component** – typically the system/assistant message that appears after the user sends a message.
+
+```tsx
+function MessageList({ messages }) {
+  return (
+    <AnimatedLegendList
+      data={messages}
+      renderItem={({ item, index }) => {
+        if (item.role === 'user') {
+          return <UserMessage message={item} index={index} />
+        }
+        // System messages need blank size calculation
+        return <SystemMessage message={item} index={index} />
+      }}
+    />
+  )
+}
+
+function SystemMessage({ message, index }) {
+  const { onLayout, refToMeasure } = useMessageBlankSize({
+    messageIndex: index,
+    messageMinimumHeight: 20,
+    bottomInset: 34, // Safe area
+  })
+
+  return (
+    <View ref={refToMeasure} onLayout={onLayout}>
+      <ChatMDX content={message.content} />
+    </View>
+  )
+}
+```
+
+## Debounced Updates
+
+When a message is growing (e.g., streaming content), the hook debounces size updates to prevent excessive recalculations:
+
+- Initial size is set immediately
+- Growing sizes are debounced by 500ms
+- Shrinking sizes are set immediately
+
+This prevents scroll jumping while content is streaming.
+
+## With First Message Animation
+
+You can combine this with `useFirstMessageEntrance` to animate the first system message:
+
+```tsx
+import { useMessageBlankSize, useFirstMessageEntrance } from 'aix'
+import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+
+function SystemMessage({ message, index }) {
+  const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
+    messageIndex: index,
+    messageMinimumHeight: 20,
+    bottomInset: 0,
+  })
+
+  const { isComplete } = useFirstMessageEntrance({
+    itemHeight: renderedSize,
+    disabled: index !== 1, // Only animate first system message
+  })
+
+  const style = useAnimatedStyle(() => ({
+    opacity: isComplete.get() ? withTiming(1, { duration: 350 }) : 0,
+  }))
+
+  return (
+    <Animated.View style={style} ref={refToMeasure} onLayout={onLayout}>
+      <Text>{message.content}</Text>
+    </Animated.View>
+  )
+}
+```
+
+## Requirements
+
+This hook requires:
+
+- `MessageListContextProvider` – For blank size state
+- `ComposerHeightContextProvider` – For composer height
+- `KeyboardStateProvider` – For keyboard state
+
+## Related Hooks
+
+- [useFirstMessageEntrance](/docs/use-first-message-animation#usefirstmessageentrance) – Animate message entrance
+- [useKeyboardAwareMessageList](/docs/use-keyboard-aware-message-list) – Keyboard handling
+

@@ -1,13 +1,74 @@
 ---
-title: Hello World
-description: Your first document
+title: aix
+description: Chat hooks and components for React Native
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+**aix** is a library of hooks and components for building AI chat interfaces in React Native.
 
-## What is Next?
+It powers the [v0 iOS app](https://apps.apple.com/us/app/v0/id6745097949), Vercel's AI code generation tool.
+
+## Features
+
+- **Keyboard-aware scrolling** – Smooth message list behavior when the keyboard opens and closes
+- **First message animation** – iMessage-like entrance animation for new messages
+- **Composer height tracking** – Auto-scroll when the composer grows
+- **Initial scroll-to-end** – Start scrolled to the bottom of existing chats
+- **Scroll-to-end button** – Show/hide logic for jumping to the latest message
+
+## Why aix?
+
+Building a great chat experience on mobile is hard. The keyboard, scroll position, and animations all need to work together seamlessly. aix handles the tricky parts so you can focus on your app.
+
+The library is built on [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/), [React Native Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller/), and [LegendList](https://legendapp.com/open-source/list/).
+
+## Quick Look
+
+```tsx
+import {
+  MessageListContextProvider,
+  ComposerHeightContextProvider,
+  ChatAnimationProvider,
+  KeyboardStateProvider,
+  useMessageListProps,
+  useKeyboardAwareMessageList,
+} from 'aix'
+import { AnimatedLegendList } from '@legendapp/list/reanimated'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
+
+function ChatProvider({ children }) {
+  return (
+    <KeyboardProvider>
+      <ComposerHeightContextProvider initialHeight={0}>
+        <MessageListContextProvider>
+          <ChatAnimationProvider>
+            <KeyboardStateProvider>
+              {children}
+            </KeyboardStateProvider>
+          </ChatAnimationProvider>
+        </MessageListContextProvider>
+      </ComposerHeightContextProvider>
+    </KeyboardProvider>
+  )
+}
+
+function MessageList({ messages }) {
+  useKeyboardAwareMessageList({ numMessages: messages.length })
+  const props = useMessageListProps()
+
+  return (
+    <AnimatedLegendList
+      data={messages}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <Message message={item} />}
+      {...props}
+    />
+  )
+}
+```
+
+## Next Steps
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Get Started" href="/docs/start" />
+  <Card title="Providers" href="/docs/providers" />
 </Cards>
