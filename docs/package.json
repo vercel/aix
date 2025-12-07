@@ -11,6 +11,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "babel-plugin-react-compiler": "^1.0.0",
     "fumadocs-core": "16.2.3",
     "fumadocs-mdx": "14.1.0",
     "fumadocs-ui": "16.2.3",
