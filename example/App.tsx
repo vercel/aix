@@ -68,13 +68,6 @@ export default function App() {
                           />
                         )
                       }
-                      // if (item.type === 'system' && index === 1) {
-                      //   return (
-                      //     <SystemMessagePlaceholder messageIndex={index}>
-                      //       <Text style={{ color: 'white' }}>Thinking...</Text>
-                      //     </SystemMessagePlaceholder>
-                      //   )
-                      // }
 
                       return (
                         <SystemMessage
@@ -256,7 +249,7 @@ function StickyView(
     }
   })
 
-  return <Animated.View style={[style]} {...props} />
+  return <Animated.View {...props} style={[style, props.style]} />
 }
 
 function List<Data>(
