@@ -1,3 +1,229 @@
 ---
 title: Get Started
+description: Install aix and set up your first chat
 ---
+
+## Installation
+
+```bash
+npm install aix
+```
+
+### Peer Dependencies
+
+aix requires these peer dependencies:
+
+```bash
+npm install react-native-reanimated react-native-keyboard-controller @legendapp/list react-native-worklets
+```
+
+Follow the installation guides for each:
+
+- [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started/)
+- [React Native Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller/docs/installation)
+- [LegendList](https://legendapp.com/open-source/list/)
+- [React Native Worklets](https://docs.swmansion.com/react-native-reanimated/docs/guides/worklets/)
+
+## Setup
+
+Wrap your chat screen with the required providers:
+
+```tsx
+import {
+  MessageListContextProvider,
+  ComposerHeightContextProvider,
+  ChatAnimationProvider,
+  KeyboardStateProvider,
+} from 'aix'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
+
+function ChatProvider({ children }) {
+  return (
+    <KeyboardProvider>
+      <ComposerHeightContextProvider initialHeight={0}>
+        <MessageListContextProvider>
+          <ChatAnimationProvider>
+            <KeyboardStateProvider>{children}</KeyboardStateProvider>
+          </ChatAnimationProvider>
+        </MessageListContextProvider>
+      </ComposerHeightContextProvider>
+    </KeyboardProvider>
+  )
+}
+
+export function ChatScreen() {
+  return (
+    <ChatProvider>
+      <MessageList />
+      <Composer />
+    </ChatProvider>
+  )
+}
+```
+
+## Message List
+
+Use `useMessageListProps` to get the props for your list component:
+
+```tsx
+import { AnimatedLegendList } from '@legendapp/list/reanimated'
+import {
+  useMessageListProps,
+  useKeyboardAwareMessageList,
+  useScrollMessageListFromComposerSizeUpdates,
+  useUpdateLastMessageIndex,
+} from 'aix'
+
+function MessageList({ messages }) {
+  const numMessages = messages.length
+
+  // Enable keyboard-aware scrolling
+  useKeyboardAwareMessageList({ numMessages })
+
+  // Auto-scroll when composer grows
+  useScrollMessageListFromComposerSizeUpdates()
+
+  // Track the last message index
+  useUpdateLastMessageIndex({ numMessages })
+
+  // Get list props (ref, animatedProps, onScroll, etc.)
+  const props = useMessageListProps()
+
+  return (
+    <AnimatedLegendList
+      data={messages}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item, index }) => (
+        <MessageItem message={item} index={index} />
+      )}
+      keyboardDismissMode='interactive'
+      {...props}
+    />
+  )
+}
+```
+
+## Composer
+
+Track your composer's height to enable auto-scrolling:
+
+```tsx
+import { useComposerHeightContext } from 'aix'
+import { TextInput, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+
+function Composer() {
+  const { composerHeight } = useComposerHeightContext()
+
+  const onLayout = (event) => {
+    composerHeight.set(event.nativeEvent.layout.height)
+  }
+
+  return (
+    <Animated.View onLayout={onLayout}>
+      <TextInput placeholder='Message' multiline />
+    </Animated.View>
+  )
+}
+```
+
+## List Container
+
+Wrap your list in a container that handles initial scroll-to-end:
+
+```tsx
+import Animated, { withTiming } from 'react-native-reanimated'
+import {
+  useMessageListContainerProps,
+  useMessageListContainerStyle,
+  useMessageListInitialScrollToEnd,
+} from 'aix'
+
+function ListContainer({ children, numMessages }) {
+  const containerProps = useMessageListContainerProps()
+  const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
+  const containerStyle = useMessageListContainerStyle({
+    ready: hasScrolledToEnd,
+    styleWorklet: ({ ready }) => {
+      'worklet'
+      return {
+        opacity: withTiming(ready ? 1 : 0, { duration: 150 }),
+      }
+    },
+  })
+
+  return (
+    <Animated.View {...containerProps} style={[{ flex: 1 }, containerStyle]}>
+      {children}
+    </Animated.View>
+  )
+}
+```
+
+## First Message Animation
+
+Animate the first user message when sending:
+
+```tsx
+import Animated from 'react-native-reanimated'
+import { useFirstMessageAnimation, useSetLastAnimatableMessage } from 'aix'
+
+function UserMessage({ message, index }) {
+  // Track this message for animation purposes
+  useSetLastAnimatableMessage({ messageIndex: index })
+
+  // Get animation style (only animates when index === 0)
+  const { style, ref, onLayout } = useFirstMessageAnimation({
+    disabled: index > 0,
+  })
+
+  return (
+    <Animated.View style={style} ref={ref} onLayout={onLayout}>
+      <Text>{message.content}</Text>
+    </Animated.View>
+  )
+}
+```
+
+To trigger the animation when sending a message:
+
+```tsx
+import { useChatAnimation } from 'aix'
+
+function Composer() {
+  const { setIsMessageSendAnimating } = useChatAnimation()
+
+  const onSend = () => {
+    setIsMessageSendAnimating(true)
+    // ... send message
+  }
+}
+```
+
+## Scroll to End
+
+Access the scroll-to-end functionality:
+
+```tsx
+import { useMessageListContext } from 'aix'
+
+function ScrollToEndButton() {
+  const { scrollToEnd, shouldShowScrollToEnd } = useMessageListContext()
+
+  // shouldShowScrollToEnd is a SharedValue<boolean>
+  // Use it with useAnimatedStyle or useDerivedValue
+
+  return <Button title='Scroll to End' onPress={() => scrollToEnd()} />
+}
+```
+
+## Next Steps
+
+<Cards>
+  <Card title='Providers' href='/docs/providers' />
+  <Card title='useMessageListProps' href='/docs/use-message-list-props' />
+  <Card
+    title='useKeyboardAwareMessageList'
+    href='/docs/use-keyboard-aware-message-list'
+  />
+</Cards>
