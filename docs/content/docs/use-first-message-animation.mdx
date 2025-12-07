@@ -1,0 +1,226 @@
+---
+title: useFirstMessageAnimation
+description: iMessage-like entrance animation for the first user message
+---
+
+`useFirstMessageAnimation` creates a smooth entrance animation when sending the first message in a new chat. The message slides up from below the keyboard and fades in, similar to iMessage.
+
+## Usage
+
+```tsx
+import Animated from 'react-native-reanimated'
+import { useFirstMessageAnimation, useSetLastAnimatableMessage } from 'aix'
+
+function UserMessage({ message, index }) {
+  // Track this message for animation purposes
+  useSetLastAnimatableMessage({ messageIndex: index })
+
+  // Get animation style (only animates when index === 0)
+  const { style, ref, onLayout } = useFirstMessageAnimation({
+    disabled: index > 0,
+  })
+
+  return (
+    <Animated.View style={[styles.bubble, style]} ref={ref} onLayout={onLayout}>
+      <Text>{message.content}</Text>
+    </Animated.View>
+  )
+}
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `disabled` | `boolean` | Set to `true` to skip the animation (e.g., for messages after the first) |
+
+## Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `style` | `AnimatedStyle` | Animated style with `transform` and `opacity` |
+| `ref` | `RefObject<View>` | Ref for measuring the message |
+| `onLayout` | `LayoutHandler` | Layout handler for size tracking |
+
+## Triggering the Animation
+
+The animation only runs when:
+
+1. `isMessageSendAnimating` is `true` (set via `useChatAnimation`)
+2. The chat started with one message (`startedWithOneMessage` is `true`)
+3. The hook is not disabled
+
+To trigger it when sending:
+
+```tsx
+import { useChatAnimation, useKeyboardContextState } from 'aix'
+import { Keyboard } from 'react-native'
+
+function Composer({ onSend }) {
+  const { setIsMessageSendAnimating } = useChatAnimation()
+  const { setKeyboardState, shouldOffsetCloseKeyboard } = useKeyboardContextState()
+
+  const handleSend = () => {
+    // Prepare for animation
+    setKeyboardState('didHide')
+    shouldOffsetCloseKeyboard.set(false)
+    setIsMessageSendAnimating(true)
+
+    // Dismiss keyboard and send
+    Keyboard.dismiss()
+    onSend()
+  }
+
+  return (
+    <Button title="Send" onPress={handleSend} />
+  )
+}
+```
+
+## Animation Details
+
+The animation is designed to feel native and responsive:
+
+### Translation
+
+- Starts from below the keyboard
+- Smaller messages start closer to their final position
+- Uses a spring animation for a natural settle
+
+### Opacity
+
+- Fades in during the translation
+- Duration scales with message size (smaller = faster)
+
+### Timing
+
+The animation parameters adapt to message height:
+
+| Message Size | Duration | Start Position |
+|--------------|----------|----------------|
+| Small (~32px) | ~450ms | ~16px below |
+| Large (~220px) | ~690ms | ~85% of height below |
+
+## useSetLastAnimatableMessage
+
+This companion hook tracks which message should animate. Call it in your user message component:
+
+```tsx
+import { useSetLastAnimatableMessage } from 'aix'
+
+function UserMessage({ message, index }) {
+  useSetLastAnimatableMessage({ messageIndex: index })
+  // ...
+}
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `messageIndex` | `number` | Index of this message |
+| `getPositionByIndex` | `(index) => number` | Optional custom position getter |
+| `getDataLength` | `() => number` | Optional custom data length getter |
+| `getIsLastAnimatableMessage` | `(params) => boolean` | Optional custom check |
+
+## useFirstMessageEntrance
+
+For more control, you can use the lower-level `useFirstMessageEntrance` hook:
+
+```tsx
+import { useFirstMessageEntrance } from 'aix'
+import { useAnimatedStyle } from 'react-native-reanimated'
+
+function SystemMessage({ index, renderedSize }) {
+  const { translateY, progress, isComplete } = useFirstMessageEntrance({
+    itemHeight: renderedSize,
+    disabled: index !== 1, // Only animate the first system message
+  })
+
+  const style = useAnimatedStyle(() => ({
+    opacity: isComplete.get() ? withTiming(1, { duration: 350 }) : 0,
+  }))
+
+  return (
+    <Animated.View style={style}>
+      {/* ... */}
+    </Animated.View>
+  )
+}
+```
+
+### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `translateY` | `SharedValue<number>` | Current Y translation |
+| `progress` | `SharedValue<number>` | Animation progress (0 to 1, -1 if not started) |
+| `isComplete` | `SharedValue<boolean>` | Whether the animation has finished |
+
+## useStartedWithOneMessage
+
+This hook tracks whether the chat started with exactly one message. It's used internally to determine if the first message animation should run.
+
+```tsx
+import { useStartedWithOneMessage } from 'aix'
+
+function MessageList({ messages }) {
+  useStartedWithOneMessage({
+    didStartWithOneMessage: messages.length === 1,
+  })
+  // ...
+}
+```
+
+## Full Example
+
+```tsx
+import Animated from 'react-native-reanimated'
+import {
+  useFirstMessageAnimation,
+  useSetLastAnimatableMessage,
+  useChatAnimation,
+  useStartedWithOneMessage,
+} from 'aix'
+
+function MessageList({ messages }) {
+  useStartedWithOneMessage({
+    didStartWithOneMessage: messages.length === 1,
+  })
+
+  return (
+    <AnimatedLegendList
+      data={messages}
+      renderItem={({ item, index }) => {
+        if (item.role === 'user') {
+          return <UserMessage message={item} index={index} />
+        }
+        return <SystemMessage message={item} index={index} />
+      }}
+    />
+  )
+}
+
+function UserMessage({ message, index }) {
+  useSetLastAnimatableMessage({ messageIndex: index })
+
+  const { style, ref, onLayout } = useFirstMessageAnimation({
+    disabled: index > 0,
+  })
+
+  return (
+    <Animated.View style={style} ref={ref} onLayout={onLayout}>
+      <Text>{message.content}</Text>
+    </Animated.View>
+  )
+}
+```
+
+## Requirements
+
+This hook requires:
+
+- `MessageListContextProvider` – For `startedWithOneMessage` state
+- `KeyboardStateProvider` – For keyboard height
+- `ChatAnimationProvider` – For `isMessageSendAnimating` state
+

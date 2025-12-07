@@ -1,0 +1,212 @@
+---
+title: useMessageListInitialScrollToEnd
+description: Start scrolled to the bottom when opening existing chats
+---
+
+`useMessageListInitialScrollToEnd` handles the initial scroll-to-end behavior when opening an existing chat. It waits for the list to be ready, scrolls to the bottom, and returns a flag indicating when it's done.
+
+## Usage
+
+```tsx
+import {
+  useMessageListInitialScrollToEnd,
+  useMessageListContainerStyle,
+  useMessageListContainerProps,
+} from 'aix'
+import Animated, { withTiming } from 'react-native-reanimated'
+
+function ListContainer({ children, numMessages }) {
+  const containerProps = useMessageListContainerProps()
+  const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
+  const containerStyle = useMessageListContainerStyle({
+    ready: hasScrolledToEnd,
+    styleWorklet: ({ ready }) => {
+      'worklet'
+      return {
+        opacity: withTiming(ready ? 1 : 0, { duration: 150 }),
+      }
+    },
+  })
+
+  return (
+    <Animated.View {...containerProps} style={[{ flex: 1 }, containerStyle]}>
+      {children}
+    </Animated.View>
+  )
+}
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `numMessages` | `number` | Number of messages in the list |
+
+## Return Value
+
+Returns a `SharedValue<boolean>` that becomes `true` when the initial scroll-to-end is complete.
+
+## How It Works
+
+1. **Wait for blank size** – The hook waits until `blankSize` is set (≥ 0), indicating the list has laid out
+2. **Scroll to end** – Calls `scrollToEnd({ animated: false })` multiple times to ensure it reaches the bottom
+3. **Signal ready** – Sets the return value to `true` after scrolling completes
+
+The multiple scroll calls handle edge cases where the list may not have fully laid out on the first attempt:
+
+```tsx
+scrollToEnd({ animated: false })
+requestAnimationFrame(() => {
+  scrollToEnd({ animated: false })
+  setTimeout(() => {
+    scrollToEnd({ animated: false })
+    requestAnimationFrame(() => {
+      hasScrolledToEnd.set(true)
+    })
+  }, 16)
+})
+```
+
+## useMessageListContainerStyle
+
+Use this companion hook to animate the container based on the ready state:
+
+```tsx
+import { useMessageListContainerStyle } from 'aix'
+
+const containerStyle = useMessageListContainerStyle({
+  ready: hasScrolledToEnd,
+  styleWorklet: ({ ready }) => {
+    'worklet'
+    return {
+      opacity: withTiming(ready ? 1 : 0, { duration: 150 }),
+    }
+  },
+})
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `ready` | `SharedValue<boolean>` | Whether the list is ready |
+| `styleWorklet` | `({ ready }) => ViewStyle` | Worklet that returns animated styles |
+
+If you don't provide a `styleWorklet`, it defaults to a simple opacity fade:
+
+```tsx
+// Default behavior
+return { opacity: withTiming(ready ? 1 : 0, { duration: 150 }) }
+```
+
+## useMessageListContainerProps
+
+Get the props needed for the container:
+
+```tsx
+import { useMessageListContainerProps } from 'aix'
+
+function ListContainer({ children }) {
+  const containerProps = useMessageListContainerProps()
+
+  return (
+    <Animated.View {...containerProps}>
+      {children}
+    </Animated.View>
+  )
+}
+```
+
+### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `onLayout` | `LayoutHandler` | Tracks the scroll view height |
+| `ref` | `RefObject<View>` | Ref to the container |
+
+## Handling New Chats
+
+For new chats (starting with one message), you may want to skip the fade-in:
+
+```tsx
+function ListContainer({ children, numMessages, didStartWithOneMessage }) {
+  const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
+  const containerStyle = useMessageListContainerStyle({
+    ready: hasScrolledToEnd,
+    styleWorklet: ({ ready }) => {
+      'worklet'
+      // Show immediately for new chats
+      const show = ready || didStartWithOneMessage
+      return {
+        opacity: withTiming(show ? 1 : 0, { duration: 150 }),
+      }
+    },
+  })
+
+  // ...
+}
+```
+
+## Full Example
+
+```tsx
+import {
+  useMessageListInitialScrollToEnd,
+  useMessageListContainerStyle,
+  useMessageListContainerProps,
+  useStartedWithOneMessage,
+} from 'aix'
+import Animated, { withTiming } from 'react-native-reanimated'
+
+function MessageListScreen({ messages }) {
+  const numMessages = messages.length
+  const didStartWithOneMessage = numMessages === 1
+
+  useStartedWithOneMessage({ didStartWithOneMessage })
+
+  return (
+    <View style={{ flex: 1, overflow: 'hidden' }}>
+      <ListContainer
+        numMessages={numMessages}
+        didStartWithOneMessage={didStartWithOneMessage}
+      >
+        {numMessages > 0 && <MessageList messages={messages} />}
+      </ListContainer>
+    </View>
+  )
+}
+
+function ListContainer({ children, numMessages, didStartWithOneMessage }) {
+  const containerProps = useMessageListContainerProps()
+  const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
+  const containerStyle = useMessageListContainerStyle({
+    ready: hasScrolledToEnd,
+    styleWorklet: ({ ready }) => {
+      'worklet'
+      const show = ready || didStartWithOneMessage
+      return {
+        opacity: withTiming(show ? 1 : 0, { duration: 150 }),
+      }
+    },
+  })
+
+  return (
+    <Animated.View {...containerProps} style={[{ flex: 1 }, containerStyle]}>
+      {children}
+    </Animated.View>
+  )
+}
+```
+
+## Requirements
+
+This hook requires:
+
+- `MessageListContextProvider` – For `blankSize` and `scrollToEnd`
+
+## Related Hooks
+
+- [useMessageListContainerProps](/docs/use-initial-scroll-to-end#usemessagelistcontainerprops) – Container props
+- [useMessageListContainerStyle](/docs/use-initial-scroll-to-end#usemessagelistcontainerstyle) – Container style
+- [useStartedWithOneMessage](/docs/use-first-message-animation#usestartedwithonemessage) – Track new chats
+
