@@ -3,23 +3,32 @@ title: aix
 description: Chat hooks and components for React Native
 ---
 
-**aix** is a library of hooks and components for building AI chat interfaces in React Native.
+**aix** is a library of hooks and components for building AI chat interfaces in
+React Native.
 
-It powers the [v0 iOS app](https://apps.apple.com/us/app/v0/id6745097949), Vercel's AI code generation tool.
+It powers the [v0 iOS app](https://apps.apple.com/us/app/v0/id6745097949),
+Vercel's AI code generation tool.
 
 ## Features
 
-- **Keyboard-aware scrolling** – Smooth message list behavior when the keyboard opens and closes
-- **First message animation** – iMessage-like entrance animation for new messages
+- **Keyboard-aware scrolling** – Smooth message list behavior when the keyboard
+  opens and closes
+- **First message animation** – iMessage-like entrance animation for new
+  messages
 - **Composer height tracking** – Auto-scroll when the composer grows
 - **Initial scroll-to-end** – Start scrolled to the bottom of existing chats
 - **Scroll-to-end button** – Show/hide logic for jumping to the latest message
 
 ## Why aix?
 
-Building a great chat experience on mobile is hard. The keyboard, scroll position, and animations all need to work together seamlessly. aix handles the tricky parts so you can focus on your app.
+Building a great chat experience on mobile is hard. The keyboard, scroll
+position, and animations all need to work together seamlessly. aix handles the
+tricky parts so you can focus on your app.
 
-The library is built on [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/), [React Native Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller/), and [LegendList](https://legendapp.com/open-source/list/).
+The library is built on
+[React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/),
+[React Native Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller/),
+and [LegendList](https://legendapp.com/open-source/list/).
 
 ## Quick Look
 
@@ -41,9 +50,7 @@ function ChatProvider({ children }) {
       <ComposerHeightContextProvider initialHeight={0}>
         <MessageListContextProvider>
           <ChatAnimationProvider>
-            <KeyboardStateProvider>
-              {children}
-            </KeyboardStateProvider>
+            <KeyboardStateProvider>{children}</KeyboardStateProvider>
           </ChatAnimationProvider>
         </MessageListContextProvider>
       </ComposerHeightContextProvider>
@@ -69,6 +76,6 @@ function MessageList({ messages }) {
 ## Next Steps
 
 <Cards>
-  <Card title="Get Started" href="/docs/start" />
-  <Card title="Providers" href="/docs/providers" />
+  <Card title='Get Started' href='/docs/start' />
+  <Card title='Providers' href='/docs/providers' />
 </Cards>
