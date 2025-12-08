@@ -23,9 +23,8 @@ import {
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ListProvider } from './ListProvider'
-import { createContext, use, useEffect, useState } from 'react'
+import { createContext, use, useState } from 'react'
 import {
-  KeyboardStickyView,
   useReanimatedKeyboardAnimation,
   KeyboardProvider,
 } from 'react-native-keyboard-controller'
@@ -202,7 +201,7 @@ function Composer() {
                 {
                   type: 'system',
                   content: 'How are you?\n'.repeat(
-                    Math.ceil((Math.random() * 100) / 2)
+                    Math.ceil(Math.random() * 20)
                   ),
                 },
               ])
