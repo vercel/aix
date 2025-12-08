@@ -9,7 +9,7 @@ import { useCallback, useLayoutEffect } from 'react'
 import type { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useMessageListContext } from './context'
 import { useComposerHeightContext } from '../composer/composer-height-context'
-import { useDebouncedCallback } from '../../utils/useDebouncedCallback'
+import { useThrottledCallback } from '../../utils/useDebouncedCallback'
 
 function isLastMessage(lastMessageIndex: number, index: number) {
   return lastMessageIndex === index
@@ -121,25 +121,16 @@ export const useMessageBlankSize = ({
   // useSyncLayoutHandler is used to measure the size of the message on the initial render
   const { ref: refToMeasure } = useSyncLayoutHandler(updateSize)
 
-  // Create a debounced callback to use when increasnig the size
-  const debouncedSetRenderedSize = useDebouncedCallback(updateSize, 500)
-
   const onLayout = useCallback(
     (event: LayoutChangeEvent) => {
       const { layout } = event.nativeEvent
       const { height } = layout
-      // Debounce if it's growing and it's not the first height so that the size is not updated too often
-      // and also so that blankSize is not shrunk too soon, which could cause scroll jumping
       const isLast = isLastMessage(lastMessageIndex.ref.current, index)
       if (isLast) {
-        if (renderedSize.get() > 0 && height > renderedSize.get()) {
-          debouncedSetRenderedSize(layout)
-        } else {
-          renderedSize.set(height)
-        }
+        renderedSize.set(height)
       }
     },
-    [debouncedSetRenderedSize, renderedSize, lastMessageIndex, index]
+    [renderedSize, lastMessageIndex, index]
   )
 
   return {

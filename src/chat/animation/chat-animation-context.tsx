@@ -22,7 +22,7 @@ export function ChatAnimationProvider({
   const isMessageSendAnimating = useSharedValue(false)
 
   // Debounced function to reset animation state after 500ms
-  const resetAnimation = useDebouncedCallback(() => {
+  const { debouncedFn: resetAnimation } = useDebouncedCallback(() => {
     isMessageSendAnimating.set(false)
   }, 500)
 
