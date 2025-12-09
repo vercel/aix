@@ -82,7 +82,7 @@ export function useKeyboardAwareMessageList({
    * Handles different scenarios like message sending animations and interactive dismissal.
    */
   const getOnMoveValues = (
-    e: NativeEvent,
+    e: Pick<NativeEvent, 'progress'>,
     isAnimating?: boolean,
     interactive?: boolean
   ) => {
@@ -135,9 +135,6 @@ export function useKeyboardAwareMessageList({
     const { offsetY: offsetYValue } = getOnMoveValues(
       {
         progress: 0,
-        height: 0,
-        duration: 0,
-        target: 0,
       },
       true
     )
