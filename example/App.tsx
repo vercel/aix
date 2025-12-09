@@ -14,7 +14,7 @@ import {
   useStartedWithOneMessage,
   useMessageListContainerStyle,
   useMessageListInitialScrollToEnd,
-  useSetLastAnimatableMessage,
+  useSetLastUserMessage,
   useFirstMessageAnimation,
   useMessageBlankSize,
   useMessageListContext,
@@ -252,7 +252,7 @@ function StickyView(
   return <Animated.View {...props} style={[style, props.style]} />
 }
 
-function List<Data>(
+function List<Data extends Message>(
   parentProps: Omit<
     React.ComponentPropsWithRef<typeof AnimatedLegendList<Data>>,
     keyof ReturnType<typeof useMessageListProps>
@@ -260,6 +260,10 @@ function List<Data>(
 ) {
   const numMessages = parentProps.data?.length ?? 0
 
+  useSetLastUserMessage({
+    lastUserMessageIndex:
+      parentProps.data?.findLastIndex((item) => item.type === 'user') ?? 0,
+  })
   useStartedWithOneMessage({ didStartWithOneMessage: true })
   useKeyboardAwareMessageList({
     numMessages,
@@ -284,7 +288,6 @@ function UserMessage({
   message: string
   messageIndex: number
 }) {
-  useSetLastAnimatableMessage({ messageIndex })
   const content = <Text style={{ color: 'white' }}>{message}</Text>
 
   return (
