@@ -167,7 +167,6 @@ For now, `aix` provides a number of hooks to help you build your own
 
 ```tsx
 import {
-  useStartedWithOneMessage,
   useKeyboardAwareMessageList,
   useScrollMessageListFromComposerSizeUpdates,
   useUpdateLastMessageIndex,
@@ -178,7 +177,6 @@ import { AnimatedLegendList } from '@legendapp/list/reanimated'
 function List({ messages, isNewChat }) {
   const numMessages = parentProps.data?.length ?? 0
 
-  useStartedWithOneMessage({ didStartWithOneMessage: isNewChat })
   useKeyboardAwareMessageList({
     numMessages,
   })
@@ -196,7 +194,12 @@ function List({ messages, isNewChat }) {
   return (
     <AnimatedLegendList
       keyboardDismissMode='interactive'
-      {...parentProps}
+      renderItem={({ item, index }) => {
+        if (item.type === 'user') {
+          return <UserMessage message={item.content} messageIndex={index} />
+        }
+        return <SystemMessage message={item.content} messageIndex={index} />
+      }}
       {...props}
     />
   )
