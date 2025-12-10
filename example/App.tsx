@@ -48,8 +48,6 @@ export default function App() {
     ])
   }
 
-  const isNewChat = true
-
   return (
     <KeyboardProvider>
       <View style={{ flex: 1, backgroundColor: 'black' }}>
