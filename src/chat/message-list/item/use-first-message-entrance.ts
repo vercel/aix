@@ -8,7 +8,6 @@ import {
   useDerivedValue,
 } from 'react-native-reanimated'
 import { useKeyboardContextState } from '../../keyboard/provider'
-import { useMessageListContext } from '../context'
 import { useWindowDimensions } from 'react-native-keyboard-controller'
 import { useChatAnimation } from '../../animation/chat-animation-context'
 
