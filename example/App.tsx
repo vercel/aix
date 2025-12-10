@@ -11,7 +11,6 @@ import {
   useUpdateLastMessageIndex,
   useScrollMessageListFromComposerSizeUpdates,
   useKeyboardAwareMessageList,
-  useStartedWithOneMessage,
   useMessageListContainerStyle,
   useMessageListInitialScrollToEnd,
   useSetLastAnimatableMessage,
@@ -23,9 +22,8 @@ import {
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ChatProvider } from './ListProvider'
-import { createContext, use, useEffect, useState } from 'react'
+import { createContext, use, useState } from 'react'
 import {
-  KeyboardStickyView,
   useReanimatedKeyboardAnimation,
   KeyboardProvider,
 } from 'react-native-keyboard-controller'
@@ -45,7 +43,7 @@ export default function App() {
       { type: 'user', content: message },
       {
         type: 'system',
-        content: 'How are you?\n'.repeat(Math.ceil((Math.random() * 100) / 2)),
+        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 10)),
       },
     ])
   }
@@ -54,42 +52,16 @@ export default function App() {
     <KeyboardProvider>
       <View style={{ flex: 1, backgroundColor: 'black' }}>
         <ChatProvider chatId={chatId}>
-          <View style={{ height: 60 }} />
-          <Actions />
+          <View style={{ flex: 1, paddingTop: 60 }}>
+            <Actions />
 
-          {messages.length > 0 && (
-            <ListContainer
-              style={({ ready }) => {
-                'worklet'
-                return {
-                  opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
-                }
-              }}
-            >
-              <List
-                data={messages}
-                renderItem={({ item, index }) => {
-                  if (item.type === 'user') {
-                    return (
-                      <UserMessage
-                        message={item.content}
-                        messageIndex={index}
-                      />
-                    )
-                  }
-
-                  return (
-                    <SystemMessage
-                      message={item.content}
-                      messageIndex={index}
-                    />
-                  )
-                }}
-                keyExtractor={(item, index) => `${item.type}-${index}`}
-              />
-            </ListContainer>
-          )}
-          <Composer onSend={onSend} />
+            {messages.length > 0 && (
+              <ListContainer>
+                <List data={messages} />
+              </ListContainer>
+            )}
+            <Composer onSend={onSend} />
+          </View>
         </ChatProvider>
       </View>
     </KeyboardProvider>
@@ -115,15 +87,6 @@ function Actions() {
 
 type Message = { type: 'user' | 'system'; content: string }
 
-const MessagesContext = createContext<
-  [
-    messages: Message[],
-    setMessages: (
-      messages: Message[] | ((messages: Message[]) => Message[])
-    ) => void
-  ]
->([[], () => {}])
-
 function ScrollToEndButton() {
   const { scrollToEnd } = useMessageListContext()
   return (
@@ -136,18 +99,17 @@ function ScrollToEndButton() {
   )
 }
 
-function ListContainer({
-  children,
-  style: styleWorklet,
-}: {
-  children: React.ReactNode
-  style: Parameters<typeof useMessageListContainerStyle>[0]['styleWorklet']
-}) {
+function ListContainer({ children }: { children: React.ReactNode }) {
   const containerProps = useMessageListContainerProps()
   const hasScrolledToEnd = useMessageListInitialScrollToEnd()
   const containerStyle = useMessageListContainerStyle({
     ready: hasScrolledToEnd,
-    styleWorklet,
+    styleWorklet: ({ ready }) => {
+      'worklet'
+      return {
+        opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+      }
+    },
   })
   return (
     <Animated.View {...containerProps} style={[{ flex: 1 }, containerStyle]}>
@@ -164,7 +126,6 @@ function Composer({ onSend }: { onSend: (message: string) => void }) {
     composerHeight.set(layout.height)
   })
   const { setIsMessageSendAnimating } = useChatAnimation()
-  const [, setMessages] = use(MessagesContext)
   const { setKeyboardState, shouldOffsetCloseKeyboard } =
     useKeyboardContextState()
 
@@ -225,8 +186,6 @@ function StickyView(
   const { height, progress } = useReanimatedKeyboardAnimation()
 
   const style = useAnimatedStyle(() => {
-    console.log('[kb][progress]', progress.get())
-    console.log('[kb][height]', height.get())
     const y =
       height.get() +
       interpolate(
@@ -234,7 +193,6 @@ function StickyView(
         [0, 1],
         [props.offset?.closed ?? 0, props.offset?.opened ?? 0]
       )
-    console.log('[kb][y]', y)
     return {
       transform: [
         {
@@ -247,15 +205,10 @@ function StickyView(
   return <Animated.View {...props} style={[style, props.style]} />
 }
 
-function List<Data>(
-  parentProps: Omit<
-    React.ComponentPropsWithRef<typeof AnimatedLegendList<Data>>,
-    keyof ReturnType<typeof useMessageListProps>
-  >
-) {
+function List<Data extends Message>(parentProps: { data: Data[] }) {
+  const isNewChat = true
   const numMessages = parentProps.data?.length ?? 0
 
-  useStartedWithOneMessage({ didStartWithOneMessage: true })
   useKeyboardAwareMessageList({
     numMessages,
   })
@@ -266,6 +219,26 @@ function List<Data>(
   return (
     <AnimatedLegendList
       keyboardDismissMode='interactive'
+      renderItem={({ item, index }) => {
+        if (item.type === 'user') {
+          return (
+            <UserMessage
+              message={item.content}
+              messageIndex={index}
+              isNewChat={isNewChat}
+            />
+          )
+        }
+
+        return (
+          <SystemMessage
+            message={item.content}
+            messageIndex={index}
+            isNewChat={isNewChat}
+          />
+        )
+      }}
+      keyExtractor={(item, index) => `${item.type}-${index}`}
       {...parentProps}
       {...props}
     />
@@ -275,16 +248,17 @@ function List<Data>(
 function UserMessage({
   message,
   messageIndex,
+  isNewChat,
 }: {
   message: string
   messageIndex: number
+  isNewChat: boolean
 }) {
   useSetLastAnimatableMessage({ messageIndex })
-  const content = <Text style={{ color: 'white' }}>{message}</Text>
 
   return (
-    <FirstUserMessageFrame messageIndex={messageIndex}>
-      {content}
+    <FirstUserMessageFrame messageIndex={messageIndex} isNewChat={isNewChat}>
+      <Text style={{ color: 'white' }}>{message}</Text>
     </FirstUserMessageFrame>
   )
 }
@@ -292,12 +266,14 @@ function UserMessage({
 function FirstUserMessageFrame({
   children,
   messageIndex,
+  isNewChat,
 }: {
   children: React.ReactNode
   messageIndex: number
+  isNewChat: boolean
 }) {
   const { style, ref, onLayout } = useFirstMessageAnimation({
-    disabled: messageIndex > 0,
+    disabled: messageIndex > 0 || !isNewChat,
   })
 
   return (
@@ -324,9 +300,11 @@ function FirstUserMessageFrame({
 function SystemMessageAnimatedFrame({
   children,
   messageIndex,
+  isNewChat,
 }: {
   children: React.ReactNode
   messageIndex: number
+  isNewChat: boolean
 }) {
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
@@ -335,7 +313,7 @@ function SystemMessageAnimatedFrame({
   })
   const { isComplete } = useFirstMessageEntrance({
     itemHeight: renderedSize,
-    disabled: messageIndex !== 1,
+    disabled: messageIndex !== 1 || !isNewChat,
   })
 
   const style = useAnimatedStyle(() => ({
@@ -351,29 +329,20 @@ function SystemMessageAnimatedFrame({
   )
 }
 
-function SystemMessagePlaceholder({
-  messageIndex,
-  children,
-}: {
-  messageIndex: number
-  children: React.ReactNode
-}) {
-  return (
-    <SystemMessageAnimatedFrame messageIndex={messageIndex}>
-      {children}
-    </SystemMessageAnimatedFrame>
-  )
-}
-
 function SystemMessage({
   message,
   messageIndex,
+  isNewChat,
 }: {
   message: string
   messageIndex: number
+  isNewChat: boolean
 }) {
   return (
-    <SystemMessageAnimatedFrame messageIndex={messageIndex}>
+    <SystemMessageAnimatedFrame
+      messageIndex={messageIndex}
+      isNewChat={isNewChat}
+    >
       <Text style={{ color: 'white' }}>{message}</Text>
     </SystemMessageAnimatedFrame>
   )

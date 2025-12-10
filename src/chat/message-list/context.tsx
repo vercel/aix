@@ -33,7 +33,6 @@ export type MessageListContextType = {
   getPreviousMessageSize: (index: number) => number | undefined
   getListState: () => ScrollState | undefined
   // Indicates if the chat initially started with exactly one message
-  startedWithOneMessage: SharedValue<boolean>
   listRef: React.RefObject<LegendListRef | null>
   refOuter: React.RefObject<View | null>
   onOuterLayout: (layout: LayoutChangeEvent) => void
@@ -177,7 +176,6 @@ export const MessageListContextProvider = ({
     position: -1,
   })
   const lastMessageIndex = useSharedValueAndRef<number>(-1)
-  const startedWithOneMessage = useSharedValue(false)
   const listRef = useRef<LegendListRef | null>(null)
 
   const bottomInset = useDerivedValue(() => {
@@ -206,7 +204,6 @@ export const MessageListContextProvider = ({
       lastMessageIndex,
       getPreviousMessageSize,
       getListState,
-      startedWithOneMessage,
       listRef,
       refOuter,
       onOuterLayout,
@@ -229,7 +226,6 @@ export const MessageListContextProvider = ({
       lastMessageIndex,
       getPreviousMessageSize,
       getListState,
-      startedWithOneMessage,
       listRef,
       refOuter,
       onOuterLayout,
