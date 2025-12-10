@@ -7,10 +7,6 @@ import {
 import type { View } from 'react-native'
 import { useComposerHeightContext } from '../composer/composer-height-context'
 import { useMemoOnce } from '../../utils/use-memo-once'
-import {
-  useSharedValueAndRef,
-  type SharedValueAndRef,
-} from '../../utils/use-shared-value-and-ref'
 import { useSyncLayoutHandler } from '../use-sync-layout'
 import type { LegendListRef, ScrollState } from '@legendapp/list'
 import { createContext, useCallback, useContext, useRef } from 'react'

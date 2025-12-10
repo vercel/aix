@@ -1,8 +1,4 @@
-import {
-  useAnimatedReaction,
-  useSharedValue,
-  type SharedValue,
-} from 'react-native-reanimated'
+import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
 import { useSyncLayoutHandler } from '../use-sync-layout'
 import { useKeyboardContextState } from '../keyboard/provider'
 import { useCallback, useLayoutEffect } from 'react'
