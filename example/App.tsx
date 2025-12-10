@@ -8,8 +8,7 @@ import Animated, {
 import {
   useMessageListContainerProps,
   useMessageListProps,
-  useUpdateLastMessageIndex,
-  useScrollMessageListFromComposerSizeUpdates,
+  useScrollOnComposerUpdate,
   useKeyboardAwareMessageList,
   useMessageListContainerStyle,
   useMessageListInitialScrollToEnd,
@@ -18,6 +17,7 @@ import {
   useMessageBlankSize,
   useMessageListContext,
   useChatAnimation,
+  useSyncLayoutHandler,
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
@@ -28,8 +28,8 @@ import {
   KeyboardProvider,
 } from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
-import { useSyncLayoutHandler } from 'ai-chat/chat/use-sync-layout'
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
+import { useIsLastItem } from '@legendapp/list'
 
 const bottomInsetPadding = 16
 
@@ -43,7 +43,7 @@ export default function App() {
       { type: 'user', content: message },
       {
         type: 'system',
-        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 10)),
+        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 21)),
       },
     ])
   }
@@ -213,8 +213,7 @@ function List<Data extends Message>({ data }: { data: Data[] }) {
     numMessages,
     lastUserMessageIndex: data.findLastIndex((item) => item.type === 'user'),
   })
-  useScrollMessageListFromComposerSizeUpdates()
-  useUpdateLastMessageIndex({ numMessages })
+  useScrollOnComposerUpdate()
   const props = useMessageListProps({ bottomInsetPadding })
 
   return (
@@ -307,10 +306,12 @@ function SystemMessageAnimatedFrame({
   messageIndex: number
   isNewChat: boolean
 }) {
+  const isLast = useIsLastItem()
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
     messageMinimumHeight: 20,
     bottomInset: 0,
+    isLastMessage: isLast,
   })
   const { isComplete } = useFirstMessageEntrance({
     itemHeight: renderedSize,

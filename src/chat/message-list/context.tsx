@@ -7,10 +7,6 @@ import {
 import type { View } from 'react-native'
 import { useComposerHeightContext } from '../composer/composer-height-context'
 import { useMemoOnce } from '../../utils/use-memo-once'
-import {
-  useSharedValueAndRef,
-  type SharedValueAndRef,
-} from '../../utils/use-shared-value-and-ref'
 import { useSyncLayoutHandler } from '../use-sync-layout'
 import type { LegendListRef, ScrollState } from '@legendapp/list'
 import { createContext, useCallback, useContext, useRef } from 'react'
@@ -29,7 +25,6 @@ export type MessageListContextType = {
     index: number
     position: number
   }>
-  lastMessageIndex: SharedValueAndRef<number>
   getPreviousMessageSize: (index: number) => number | undefined
   getListState: () => ScrollState | undefined
   // Indicates if the chat initially started with exactly one message
@@ -175,7 +170,6 @@ export const MessageListContextProvider = ({
     index: -1,
     position: -1,
   })
-  const lastMessageIndex = useSharedValueAndRef<number>(-1)
   const listRef = useRef<LegendListRef | null>(null)
 
   const bottomInset = useDerivedValue(() => {
@@ -201,7 +195,6 @@ export const MessageListContextProvider = ({
       blankSizeFull,
       scrollViewHeight,
       lastUserMessage,
-      lastMessageIndex,
       getPreviousMessageSize,
       getListState,
       listRef,
@@ -223,7 +216,6 @@ export const MessageListContextProvider = ({
       blankSizeFull,
       scrollViewHeight,
       lastUserMessage,
-      lastMessageIndex,
       getPreviousMessageSize,
       getListState,
       listRef,

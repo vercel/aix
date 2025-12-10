@@ -1,17 +1,19 @@
 ---
-title: useScrollMessageListFromComposerSizeUpdates
+title: useScrollOnComposerUpdate
 description: Auto-scroll when the composer grows
 ---
 
-`useScrollMessageListFromComposerSizeUpdates` automatically scrolls the message list to the end when the composer height increases. This keeps the conversation visible as the user types multi-line messages.
+`useScrollOnComposerUpdate` automatically scrolls the message list to the end
+when the composer height increases. This keeps the conversation visible as the
+user types multi-line messages.
 
 ## Usage
 
 ```tsx
-import { useScrollMessageListFromComposerSizeUpdates } from 'aix'
+import { useScrollOnComposerUpdate } from 'aix'
 
 function MessageList({ messages }) {
-  useScrollMessageListFromComposerSizeUpdates()
+  useScrollOnComposerUpdate()
 
   // ... rest of your list
 }
@@ -19,7 +21,8 @@ function MessageList({ messages }) {
 
 ## How It Works
 
-The hook watches the `composerHeight` shared value. When it increases, it checks if the user is already scrolled near the bottom:
+The hook watches the `composerHeight` shared value. When it increases, it checks
+if the user is already scrolled near the bottom:
 
 ```tsx
 const distanceFromEnd = contentLength - scroll - scrollLength
@@ -45,14 +48,14 @@ If the user has scrolled up to read older messages, the list won't jump.
 
 ```tsx
 import {
-  useScrollMessageListFromComposerSizeUpdates,
+  useScrollOnComposerUpdate,
   useMessageListProps,
   useComposerHeightContext,
 } from 'aix'
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
 
 function MessageList({ messages }) {
-  useScrollMessageListFromComposerSizeUpdates()
+  useScrollOnComposerUpdate()
   const props = useMessageListProps()
 
   return (
@@ -71,7 +74,7 @@ function Composer() {
     <Animated.View
       onLayout={(e) => composerHeight.set(e.nativeEvent.layout.height)}
     >
-      <TextInput multiline placeholder="Message" />
+      <TextInput multiline placeholder='Message' />
     </Animated.View>
   )
 }
@@ -86,7 +89,8 @@ This hook requires:
 
 ## Related Hooks
 
-- [useComposerHeightContext](/docs/providers#composerheightcontextprovider) – Track composer height
+- [useComposerHeightContext](/docs/providers#composerheightcontextprovider) –
+  Track composer height
 - [useMessageListProps](/docs/use-message-list-props) – Get list props
-- [useKeyboardAwareMessageList](/docs/use-keyboard-aware-message-list) – Keyboard handling
-
+- [useKeyboardAwareMessageList](/docs/use-keyboard-aware-message-list) –
+  Keyboard handling

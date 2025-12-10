@@ -3,7 +3,8 @@ title: Providers
 description: Context providers for chat state management
 ---
 
-aix uses React Context to share state between the message list, composer, and animations. You need to wrap your chat screen with these providers.
+aix uses React Context to share state between the message list, composer, and
+animations. You need to wrap your chat screen with these providers.
 
 ## Provider Order
 
@@ -24,9 +25,7 @@ function ChatProvider({ children }) {
       <ComposerHeightContextProvider initialHeight={0}>
         <MessageListContextProvider>
           <ChatAnimationProvider>
-            <KeyboardStateProvider>
-              {children}
-            </KeyboardStateProvider>
+            <KeyboardStateProvider>{children}</KeyboardStateProvider>
           </ChatAnimationProvider>
         </MessageListContextProvider>
       </ComposerHeightContextProvider>
@@ -35,7 +34,7 @@ function ChatProvider({ children }) {
 }
 ```
 
-<Callout type="info">
+<Callout type='info'>
   `KeyboardProvider` comes from `react-native-keyboard-controller`, not aix.
 </Callout>
 
@@ -43,22 +42,22 @@ function ChatProvider({ children }) {
 
 ## ComposerHeightContextProvider
 
-Tracks the height of your composer input. This is used to calculate scroll offsets and content insets.
+Tracks the height of your composer input. This is used to calculate scroll
+offsets and content insets.
 
 ```tsx
 import { ComposerHeightContextProvider } from 'aix'
-
-<ComposerHeightContextProvider initialHeight={0}>
+;<ComposerHeightContextProvider initialHeight={0}>
   {children}
 </ComposerHeightContextProvider>
 ```
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `initialHeight` | `number` | Initial height of the composer |
-| `children` | `ReactNode` | Child components |
+| Prop            | Type        | Description                    |
+| --------------- | ----------- | ------------------------------ |
+| `initialHeight` | `number`    | Initial height of the composer |
+| `children`      | `ReactNode` | Child components               |
 
 ### Hook
 
@@ -75,14 +74,12 @@ function Composer() {
 
 ## MessageListContextProvider
 
-Manages message list state including scroll position, content size, and blank space calculations.
+Manages message list state including scroll position, content size, and blank
+space calculations.
 
 ```tsx
 import { MessageListContextProvider } from 'aix'
-
-<MessageListContextProvider>
-  {children}
-</MessageListContextProvider>
+;<MessageListContextProvider>{children}</MessageListContextProvider>
 ```
 
 ### Hook
@@ -109,7 +106,6 @@ function MyComponent() {
     bottomInset,
 
     // Message tracking
-    lastMessageIndex,
     lastUserMessage,
   } = useMessageListContext()
 }
@@ -117,18 +113,17 @@ function MyComponent() {
 
 ### Context Values
 
-| Value | Type | Description |
-|-------|------|-------------|
-| `listRef` | `RefObject<LegendListRef>` | Ref to the LegendList component |
-| `scrollY` | `SharedValue<number>` | Current scroll offset |
-| `contentHeight` | `SharedValue<number>` | Total content height |
-| `scrollViewHeight` | `SharedValue<number>` | Visible scroll view height |
-| `scrollToEnd` | `(params?) => void` | Scroll to the end of the list |
-| `shouldShowScrollToEnd` | `SharedValue<boolean>` | Whether to show scroll-to-end button |
-| `blankSize` | `SharedValue<number>` | Blank space at the bottom for keyboard |
-| `bottomInset` | `SharedValue<number>` | Total bottom inset (blank + composer) |
-| `lastMessageIndex` | `SharedValueAndRef<number>` | Index of the last message |
-| `lastUserMessage` | `SharedValue<{index, position}>` | Last user message info |
+| Value                   | Type                             | Description                            |
+| ----------------------- | -------------------------------- | -------------------------------------- |
+| `listRef`               | `RefObject<LegendListRef>`       | Ref to the LegendList component        |
+| `scrollY`               | `SharedValue<number>`            | Current scroll offset                  |
+| `contentHeight`         | `SharedValue<number>`            | Total content height                   |
+| `scrollViewHeight`      | `SharedValue<number>`            | Visible scroll view height             |
+| `scrollToEnd`           | `(params?) => void`              | Scroll to the end of the list          |
+| `shouldShowScrollToEnd` | `SharedValue<boolean>`           | Whether to show scroll-to-end button   |
+| `blankSize`             | `SharedValue<number>`            | Blank space at the bottom for keyboard |
+| `bottomInset`           | `SharedValue<number>`            | Total bottom inset (blank + composer)  |
+| `lastUserMessage`       | `SharedValue<{index, position}>` | Last user message info                 |
 
 ---
 
@@ -138,10 +133,7 @@ Manages the message send animation state.
 
 ```tsx
 import { ChatAnimationProvider } from 'aix'
-
-<ChatAnimationProvider>
-  {children}
-</ChatAnimationProvider>
+;<ChatAnimationProvider>{children}</ChatAnimationProvider>
 ```
 
 ### Hook
@@ -150,7 +142,8 @@ import { ChatAnimationProvider } from 'aix'
 import { useChatAnimation } from 'aix'
 
 function Composer() {
-  const { isMessageSendAnimating, setIsMessageSendAnimating } = useChatAnimation()
+  const { isMessageSendAnimating, setIsMessageSendAnimating } =
+    useChatAnimation()
 
   const onSend = () => {
     setIsMessageSendAnimating(true)
@@ -161,12 +154,12 @@ function Composer() {
 
 ### Context Values
 
-| Value | Type | Description |
-|-------|------|-------------|
-| `isMessageSendAnimating` | `SharedValue<boolean>` | Whether a send animation is in progress |
-| `setIsMessageSendAnimating` | `(boolean) => void` | Trigger or cancel the animation |
+| Value                       | Type                   | Description                             |
+| --------------------------- | ---------------------- | --------------------------------------- |
+| `isMessageSendAnimating`    | `SharedValue<boolean>` | Whether a send animation is in progress |
+| `setIsMessageSendAnimating` | `(boolean) => void`    | Trigger or cancel the animation         |
 
-<Callout type="info">
+<Callout type='info'>
   The animation state automatically resets after 500ms as a fallback.
 </Callout>
 
@@ -174,14 +167,13 @@ function Composer() {
 
 ## KeyboardStateProvider
 
-Tracks keyboard visibility state. This supplements `react-native-keyboard-controller` with additional state management for chat-specific behavior.
+Tracks keyboard visibility state. This supplements
+`react-native-keyboard-controller` with additional state management for
+chat-specific behavior.
 
 ```tsx
 import { KeyboardStateProvider } from 'aix'
-
-<KeyboardStateProvider>
-  {children}
-</KeyboardStateProvider>
+;<KeyboardStateProvider>{children}</KeyboardStateProvider>
 ```
 
 ### Hook
@@ -202,13 +194,13 @@ function MyComponent() {
 
 ### Context Values
 
-| Value | Type | Description |
-|-------|------|-------------|
-| `keyboardState` | `SharedValue<string>` | `'didHide'`, `'didShow'`, `'willHide'`, `'willShow'` |
-| `keyboardStateActual` | `SharedValue<string>` | Actual keyboard state from system events |
-| `keyboardHeight` | `SharedValue<number>` | Current keyboard height |
-| `shouldOffsetCloseKeyboard` | `SharedValue<boolean>` | Whether to offset scroll when keyboard closes |
-| `setKeyboardState` | `(state) => void` | Manually set keyboard state |
+| Value                       | Type                   | Description                                          |
+| --------------------------- | ---------------------- | ---------------------------------------------------- |
+| `keyboardState`             | `SharedValue<string>`  | `'didHide'`, `'didShow'`, `'willHide'`, `'willShow'` |
+| `keyboardStateActual`       | `SharedValue<string>`  | Actual keyboard state from system events             |
+| `keyboardHeight`            | `SharedValue<number>`  | Current keyboard height                              |
+| `shouldOffsetCloseKeyboard` | `SharedValue<boolean>` | Whether to offset scroll when keyboard closes        |
+| `setKeyboardState`          | `(state) => void`      | Manually set keyboard state                          |
 
 ---
 
@@ -230,9 +222,7 @@ function ChatProvider({ children }) {
       <ComposerHeightContextProvider initialHeight={56}>
         <MessageListContextProvider>
           <ChatAnimationProvider>
-            <KeyboardStateProvider>
-              {children}
-            </KeyboardStateProvider>
+            <KeyboardStateProvider>{children}</KeyboardStateProvider>
           </ChatAnimationProvider>
         </MessageListContextProvider>
       </ComposerHeightContextProvider>
@@ -247,10 +237,13 @@ export function ChatScreen() {
     <ChatProvider>
       <View style={{ flex: 1 }}>
         <MessageList messages={messages} />
-        <Composer onSend={(text) => {/* ... */}} />
+        <Composer
+          onSend={(text) => {
+            /* ... */
+          }}
+        />
       </View>
     </ChatProvider>
   )
 }
 ```
-

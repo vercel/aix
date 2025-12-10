@@ -31,7 +31,7 @@ function MessageList({ messages }) {
 
 | Parameter            | Type     | Default | Description                                      |
 | -------------------- | -------- | ------- | ------------------------------------------------ |
-| `bottomInsetPadding` | `number` | `12`    | Extra padding at the bottom of scroll indicators |
+| `bottomInsetPadding` | `number` | `0`     | Extra padding at the bottom of scroll indicators |
 
 ## Return Value
 
@@ -73,8 +73,7 @@ For a complete message list, you'll typically use several hooks together:
 import {
   useMessageListProps,
   useKeyboardAwareMessageList,
-  useScrollMessageListFromComposerSizeUpdates,
-  useUpdateLastMessageIndex,
+  useScrollOnComposerUpdate,
   useStartedWithOneMessage,
 } from 'aix'
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
@@ -94,10 +93,7 @@ function MessageList({ messages }) {
   })
 
   // Auto-scroll when composer grows
-  useScrollMessageListFromComposerSizeUpdates()
-
-  // Track the last message index
-  useUpdateLastMessageIndex({ numMessages })
+  useScrollOnComposerUpdate()
 
   // Get list props
   const props = useMessageListProps({ bottomInsetPadding: 12 })
@@ -125,5 +121,5 @@ function MessageList({ messages }) {
   for the list container
 - [useKeyboardAwareMessageList](/docs/use-keyboard-aware-message-list) –
   Keyboard handling
-- [useScrollMessageListFromComposerSizeUpdates](/docs/use-scroll-from-composer)
-  – Auto-scroll on composer resize
+- [useScrollOnComposerUpdate](/docs/use-scroll-from-composer) – Auto-scroll on
+  composer resize

@@ -168,27 +168,23 @@ For now, `aix` provides a number of hooks to help you build your own
 ```tsx
 import {
   useKeyboardAwareMessageList,
-  useScrollMessageListFromComposerSizeUpdates,
-  useUpdateLastMessageIndex,
+  useScrollOnComposerUpdate,
   useMessageListProps,
 } from 'aix'
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
 
 function List({ messages, isNewChat }) {
-  const numMessages = parentProps.data?.length ?? 0
+  const numMessages = messages.length
+  const lastUserMessageIndex = messages.findLastIndex(
+    (item) => item.type === 'user'
+  )
 
   useKeyboardAwareMessageList({
     numMessages,
+    lastUserMessageIndex,
   })
 
-  // if you want to add optimistic messages, do it here
-  // in the future, this will be improved
-  // for now, it has to go after useKeyboardAwareMessageList
-  // and before useUpdateLastMessageIndex
-  // this is because numMessages is used differently before and after
-
-  useScrollMessageListFromComposerSizeUpdates()
-  useUpdateLastMessageIndex({ numMessages })
+  useScrollOnComposerUpdate()
   const props = useMessageListProps({ bottomInsetPadding })
 
   return (
@@ -200,8 +196,159 @@ function List({ messages, isNewChat }) {
         }
         return <SystemMessage message={item.content} messageIndex={index} />
       }}
+      keyExtractor={(item) => item.id}
       {...props}
     />
   )
 }
 ```
+
+If you want to add an optimistic placeholder, you could do it here, or in the
+parent:
+
+```tsx
+let messages = props.messages
+
+if (isPending) {
+  messages = [...messages, { id: 'optimistic', type: 'placeholder' }]
+}
+
+// in renderItem
+if (item.type === 'placeholder') {
+  return <PlaceholderMessage />
+}
+```
+
+A common pattern is to show a thinking state optimistically.
+
+### `UserMessage`
+
+```tsx
+import { useFirstMessageAnimation } from 'aix'
+import Animated from 'react-native-reanimated'
+import { UserMessageContent } from 'path/to/your/user-message-content'
+
+export function UserMessage({ message, messageIndex, isNewChat }) {
+  // almost every app should use this logic
+  // unless you're doing something special
+  const shouldAnimateIn = isNewChat && messageIndex === 0
+
+  if (shouldAnimateIn) {
+    return (
+      <FirstUserMessageFrame>
+        <UserMessageContent />
+      </FirstUserMessageFrame>
+    )
+  }
+
+  return <UserMessageContent />
+}
+
+function FirstUserMessageFrame({ children }) {
+  const { style, ref, onLayout } = useFirstMessageAnimation({
+    disabled: false,
+  })
+
+  return (
+    <Animated.View style={style} ref={ref} onLayout={onLayout}>
+      {children}
+    </Animated.View>
+  )
+}
+```
+
+#### `useFirstMessageAnimation`
+
+As a performance optimization, we conditionally render the
+`FirstUserMessageFrame` in the example above. This way, we only render the
+animated node and hooks if they're used.
+
+However, if for some reason you need to mount the `useFirstMessageAnimation`
+hook, you can rely on the `disabled` prop rather than the conditional rendering.
+
+```tsx
+import { useFirstMessageAnimation } from 'aix'
+import Animated from 'react-native-reanimated'
+import { UserMessageContent } from 'path/to/your/user-message-content'
+
+function UserMessage({ message, messageIndex, isNewChat }) {
+  const shouldAnimateIn = isNewChat && messageIndex === 0
+  const { style, ref, onLayout } = useFirstMessageAnimation({
+    disabled: !shouldAnimateIn,
+  })
+
+  return (
+    <Animated.View style={style} ref={ref} onLayout={onLayout}>
+      <UserMessageContent />
+    </Animated.View>
+  )
+}
+```
+
+We conditionally apply these animations because they only apply for the first
+message in new chats. All subsequent messages will rely on an implementation of
+`scrollToEnd({ animated: true })` instead of this animation.
+
+Most apps will rely on `isNewChat && messageIndex === 0` to determine if the
+message should be animated in. However, if you are doing something special, such
+as rendering custom items in your LegendList above the actual messages, you can
+tweak the logic to fit your app.
+
+In the future, `aix` will provide more granular customization of the animation
+itself. For now, it provides an `opacity` + `translateY` entrance animation
+based on the message's size.
+
+### `SystemMessage`
+
+### `Composer`
+
+`aix` is built to support a "floating composer". This lets you use UIs like
+Liquid Glass and progressive blurs in your composer as users scroll.
+
+In order to support this behavior, you need to do 2 things.
+
+#### Build your own composer
+
+First, build your own composer. It should register its height with `aix` using
+the `useComposerHeightContext` hook. `useSyncLayoutHandler` is a convenience
+hook to measure synchronously.
+
+```tsx
+import { KeyboardStickyView } from 'react-native-keyboard-controller'
+import { useComposerHeightContext, useSyncLayoutHandler } from 'aix'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+function Composer() {
+  const { composerHeight } = useComposerHeightContext()
+  const { onLayout, ref } = useSyncLayoutHandler((layout) => {
+    composerHeight.set(layout.height)
+  })
+
+  const { bottom } = useSafeAreaInsets()
+
+  return (
+    <View
+      style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+      ref={ref}
+      onLayout={onLayout}
+    >
+      <KeyboardStickyView offset={{ opened: 0, closed: -bottom }}>
+        <ComposerContent />
+      </KeyboardStickyView>
+    </View>
+  )
+}
+```
+
+`KeybaordStickyView` from `react-native-keyboard-controller` ensures that your
+composer content reacts to the keyboard size.
+
+Notice that the composer is absolutely-positioned to the bottom of the screen.
+
+#### Enable autoscrolling
+
+In order to enable autoscrolling, call `useScrollOnComposerUpdate()` in your
+`MessagesList` component. If you follow the docs for
+[MessagesList](#messageslist), above, you will already have this. As the name
+implies, this hook ensures that, whenever you type a new line, the list will
+scroll if you are at the bottom of the chat.
