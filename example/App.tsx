@@ -205,12 +205,13 @@ function StickyView(
   return <Animated.View {...props} style={[style, props.style]} />
 }
 
-function List<Data extends Message>(parentProps: { data: Data[] }) {
+function List<Data extends Message>({ data }: { data: Data[] }) {
   const isNewChat = true
-  const numMessages = parentProps.data?.length ?? 0
+  const numMessages = data?.length ?? 0
 
   useKeyboardAwareMessageList({
     numMessages,
+    lastUserMessageIndex: data.findLastIndex((item) => item.type === 'user'),
   })
   useScrollMessageListFromComposerSizeUpdates()
   useUpdateLastMessageIndex({ numMessages })
@@ -219,6 +220,7 @@ function List<Data extends Message>(parentProps: { data: Data[] }) {
   return (
     <AnimatedLegendList
       keyboardDismissMode='interactive'
+      data={data}
       renderItem={({ item, index }) => {
         if (item.type === 'user') {
           return (
@@ -239,7 +241,6 @@ function List<Data extends Message>(parentProps: { data: Data[] }) {
         )
       }}
       keyExtractor={(item, index) => `${item.type}-${index}`}
-      {...parentProps}
       {...props}
     />
   )
