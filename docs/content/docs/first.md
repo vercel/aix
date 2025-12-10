@@ -169,7 +169,6 @@ For now, `aix` provides a number of hooks to help you build your own
 import {
   useKeyboardAwareMessageList,
   useScrollOnComposerUpdate,
-  useUpdateLastMessageIndex,
   useMessageListProps,
 } from 'aix'
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
@@ -186,7 +185,6 @@ function List({ messages, isNewChat }) {
   })
 
   useScrollOnComposerUpdate()
-  useUpdateLastMessageIndex({ numMessages })
   const props = useMessageListProps({ bottomInsetPadding })
 
   return (

@@ -11,24 +11,14 @@ import { useMessageListContext } from './context'
 import { useComposerHeightContext } from '../composer/composer-height-context'
 import { useDebouncedCallback } from '../../utils/useDebouncedCallback'
 
-function isLastMessage(lastMessageIndex: number, index: number) {
-  return lastMessageIndex === index
-}
-
-function isLastMessageWorklet(
-  lastMessageIndex: SharedValue<number>,
-  index: number
-) {
-  'worklet'
-  return lastMessageIndex.get() === index
-}
-
 export const useMessageBlankSize = ({
   messageIndex: index,
   messageMinimumHeight,
   bottomInset,
+  isLastMessage,
 }: {
   messageIndex: number
+  isLastMessage: boolean
   /**
    * Line height + padding * 2
    */
@@ -41,7 +31,6 @@ export const useMessageBlankSize = ({
     blankSizeFull,
     scrollViewHeight,
     getListState,
-    lastMessageIndex,
   } = useMessageListContext()
   const { composerHeight } = useComposerHeightContext()
   const previousMessageSize = useSharedValue<number | undefined>(
@@ -49,7 +38,6 @@ export const useMessageBlankSize = ({
   )
   const renderedSize = useSharedValue<number>(0)
   const { keyboardState, keyboardHeight } = useKeyboardContextState()
-  const lastMessageIndexSharedValue = lastMessageIndex.sharedValue
 
   useAnimatedReaction(
     () => {
@@ -57,7 +45,7 @@ export const useMessageBlankSize = ({
       let minHeightFull = 0
       let size = 0
 
-      const isLast = isLastMessageWorklet(lastMessageIndexSharedValue, index)
+      const isLast = isLastMessage
 
       if (isLast) {
         const composerSize = composerHeight.get()
@@ -93,7 +81,7 @@ export const useMessageBlankSize = ({
   )
 
   useLayoutEffect(() => {
-    const isLast = isLastMessage(lastMessageIndex.ref.current, index)
+    const isLast = isLastMessage
     if (isLast) {
       const size = getPreviousMessageSize(index)
       if (size) {
@@ -102,7 +90,7 @@ export const useMessageBlankSize = ({
     }
   }, [
     getPreviousMessageSize,
-    lastMessageIndex,
+    isLastMessage,
     index,
     previousMessageSize,
     getListState,
@@ -110,12 +98,12 @@ export const useMessageBlankSize = ({
 
   const updateSize = useCallback(
     (layout: LayoutRectangle) => {
-      const isLast = isLastMessage(lastMessageIndex.ref.current, index)
+      const isLast = isLastMessage
       if (isLast) {
         renderedSize.set(layout.height)
       }
     },
-    [lastMessageIndex, index, renderedSize]
+    [isLastMessage, index, renderedSize]
   )
 
   // useSyncLayoutHandler is used to measure the size of the message on the initial render
@@ -130,7 +118,7 @@ export const useMessageBlankSize = ({
       const { height } = layout
       // Debounce if it's growing and it's not the first height so that the size is not updated too often
       // and also so that blankSize is not shrunk too soon, which could cause scroll jumping
-      const isLast = isLastMessage(lastMessageIndex.ref.current, index)
+      const isLast = isLastMessage
       if (isLast) {
         if (renderedSize.get() > 0 && height > renderedSize.get()) {
           debouncedSetRenderedSize(layout)
@@ -139,7 +127,7 @@ export const useMessageBlankSize = ({
         }
       }
     },
-    [debouncedSetRenderedSize, renderedSize, lastMessageIndex, index]
+    [debouncedSetRenderedSize, renderedSize, isLastMessage, index]
   )
 
   return {

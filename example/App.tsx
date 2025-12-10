@@ -8,7 +8,6 @@ import Animated, {
 import {
   useMessageListContainerProps,
   useMessageListProps,
-  useUpdateLastMessageIndex,
   useScrollOnComposerUpdate,
   useKeyboardAwareMessageList,
   useMessageListContainerStyle,
@@ -30,6 +29,7 @@ import {
 } from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
+import { useIsLastItem } from '@legendapp/list'
 
 const bottomInsetPadding = 16
 
@@ -214,7 +214,6 @@ function List<Data extends Message>({ data }: { data: Data[] }) {
     lastUserMessageIndex: data.findLastIndex((item) => item.type === 'user'),
   })
   useScrollOnComposerUpdate()
-  useUpdateLastMessageIndex({ numMessages })
   const props = useMessageListProps({ bottomInsetPadding })
 
   return (
@@ -307,10 +306,12 @@ function SystemMessageAnimatedFrame({
   messageIndex: number
   isNewChat: boolean
 }) {
+  const isLast = useIsLastItem()
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
     messageMinimumHeight: 20,
     bottomInset: 0,
+    isLastMessage: isLast,
   })
   const { isComplete } = useFirstMessageEntrance({
     itemHeight: renderedSize,

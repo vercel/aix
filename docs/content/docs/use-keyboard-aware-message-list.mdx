@@ -108,11 +108,7 @@ keep everything in sync.
 ## Example
 
 ```tsx
-import {
-  useKeyboardAwareMessageList,
-  useMessageListProps,
-  useUpdateLastMessageIndex,
-} from 'aix'
+import { useKeyboardAwareMessageList, useMessageListProps } from 'aix'
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -125,8 +121,6 @@ function MessageList({ messages }) {
     bottomInset: bottom,
     chatPaddingBottom: 16,
   })
-
-  useUpdateLastMessageIndex({ numMessages })
 
   const props = useMessageListProps()
 

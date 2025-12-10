@@ -71,7 +71,6 @@ import {
   useMessageListProps,
   useKeyboardAwareMessageList,
   useScrollOnComposerUpdate,
-  useUpdateLastMessageIndex,
 } from 'aix'
 
 function MessageList({ messages }) {
@@ -82,9 +81,6 @@ function MessageList({ messages }) {
 
   // Auto-scroll when composer grows
   useScrollOnComposerUpdate()
-
-  // Track the last message index
-  useUpdateLastMessageIndex({ numMessages })
 
   // Get list props (ref, animatedProps, onScroll, etc.)
   const props = useMessageListProps()
