@@ -3,7 +3,7 @@ import { useMessageListContext } from './context'
 import { useComposerHeightContext } from '../composer/composer-height-context'
 
 export function useScrollViewAnimatedProps({
-  bottomInsetPadding = 12,
+  bottomInsetPadding = 0,
 }: {
   bottomInsetPadding?: number
 }) {

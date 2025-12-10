@@ -175,17 +175,15 @@ import {
 import { AnimatedLegendList } from '@legendapp/list/reanimated'
 
 function List({ messages, isNewChat }) {
-  const numMessages = parentProps.data?.length ?? 0
+  const numMessages = messages.length
+  const lastUserMessageIndex = messages.findLastIndex(
+    (item) => item.type === 'user'
+  )
 
   useKeyboardAwareMessageList({
     numMessages,
+    lastUserMessageIndex,
   })
-
-  // if you want to add optimistic messages, do it here
-  // in the future, this will be improved
-  // for now, it has to go after useKeyboardAwareMessageList
-  // and before useUpdateLastMessageIndex
-  // this is because numMessages is used differently before and after
 
   useScrollMessageListFromComposerSizeUpdates()
   useUpdateLastMessageIndex({ numMessages })
