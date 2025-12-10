@@ -1,6 +1,6 @@
 {
   "name": "@vercel/aix",
-  "version": "0.0.0-alpha.5",
+  "version": "0.0.0-alpha.6",
   "description": "My new module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -22,7 +22,10 @@
     "ai-chat",
     "AiChat"
   ],
-  "repository": "https://github.com/vercel/aix",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel/aix.git"
+  },
   "bugs": {
     "url": "https://github.com/vercel/aix/issues"
   },
