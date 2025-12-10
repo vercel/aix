@@ -173,7 +173,17 @@ export const MessageListContextProvider = ({
   const listRef = useRef<LegendListRef | null>(null)
 
   const bottomInset = useDerivedValue(() => {
-    return blankSize.get() + composerHeight.get() + translateY.get()
+    const bs = blankSize.get()
+    const ch = composerHeight.get()
+    const ty = translateY.get()
+    const inset = bs + ch + ty
+    console.log('[bottomInset]', {
+      blankSize: bs,
+      composerHeight: ch,
+      translateY: ty,
+      inset,
+    })
+    return inset
   })
 
   // Hooks to set up the sharedValues

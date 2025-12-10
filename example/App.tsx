@@ -30,22 +30,16 @@ import {
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 import { useIsLastItem } from '@legendapp/list'
+import { useAppleChat } from './src/use-apple-chat'
 
 const bottomInsetPadding = 16
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([])
+  let { messages, submit } = useAppleChat()
   const chatId = '1'
 
-  function onSend(message: string) {
-    setMessages((m) => [
-      ...m,
-      { type: 'user', content: message },
-      {
-        type: 'system',
-        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 21)),
-      },
-    ])
+  if (messages.at(-1)?.role === 'user') {
+    messages = [...messages, { role: 'assistant', content: 'Thinking...' }]
   }
 
   return (
@@ -60,8 +54,8 @@ export default function App() {
                 <List data={messages} />
               </ListContainer>
             )}
-            <Composer onSend={onSend} />
           </View>
+          <Composer onSend={submit} />
         </ChatProvider>
       </View>
     </KeyboardProvider>
@@ -85,7 +79,7 @@ function Actions() {
   )
 }
 
-type Message = { type: 'user' | 'system'; content: string }
+type Message = { role: 'user' | 'assistant'; content: string }
 
 function ScrollToEndButton() {
   const { scrollToEnd } = useMessageListContext()
@@ -130,12 +124,11 @@ function Composer({ onSend }: { onSend: (message: string) => void }) {
     useKeyboardContextState()
 
   return (
-    <View
-      style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-      ref={ref}
-      onLayout={onLayout}
-    >
-      <StickyView offset={{ opened: 0, closed: -bottomInsetPadding }}>
+    <View>
+      <StickyView
+        offset={{ opened: 0, closed: -bottomInsetPadding }}
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+      >
         <View
           style={{
             padding: 8,
@@ -143,6 +136,8 @@ function Composer({ onSend }: { onSend: (message: string) => void }) {
             paddingHorizontal: 16,
             flexDirection: 'row',
           }}
+          ref={ref}
+          onLayout={onLayout}
         >
           <TextInput
             style={{
@@ -205,23 +200,23 @@ function StickyView(
   return <Animated.View {...props} style={[style, props.style]} />
 }
 
-function List<Data extends Message>({ data }: { data: Data[] }) {
+function List({ data }: { data: Message[] }) {
   const isNewChat = true
   const numMessages = data?.length ?? 0
 
   useKeyboardAwareMessageList({
     numMessages,
-    lastUserMessageIndex: data.findLastIndex((item) => item.type === 'user'),
+    lastUserMessageIndex: data.findLastIndex((item) => item.role === 'user'),
   })
   useScrollOnComposerUpdate()
-  const props = useMessageListProps({ bottomInsetPadding })
+  const props = useMessageListProps({ bottomInsetPadding: 0 })
 
   return (
     <AnimatedLegendList
       keyboardDismissMode='interactive'
       data={data}
       renderItem={({ item, index }) => {
-        if (item.type === 'user') {
+        if (item.role === 'user') {
           return (
             <UserMessage
               message={item.content}
@@ -232,14 +227,18 @@ function List<Data extends Message>({ data }: { data: Data[] }) {
         }
 
         return (
-          <SystemMessage
+          <AssistantMessage
             message={item.content}
             messageIndex={index}
             isNewChat={isNewChat}
           />
         )
       }}
-      keyExtractor={(item, index) => `${item.type}-${index}`}
+      keyExtractor={(item, index) => `${item.role}-${index}`}
+      contentContainerStyle={{
+        paddingBottom: bottomInsetPadding,
+        paddingHorizontal: 16,
+      }}
       {...props}
     />
   )
@@ -297,7 +296,7 @@ function FirstUserMessageFrame({
   )
 }
 
-function SystemMessageAnimatedFrame({
+function AssistantMessageAnimatedFrame({
   children,
   messageIndex,
   isNewChat,
@@ -331,7 +330,7 @@ function SystemMessageAnimatedFrame({
   )
 }
 
-function SystemMessage({
+function AssistantMessage({
   message,
   messageIndex,
   isNewChat,
@@ -341,11 +340,11 @@ function SystemMessage({
   isNewChat: boolean
 }) {
   return (
-    <SystemMessageAnimatedFrame
+    <AssistantMessageAnimatedFrame
       messageIndex={messageIndex}
       isNewChat={isNewChat}
     >
       <Text style={{ color: 'white' }}>{message}</Text>
-    </SystemMessageAnimatedFrame>
+    </AssistantMessageAnimatedFrame>
   )
 }
