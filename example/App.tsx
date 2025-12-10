@@ -9,7 +9,7 @@ import {
   useMessageListContainerProps,
   useMessageListProps,
   useUpdateLastMessageIndex,
-  useScrollMessageListFromComposerSizeUpdates,
+  useScrollOnComposerUpdate,
   useKeyboardAwareMessageList,
   useMessageListContainerStyle,
   useMessageListInitialScrollToEnd,
@@ -18,6 +18,7 @@ import {
   useMessageBlankSize,
   useMessageListContext,
   useChatAnimation,
+  useSyncLayoutHandler,
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
@@ -28,7 +29,6 @@ import {
   KeyboardProvider,
 } from 'react-native-keyboard-controller'
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
-import { useSyncLayoutHandler } from 'ai-chat/chat/use-sync-layout'
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 
 const bottomInsetPadding = 16
@@ -213,7 +213,7 @@ function List<Data extends Message>({ data }: { data: Data[] }) {
     numMessages,
     lastUserMessageIndex: data.findLastIndex((item) => item.type === 'user'),
   })
-  useScrollMessageListFromComposerSizeUpdates()
+  useScrollOnComposerUpdate()
   useUpdateLastMessageIndex({ numMessages })
   const props = useMessageListProps({ bottomInsetPadding })
 

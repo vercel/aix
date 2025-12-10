@@ -70,7 +70,7 @@ import { AnimatedLegendList } from '@legendapp/list/reanimated'
 import {
   useMessageListProps,
   useKeyboardAwareMessageList,
-  useScrollMessageListFromComposerSizeUpdates,
+  useScrollOnComposerUpdate,
   useUpdateLastMessageIndex,
 } from 'aix'
 
@@ -81,7 +81,7 @@ function MessageList({ messages }) {
   useKeyboardAwareMessageList({ numMessages })
 
   // Auto-scroll when composer grows
-  useScrollMessageListFromComposerSizeUpdates()
+  useScrollOnComposerUpdate()
 
   // Track the last message index
   useUpdateLastMessageIndex({ numMessages })

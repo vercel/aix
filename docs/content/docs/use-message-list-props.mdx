@@ -73,7 +73,7 @@ For a complete message list, you'll typically use several hooks together:
 import {
   useMessageListProps,
   useKeyboardAwareMessageList,
-  useScrollMessageListFromComposerSizeUpdates,
+  useScrollOnComposerUpdate,
   useUpdateLastMessageIndex,
   useStartedWithOneMessage,
 } from 'aix'
@@ -94,7 +94,7 @@ function MessageList({ messages }) {
   })
 
   // Auto-scroll when composer grows
-  useScrollMessageListFromComposerSizeUpdates()
+  useScrollOnComposerUpdate()
 
   // Track the last message index
   useUpdateLastMessageIndex({ numMessages })
@@ -125,5 +125,5 @@ function MessageList({ messages }) {
   for the list container
 - [useKeyboardAwareMessageList](/docs/use-keyboard-aware-message-list) –
   Keyboard handling
-- [useScrollMessageListFromComposerSizeUpdates](/docs/use-scroll-from-composer)
-  – Auto-scroll on composer resize
+- [useScrollOnComposerUpdate](/docs/use-scroll-from-composer) – Auto-scroll on
+  composer resize

@@ -3,7 +3,9 @@ title: useKeyboardAwareMessageList
 description: Smooth keyboard handling for chat message lists
 ---
 
-`useKeyboardAwareMessageList` handles the complex keyboard interactions in a chat interface. When the keyboard opens or closes, it keeps messages visible and properly positioned.
+`useKeyboardAwareMessageList` handles the complex keyboard interactions in a
+chat interface. When the keyboard opens or closes, it keeps messages visible and
+properly positioned.
 
 ## Usage
 
@@ -23,11 +25,11 @@ function MessageList({ messages }) {
 
 ## Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `numMessages` | `number` | Required | Current number of messages |
-| `bottomInset` | `number` | `0` | Safe area bottom inset |
-| `chatPaddingBottom` | `number` | `0` | Extra padding at the bottom of the chat |
+| Parameter           | Type     | Default  | Description                             |
+| ------------------- | -------- | -------- | --------------------------------------- |
+| `numMessages`       | `number` | Required | Current number of messages              |
+| `bottomInset`       | `number` | `0`      | Safe area bottom inset                  |
+| `chatPaddingBottom` | `number` | `0`      | Extra padding at the bottom of the chat |
 
 ## What It Does
 
@@ -37,7 +39,8 @@ When the keyboard opens, the hook:
 
 1. Calculates how much to offset the scroll position
 2. Transforms the content up to keep the current view visible
-3. Handles the case where you're scrolled to the bottom vs. somewhere in the middle
+3. Handles the case where you're scrolled to the bottom vs. somewhere in the
+   middle
 
 ### Keyboard Close
 
@@ -65,7 +68,8 @@ When sending a message with the keyboard closed, the hook:
 
 ## How It Works
 
-The hook uses `react-native-keyboard-controller`'s `useKeyboardHandler` to track keyboard events:
+The hook uses `react-native-keyboard-controller`'s `useKeyboardHandler` to track
+keyboard events:
 
 ```tsx
 useKeyboardHandler({
@@ -86,7 +90,8 @@ useKeyboardHandler({
 
 ### Scroll Processing
 
-During keyboard animations, the hook temporarily disables LegendList's scroll processing for better performance:
+During keyboard animations, the hook temporarily disables LegendList's scroll
+processing for better performance:
 
 ```tsx
 listRef.current?.setScrollProcessingEnabled(false)
@@ -96,7 +101,9 @@ listRef.current?.setScrollProcessingEnabled(true)
 
 ### Blank Size Sync
 
-The hook also reacts to changes in the message list while the keyboard is open. If new messages arrive or the blank space changes, it recalculates positions to keep everything in sync.
+The hook also reacts to changes in the message list while the keyboard is open.
+If new messages arrive or the blank space changes, it recalculates positions to
+keep everything in sync.
 
 ## Example
 
@@ -130,7 +137,7 @@ function MessageList({ messages }) {
       renderItem={({ item, index }) => (
         <MessageItem message={item} index={index} />
       )}
-      keyboardDismissMode="interactive"
+      keyboardDismissMode='interactive'
       {...props}
     />
   )
@@ -150,6 +157,7 @@ This hook requires:
 ## Related Hooks
 
 - [useMessageListProps](/docs/use-message-list-props) – Get list props
-- [useScrollMessageListFromComposerSizeUpdates](/docs/use-scroll-from-composer) – Auto-scroll on composer resize
-- [useChatAnimation](/docs/providers#chatanimationprovider) – Trigger send animations
-
+- [useScrollOnComposerUpdate](/docs/use-scroll-from-composer) – Auto-scroll on
+  composer resize
+- [useChatAnimation](/docs/providers#chatanimationprovider) – Trigger send
+  animations
