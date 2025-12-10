@@ -22,7 +22,7 @@ import {
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ChatProvider } from './ListProvider'
-import { createContext, use, useState } from 'react'
+import { useState } from 'react'
 import {
   useReanimatedKeyboardAnimation,
   KeyboardProvider,
@@ -31,8 +31,12 @@ import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 import { useIsLastItem } from '@legendapp/list'
 import { useAppleChat } from './src/use-apple-chat'
+import {
+  useSafeAreaInsets,
+  SafeAreaProvider,
+} from 'react-native-safe-area-context'
 
-const bottomInsetPadding = 16
+const bottomInsetPadding = 12
 
 export default function App() {
   let { messages, submit } = useAppleChat()
@@ -43,23 +47,28 @@ export default function App() {
   }
 
   return (
-    <KeyboardProvider>
-      <View style={{ flex: 1, backgroundColor: 'black' }}>
-        <ChatProvider chatId={chatId}>
-          <View style={{ flex: 1, paddingTop: 60 }}>
-            <Actions />
-
-            {messages.length > 0 && (
-              <ListContainer>
-                <List data={messages} />
-              </ListContainer>
-            )}
-          </View>
-          <Composer onSend={submit} />
-        </ChatProvider>
-      </View>
-    </KeyboardProvider>
+    <SafeAreaProvider>
+      <KeyboardProvider>
+        <View style={{ flex: 1, backgroundColor: 'black' }}>
+          <ChatProvider chatId={chatId}>
+            <Wrapper>
+              {messages.length > 0 && (
+                <ListContainer>
+                  <List data={messages} />
+                </ListContainer>
+              )}
+            </Wrapper>
+            <Composer onSend={submit} />
+          </ChatProvider>
+        </View>
+      </KeyboardProvider>
+    </SafeAreaProvider>
   )
+}
+
+function Wrapper({ children }: { children: React.ReactNode }) {
+  const top = useSafeAreaInsets().top
+  return <View style={{ flex: 1, marginTop: top }}>{children}</View>
 }
 
 function Actions() {
@@ -123,21 +132,22 @@ function Composer({ onSend }: { onSend: (message: string) => void }) {
   const { setKeyboardState, shouldOffsetCloseKeyboard } =
     useKeyboardContextState()
 
+  const bottomInset = useSafeAreaInsets().bottom
+
   return (
     <View>
       <StickyView
-        offset={{ opened: 0, closed: -bottomInsetPadding }}
+        offset={{ opened: -8, closed: -bottomInset }}
         style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
       >
         <View
           style={{
-            padding: 8,
-            paddingTop: 0,
             paddingHorizontal: 16,
             flexDirection: 'row',
           }}
           ref={ref}
           onLayout={onLayout}
+          collapsable={false}
         >
           <TextInput
             style={{
@@ -201,19 +211,26 @@ function StickyView(
 }
 
 function List({ data }: { data: Message[] }) {
+  const chatPaddingBottom = 16
   const isNewChat = true
   const numMessages = data?.length ?? 0
+  const bottomInset = useSafeAreaInsets().bottom
 
   useKeyboardAwareMessageList({
     numMessages,
     lastUserMessageIndex: data.findLastIndex((item) => item.role === 'user'),
+    chatPaddingBottom,
+    bottomInset,
   })
   useScrollOnComposerUpdate()
-  const props = useMessageListProps({ bottomInsetPadding: 0 })
+  const props = useMessageListProps({ bottomInsetPadding })
+
+  const initialScrollIndex = data.length > 2 ? data.length - 1 : undefined
 
   return (
     <AnimatedLegendList
       keyboardDismissMode='interactive'
+      initialScrollIndex={initialScrollIndex}
       data={data}
       renderItem={({ item, index }) => {
         if (item.role === 'user') {
@@ -236,7 +253,7 @@ function List({ data }: { data: Message[] }) {
       }}
       keyExtractor={(item, index) => `${item.role}-${index}`}
       contentContainerStyle={{
-        paddingBottom: bottomInsetPadding,
+        paddingBottom: chatPaddingBottom,
         paddingHorizontal: 16,
       }}
       {...props}
@@ -285,7 +302,6 @@ function FirstUserMessageFrame({
           maxWidth: '80%',
           borderRadius: 24,
           alignSelf: 'flex-end',
-          margin: 4,
         },
       ]}
       ref={ref}
@@ -306,10 +322,11 @@ function AssistantMessageAnimatedFrame({
   isNewChat: boolean
 }) {
   const isLast = useIsLastItem()
+  const bottomInset = useSafeAreaInsets().bottom
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
-    messageMinimumHeight: 20,
-    bottomInset: 0,
+    messageMinimumHeight: 41,
+    bottomInset,
     isLastMessage: isLast,
   })
   const { isComplete } = useFirstMessageEntrance({
