@@ -68,7 +68,18 @@ export default function App() {
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   const top = useSafeAreaInsets().top
-  return <View style={{ flex: 1, marginTop: top }}>{children}</View>
+  return (
+    <View
+      style={{
+        flex: 1,
+        marginTop: top,
+        borderTopColor: '#111111',
+        borderTopWidth: 1,
+      }}
+    >
+      {children}
+    </View>
+  )
 }
 
 function Actions() {
@@ -135,19 +146,18 @@ function Composer({ onSend }: { onSend: (message: string) => void }) {
   const bottomInset = useSafeAreaInsets().bottom
 
   return (
-    <View>
-      <StickyView
-        offset={{ opened: -8, closed: -bottomInset }}
-        style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-      >
+    <View
+      ref={ref}
+      onLayout={onLayout}
+      collapsable={false}
+      style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+    >
+      <StickyView offset={{ opened: -8, closed: -bottomInset }}>
         <View
           style={{
             paddingHorizontal: 16,
             flexDirection: 'row',
           }}
-          ref={ref}
-          onLayout={onLayout}
-          collapsable={false}
         >
           <TextInput
             style={{
