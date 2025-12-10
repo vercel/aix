@@ -71,7 +71,6 @@ function getAnimatedValues({
 // TODO remove "type" and abstract it better. hook should only run on proper message in the container
 // TODO make the styles adaptible / dependency injected
 export function useFirstMessageEntrance({ disabled, itemHeight }: Params) {
-  const { startedWithOneMessage } = useMessageListContext()
   const { keyboardHeight } = useKeyboardContextState()
   const { isMessageSendAnimating } = useChatAnimation()
   const { height: windowHeight } = useWindowDimensions()
@@ -82,10 +81,7 @@ export function useFirstMessageEntrance({ disabled, itemHeight }: Params) {
     () => itemHeight.get(),
     (height) => {
       if (height > 0 && progress.get() === -1) {
-        const eligible =
-          isMessageSendAnimating.get() &&
-          startedWithOneMessage.get() &&
-          !disabled
+        const eligible = isMessageSendAnimating.get() && !disabled
 
         if (eligible) {
           const kbHeight = keyboardHeight.get()
