@@ -1,6 +1,6 @@
 {
   "name": "@vercel/aix",
-  "version": "0.0.0-alpha.4",
+  "version": "0.0.0-alpha.5",
   "description": "My new module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -22,13 +22,13 @@
     "ai-chat",
     "AiChat"
   ],
-  "repository": "https://github.com/nandorojo/ai-chat/ai-chat",
+  "repository": "https://github.com/vercel/aix",
   "bugs": {
-    "url": "https://github.com/nandorojo/ai-chat/ai-chat/issues"
+    "url": "https://github.com/vercel/aix/issues"
   },
-  "author": "Fernando Rojo <fernando.rojo@vercel.com> (https://github.com/nandorojo/ai-chat)",
+  "author": "Fernando Rojo <fernando.rojo@vercel.com> (https://github.com/vercel/aix)",
   "license": "MIT",
-  "homepage": "https://github.com/nandorojo/ai-chat/ai-chat#readme",
+  "homepage": "https://github.com/vercel/aix#readme",
   "dependencies": {
     "@legendapp/list": "2.0.9",
     "react-native-keyboard-controller": "1.20.1",

@@ -5,6 +5,7 @@ import {
 } from 'react-native-reanimated'
 import useLatestCallback from 'use-latest-callback'
 import { scheduleOnRN } from 'react-native-worklets'
+import { useEffect } from 'react'
 
 export function useInitialScrollToEnd(
   blankSize: SharedValue<number>,
@@ -30,6 +31,20 @@ export function useInitialScrollToEnd(
       }, 16)
     })
   })
+
+  useEffect(
+    function timeout() {
+      if (hasMessages && !hasScrolledToEnd.get()) {
+        const timer = setTimeout(() => {
+          hasScrolledToEnd.set(true)
+        }, 1_000) // todo make this a prop or something
+
+        return () => clearTimeout(timer)
+      }
+      return undefined
+    },
+    [hasMessages, hasScrolledToEnd]
+  )
 
   useAnimatedReaction(
     () => {
