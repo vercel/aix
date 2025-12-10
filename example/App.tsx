@@ -22,7 +22,7 @@ import {
 } from 'ai-chat'
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
-import { ListProvider } from './ListProvider'
+import { ChatProvider } from './ListProvider'
 import { createContext, use, useEffect, useState } from 'react'
 import {
   KeyboardStickyView,
@@ -37,60 +37,66 @@ const bottomInsetPadding = 16
 
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([])
+  const chatId = '1'
+
+  function onSend(message: string) {
+    setMessages((m) => [
+      ...m,
+      { type: 'user', content: message },
+      {
+        type: 'system',
+        content: 'How are you?\n'.repeat(Math.ceil((Math.random() * 100) / 2)),
+      },
+    ])
+  }
 
   return (
     <KeyboardProvider>
       <View style={{ flex: 1, backgroundColor: 'black' }}>
-        <ListProvider initialComposerHeight={0}>
-          <MessagesContext value={[messages, setMessages]}>
-            <View style={{ height: 60 }} />
-            <Actions />
+        <ChatProvider chatId={chatId}>
+          <View style={{ height: 60 }} />
+          <Actions />
 
-            <View style={{ flex: 1, overflow: 'hidden' }}>
-              <ListContainer
-                length={messages.length}
-                style={({ ready }) => {
-                  'worklet'
-                  return {
-                    opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+          {messages.length > 0 && (
+            <ListContainer
+              style={({ ready }) => {
+                'worklet'
+                return {
+                  opacity: withTiming(ready ? 1 : 0, { duration: 200 }),
+                }
+              }}
+            >
+              <List
+                data={messages}
+                renderItem={({ item, index }) => {
+                  if (item.type === 'user') {
+                    return (
+                      <UserMessage
+                        message={item.content}
+                        messageIndex={index}
+                      />
+                    )
                   }
-                }}
-              >
-                {messages.length > 0 && (
-                  <List
-                    data={messages}
-                    renderItem={({ item, index }) => {
-                      if (item.type === 'user') {
-                        return (
-                          <UserMessage
-                            message={item.content}
-                            messageIndex={index}
-                          />
-                        )
-                      }
 
-                      return (
-                        <SystemMessage
-                          message={item.content}
-                          messageIndex={index}
-                        />
-                      )
-                    }}
-                    keyExtractor={(item, index) => `${item.type}-${index}`}
-                  />
-                )}
-              </ListContainer>
-            </View>
-            <Composer />
-          </MessagesContext>
-        </ListProvider>
+                  return (
+                    <SystemMessage
+                      message={item.content}
+                      messageIndex={index}
+                    />
+                  )
+                }}
+                keyExtractor={(item, index) => `${item.type}-${index}`}
+              />
+            </ListContainer>
+          )}
+          <Composer onSend={onSend} />
+        </ChatProvider>
       </View>
     </KeyboardProvider>
   )
 }
 
 function Actions() {
-  const [, setMessages] = use(MessagesContext)
   return (
     <View
       style={{
@@ -132,15 +138,13 @@ function ScrollToEndButton() {
 
 function ListContainer({
   children,
-  length: numMessages,
   style: styleWorklet,
 }: {
   children: React.ReactNode
-  length: number
   style: Parameters<typeof useMessageListContainerStyle>[0]['styleWorklet']
 }) {
   const containerProps = useMessageListContainerProps()
-  const hasScrolledToEnd = useMessageListInitialScrollToEnd({ numMessages })
+  const hasScrolledToEnd = useMessageListInitialScrollToEnd()
   const containerStyle = useMessageListContainerStyle({
     ready: hasScrolledToEnd,
     styleWorklet,
@@ -152,7 +156,7 @@ function ListContainer({
   )
 }
 
-function Composer() {
+function Composer({ onSend }: { onSend: (message: string) => void }) {
   const defaultText = 'Hi'
   const [text, setText] = useState(defaultText)
   const { composerHeight } = useComposerHeightContext()
@@ -196,16 +200,7 @@ function Composer() {
           <Button
             title='Add'
             onPress={() => {
-              setMessages((m) => [
-                ...m,
-                { type: 'user', content: text },
-                {
-                  type: 'system',
-                  content: 'How are you?\n'.repeat(
-                    Math.ceil((Math.random() * 100) / 2)
-                  ),
-                },
-              ])
+              onSend(text)
               setText('')
 
               // this is horrifying, fix it

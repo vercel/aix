@@ -6,17 +6,17 @@ import {
 } from 'ai-chat'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 
-export function ListProvider({
+export function ChatProvider({
+  chatId,
   children,
-  initialComposerHeight = 0,
 }: {
+  chatId: string
   children: React.ReactNode
-  initialComposerHeight?: number
 }) {
   return (
     <KeyboardProvider>
-      <ComposerHeightContextProvider initialHeight={initialComposerHeight}>
-        <MessageListContextProvider>
+      <ComposerHeightContextProvider initialHeight={0}>
+        <MessageListContextProvider key={chatId}>
           <ChatAnimationProvider>
             <KeyboardStateProvider>{children}</KeyboardStateProvider>
           </ChatAnimationProvider>

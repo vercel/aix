@@ -2,11 +2,11 @@ import { useMessageListContext } from './message-list/context'
 import { useInitialScrollToEnd } from './use-initial-scroll-to-end'
 
 export function useMessageListInitialScrollToEnd({
-  numMessages,
+  disabled = false,
 }: {
-  numMessages: number
-}) {
+  disabled?: boolean
+} = {}) {
   const { blankSize, scrollToEnd } = useMessageListContext()
 
-  return useInitialScrollToEnd(blankSize, scrollToEnd, numMessages > 0)
+  return useInitialScrollToEnd(blankSize, scrollToEnd, !disabled)
 }
