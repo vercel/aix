@@ -27,11 +27,13 @@ import { AppState } from 'react-native'
  * Handles smooth animations and scroll positioning to keep messages visible and properly positioned.
  */
 export function useKeyboardAwareMessageList({
-  numMessages: numMessagesProp,
+  numMessages: numMessagesProp, // i'd like to deprecate this if possible
+  lastUserMessageIndex,
   chatPaddingBottom = 0,
   bottomInset = 0,
 }: {
   numMessages: number
+  lastUserMessageIndex: number
   chatPaddingBottom?: number
   bottomInset?: number
 }) {
@@ -161,15 +163,14 @@ export function useKeyboardAwareMessageList({
     (lastMessage) => {
       if (
         lastMessage &&
-        lastMessage.index === numMessages.get() - 1 &&
+        lastMessage.index === lastUserMessageIndex &&
         lastMessage.position >= 0
       ) {
         scrollAtStart.set(scrollY.get())
         onMoveWhileClosed()
         doScrollToEnd.set(false)
       }
-    },
-    []
+    }
   )
 
   const appState = useAppState()

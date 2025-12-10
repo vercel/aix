@@ -14,5 +14,6 @@ export function useMessageListProps({
     onContentSizeChange,
     enableAverages: false,
     onScroll,
+    maintainVisibleContentPosition: true,
   } satisfies Partial<React.ComponentPropsWithRef<typeof AnimatedLegendList>>
 }
