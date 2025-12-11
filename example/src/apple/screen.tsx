@@ -30,23 +30,14 @@ import {
 import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-context'
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 import { useIsLastItem } from '@legendapp/list'
+import { useAppleChat } from './use-apple'
 
 const bottomInsetPadding = 16
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([])
   const chatId = '1'
 
-  function onSend(message: string) {
-    setMessages((m) => [
-      ...m,
-      { type: 'user', content: message },
-      {
-        type: 'system',
-        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 100)),
-      },
-    ])
-  }
+  let { messages, submit } = useAppleChat()
 
   return (
     <KeyboardProvider>
@@ -60,7 +51,7 @@ export default function App() {
                 <List data={messages} />
               </ListContainer>
             )}
-            <Composer onSend={onSend} />
+            <Composer onSend={submit} />
           </View>
         </ChatProvider>
       </View>
@@ -85,7 +76,7 @@ function Actions() {
   )
 }
 
-type Message = { type: 'user' | 'system'; content: string }
+type Message = { role: 'user' | 'assistant'; content: string }
 
 function ScrollToEndButton() {
   const { scrollToEnd } = useMessageListContext()
@@ -205,23 +196,28 @@ function StickyView(
   return <Animated.View {...props} style={[style, props.style]} />
 }
 
-function List<Data extends Message>({ data }: { data: Data[] }) {
+function List({ data }: { data: Message[] }) {
   const isNewChat = true
   const numMessages = data?.length ?? 0
 
   useKeyboardAwareMessageList({
     numMessages,
-    lastUserMessageIndex: data.findLastIndex((item) => item.type === 'user'),
+    lastUserMessageIndex: data.findLastIndex((item) => item.role === 'user'),
   })
   useScrollOnComposerUpdate()
   const props = useMessageListProps({ bottomInsetPadding })
 
+  let messages = data
+  if (messages.at(-1)?.role === 'user') {
+    messages = [...messages, { role: 'assistant', content: 'Thinking...' }]
+  }
+
   return (
     <AnimatedLegendList
       keyboardDismissMode='interactive'
-      data={data}
+      data={messages}
       renderItem={({ item, index }) => {
-        if (item.type === 'user') {
+        if (item.role === 'user') {
           return (
             <UserMessage
               message={item.content}
@@ -239,7 +235,7 @@ function List<Data extends Message>({ data }: { data: Data[] }) {
           />
         )
       }}
-      keyExtractor={(item, index) => `${item.type}-${index}`}
+      keyExtractor={(item, index) => `${item.role}-${index}`}
       {...props}
     />
   )

@@ -1,1 +1,1 @@
-export { default } from './src/mock-data/screen'
+export { default } from './src/apple/screen'
