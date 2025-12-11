@@ -93,7 +93,7 @@ function useScrollToEnd(
       if (listRef.current) {
         listRef.current.scrollToEnd({
           animated: params.animated,
-          viewOffset: -bottomInset.get(),
+          viewOffset: -bottomInset.get() + 50,
         })
       }
     },

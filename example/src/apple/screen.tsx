@@ -31,8 +31,10 @@ import { useComposerHeightContext } from 'ai-chat/chat/composer/composer-height-
 import { useKeyboardContextState } from 'ai-chat/chat/keyboard/provider'
 import { useIsLastItem } from '@legendapp/list'
 import { useAppleChat } from './use-apple'
-
-const bottomInsetPadding = 16
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context'
 
 export default function App() {
   const chatId = '1'
@@ -40,55 +42,22 @@ export default function App() {
   let { messages, submit } = useAppleChat()
 
   return (
-    <KeyboardProvider>
-      <View style={{ flex: 1, backgroundColor: 'black' }}>
-        <ChatProvider chatId={chatId}>
-          <View style={{ flex: 1, paddingTop: 60 }}>
-            <Actions />
-
-            {messages.length > 0 && (
-              <ListContainer>
-                <List data={messages} />
-              </ListContainer>
-            )}
+    <SafeAreaProvider>
+      <KeyboardProvider>
+        <View style={{ flex: 1, backgroundColor: 'black' }}>
+          <ChatProvider chatId={chatId}>
+            <View style={{ flex: 1, paddingTop: 60 }}>
+              {messages.length > 0 && <List data={messages} />}
+            </View>
             <Composer onSend={submit} />
-          </View>
-        </ChatProvider>
-      </View>
-    </KeyboardProvider>
-  )
-}
-
-function Actions() {
-  return (
-    <View
-      style={{
-        height: 40,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
-      }}
-    >
-      <ScrollToEndButton />
-    </View>
+          </ChatProvider>
+        </View>
+      </KeyboardProvider>
+    </SafeAreaProvider>
   )
 }
 
 type Message = { role: 'user' | 'assistant'; content: string }
-
-function ScrollToEndButton() {
-  const { scrollToEnd } = useMessageListContext()
-  return (
-    <Button
-      title='Scroll to end'
-      onPress={() => {
-        scrollToEnd()
-      }}
-    />
-  )
-}
 
 function ListContainer({ children }: { children: React.ReactNode }) {
   const containerProps = useMessageListContainerProps()
@@ -120,17 +89,16 @@ function Composer({ onSend }: { onSend: (message: string) => void }) {
   const { setKeyboardState, shouldOffsetCloseKeyboard } =
     useKeyboardContextState()
 
+  const bottomInset = useBottomInset()
   return (
     <View
       style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
       ref={ref}
       onLayout={onLayout}
     >
-      <StickyView offset={{ opened: 0, closed: -bottomInsetPadding }}>
+      <StickyView offset={{ opened: -8, closed: -bottomInset }}>
         <View
           style={{
-            padding: 8,
-            paddingTop: 0,
             paddingHorizontal: 16,
             flexDirection: 'row',
           }}
@@ -196,16 +164,25 @@ function StickyView(
   return <Animated.View {...props} style={[style, props.style]} />
 }
 
+function useBottomInset() {
+  return useSafeAreaInsets().bottom
+}
+
+const chatPaddingBottom = 16
+
 function List({ data }: { data: Message[] }) {
   const isNewChat = true
   const numMessages = data?.length ?? 0
+  const bottomInset = useBottomInset()
 
   useKeyboardAwareMessageList({
     numMessages,
     lastUserMessageIndex: data.findLastIndex((item) => item.role === 'user'),
+    bottomInset,
+    chatPaddingBottom,
   })
   useScrollOnComposerUpdate()
-  const props = useMessageListProps({ bottomInsetPadding })
+  const props = useMessageListProps({ bottomInsetPadding: 12 })
 
   let messages = data
   if (messages.at(-1)?.role === 'user') {
@@ -213,31 +190,37 @@ function List({ data }: { data: Message[] }) {
   }
 
   return (
-    <AnimatedLegendList
-      keyboardDismissMode='interactive'
-      data={messages}
-      renderItem={({ item, index }) => {
-        if (item.role === 'user') {
+    <ListContainer>
+      <AnimatedLegendList
+        keyboardDismissMode='interactive'
+        data={messages}
+        renderItem={({ item, index }) => {
+          if (item.role === 'user') {
+            return (
+              <UserMessage
+                message={item.content}
+                messageIndex={index}
+                isNewChat={isNewChat}
+              />
+            )
+          }
+
           return (
-            <UserMessage
+            <SystemMessage
               message={item.content}
               messageIndex={index}
               isNewChat={isNewChat}
             />
           )
-        }
-
-        return (
-          <SystemMessage
-            message={item.content}
-            messageIndex={index}
-            isNewChat={isNewChat}
-          />
-        )
-      }}
-      keyExtractor={(item, index) => `${item.role}-${index}`}
-      {...props}
-    />
+        }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: chatPaddingBottom,
+        }}
+        keyExtractor={(item, index) => `${item.role}-${index}`}
+        {...props}
+      />
+    </ListContainer>
   )
 }
 
@@ -253,13 +236,13 @@ function UserMessage({
   useSetLastAnimatableMessage({ messageIndex })
 
   return (
-    <FirstUserMessageFrame messageIndex={messageIndex} isNewChat={isNewChat}>
+    <UserMessageFrame messageIndex={messageIndex} isNewChat={isNewChat}>
       <Text style={{ color: 'white' }}>{message}</Text>
-    </FirstUserMessageFrame>
+    </UserMessageFrame>
   )
 }
 
-function FirstUserMessageFrame({
+function UserMessageFrame({
   children,
   messageIndex,
   isNewChat,
@@ -282,7 +265,7 @@ function FirstUserMessageFrame({
           maxWidth: '80%',
           borderRadius: 24,
           alignSelf: 'flex-end',
-          margin: 4,
+          marginBottom: 16,
         },
       ]}
       ref={ref}
@@ -303,10 +286,11 @@ function SystemMessageAnimatedFrame({
   isNewChat: boolean
 }) {
   const isLast = useIsLastItem()
+  const bottomInset = useBottomInset()
   const { onLayout, refToMeasure, renderedSize } = useMessageBlankSize({
     messageIndex,
     messageMinimumHeight: 20,
-    bottomInset: 0,
+    bottomInset,
     isLastMessage: isLast,
   })
   const { isComplete } = useFirstMessageEntrance({
@@ -321,7 +305,11 @@ function SystemMessageAnimatedFrame({
   }))
 
   return (
-    <Animated.View style={style} ref={refToMeasure} onLayout={onLayout}>
+    <Animated.View
+      style={[style, { paddingBottom: 16 }]}
+      ref={refToMeasure}
+      onLayout={onLayout}
+    >
       {children}
     </Animated.View>
   )
