@@ -283,6 +283,7 @@ class HybridAix: HybridAixSpec, AixContext {
             x: 0,
             y: max(0, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom)
         )
+        print("[Aix] scrolling to end: bottomOffset=\(bottomOffset)")
         scrollView.setContentOffset(bottomOffset, animated: animated)
     }
     
