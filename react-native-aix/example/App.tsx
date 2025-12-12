@@ -11,17 +11,20 @@ function App(): React.JSX.Element {
         style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollView}
           contentInsetAdjustmentBehavior="automatic"
           bounces
           alwaysBounceVertical
+          contentContainerStyle={styles.scrollView}
         >
-          <AixCellView index={0} isLast={false}>
-            <View style={styles.view}></View>
-          </AixCellView>
-          <AixCellView index={1} isLast>
-            <View style={styles.view}></View>
-          </AixCellView>
+          {Array.from({ length: 20 }).map((_, index, arr) => (
+            <AixCellView
+              key={index}
+              index={index}
+              isLast={index === arr.length - 1}
+            >
+              <View style={styles.view}></View>
+            </AixCellView>
+          ))}
         </ScrollView>
       </Aix>
     </View>
@@ -31,9 +34,6 @@ function App(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
   },
   scrollView: {
     gap: 12,

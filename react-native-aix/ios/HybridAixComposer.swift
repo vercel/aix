@@ -24,9 +24,9 @@ class HybridAixComposer: HybridAixComposerSpec {
             owner?.handleLayoutChange()
         }
         
-        override func didMoveToSuperview() {
-            super.didMoveToSuperview()
-            owner?.handleDidMoveToSuperview()
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            owner?.handleDidMoveToWindow()
         }
         
         override func willMove(toSuperview newSuperview: UIView?) {
@@ -69,9 +69,10 @@ class HybridAixComposer: HybridAixComposerSpec {
     
     // MARK: - Lifecycle Handlers
     
-    /// Called when the view is added to a superview
-    private func handleDidMoveToSuperview() {
-        guard view.superview != nil else { return }
+    /// Called when the view is added to a window (full hierarchy is connected)
+    private func handleDidMoveToWindow() {
+        print("[Aix] Composer didMoveToWindow")
+        guard view.window != nil else { return }
         
         // Clear cached context since hierarchy changed
         cachedAixContext = nil

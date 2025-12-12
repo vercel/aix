@@ -85,6 +85,11 @@ class HybridAix: HybridAixSpec, AixContext {
             super.didMoveToSuperview()
             owner?.handleDidMoveToSuperview()
         }
+        
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            // Never claim to contain any points - let touches pass through
+            return false
+        }
     }
     
     /// The root UIView that this context is attached to
@@ -195,7 +200,7 @@ class HybridAix: HybridAixSpec, AixContext {
     /// when the layout is ready
     func scrollToEndOnBlankSizeUpdate(index: Int) {
         // If the blank view is already at this index, scroll immediately
-        if let blankView = blankView, index == Int(blankView.index) {
+        if let blankView, index == Int(blankView.index) {
             scrollToEnd(animated: true)
         } else {
             // Otherwise queue the scroll for when the blank view updates

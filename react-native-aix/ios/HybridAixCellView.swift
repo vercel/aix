@@ -71,6 +71,9 @@ class HybridAixCellView: HybridAixCellViewSpec {
     /// Cached reference to the AixContext (found on first access)
     private weak var cachedAixContext: AixContext?
     
+    /// Last reported size (to avoid reporting unchanged sizes)
+    private var lastReportedSize: CGSize = .zero
+    
     // MARK: - Initialization
     
     override init() {
@@ -128,8 +131,13 @@ class HybridAixCellView: HybridAixCellViewSpec {
     /// Called when layoutSubviews fires (size may have changed)
     private func handleLayoutChange() {
         // Only report size changes for the last cell (blank view)
-        if isLast, let ctx = getAixContext() {
-            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: Int(index))
+        // and only if the size actually changed
+        let currentSize = view.bounds.size
+        if isLast && currentSize != lastReportedSize {
+            lastReportedSize = currentSize
+            if let ctx = getAixContext() {
+                ctx.reportBlankViewSizeChange(size: currentSize, index: Int(index))
+            }
         }
     }
     
@@ -148,7 +156,9 @@ class HybridAixCellView: HybridAixCellViewSpec {
         if isLast {
             // This cell is now the last one - become the blank view
             ctx.blankView = self
-            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: Int(index))
+            let currentSize = view.bounds.size
+            lastReportedSize = currentSize
+            ctx.reportBlankViewSizeChange(size: currentSize, index: Int(index))
         } else if ctx.blankView === self {
             // This cell is no longer last - clear blank view reference
             ctx.blankView = nil
