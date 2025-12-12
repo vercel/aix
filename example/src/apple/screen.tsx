@@ -179,7 +179,7 @@ function List({ data }: { data: Message[] }) {
   useKeyboardAwareMessageList({
     numMessages,
     lastUserMessageIndex: data.findLastIndex((item) => item.role === 'user'),
-    bottomInset,
+    bottomInset: 0,
     chatPaddingBottom,
   })
   useScrollOnComposerUpdate()

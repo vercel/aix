@@ -1,13 +1,18 @@
-import { Text, TextInput, View } from 'react-native'
+import { TextInput } from 'react-native'
 import { FullWindowOverlay } from 'react-native-screens'
 import { useKeyboardContextState } from './chat/keyboard/provider'
 import Animated, {
   DerivedValue,
-  SharedValue,
   useAnimatedProps,
   useAnimatedStyle,
   useDerivedValue,
+  useSharedValue,
 } from 'react-native-reanimated'
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler'
 
 import { useMessageListContext } from './chat/message-list/context'
 import { useComposerHeightContext } from './chat/composer/composer-height-context'
@@ -33,66 +38,83 @@ export function Debugger() {
     () => `Blank Size Full: ${Math.round(blankSizeFull.get())}`
   )
   const bottomInsetText = useDerivedValue(
-    () => `Bottom Inset: ${Math.round(bottomInset.get())}`
-  )
-  const keyboardHeightText = useDerivedValue(
-    () => `Keyboard Height: ${Math.round(keyboardHeight.get())}`
-  )
-  const keyboardStateText = useDerivedValue(
-    () => `Keyboard State: ${keyboardState.get()}`
+    () =>
+      `contentInset.bottom: (ty + ch + bs) = ${Math.round(bottomInset.get())}`
   )
   const translateYText = useDerivedValue(
-    () => `Translate Y: ${Math.round(translateY.get())}`
+    () => `translateY (kb - safe): ${Math.round(translateY.get())}`
+  )
+  const keyboardHeightText = useDerivedValue(
+    () => `Expanded Keyboard Height: ${Math.round(keyboardHeight.get())}`
+  )
+  const keyboardStateText = useDerivedValue(
+    () => `keyboardState: ${keyboardState.get()}`
   )
   const scrollYText = useDerivedValue(
-    () => `Scroll Y: ${Math.round(scrollY.get())}`
+    () => `scrollY: ${Math.round(scrollY.get())}`
   )
   const offsetYText = useDerivedValue(
-    () => `Offset Y: ${Math.round(offsetY.get())}`
+    () => `offsetY: ${Math.round(offsetY.get())}`
   )
   const contentHeightText = useDerivedValue(
-    () => `Content Height: ${Math.round(contentHeight.get())}`
+    () => `contentHeight: ${Math.round(contentHeight.get())}`
   )
   const scrollViewHeightText = useDerivedValue(
-    () => `Scroll View Height: ${Math.round(scrollViewHeight.get())}`
+    () => `scrollViewHeight: ${Math.round(scrollViewHeight.get())}`
   )
   const composerHeightText = useDerivedValue(
-    () => `Composer Height: ${Math.round(composerHeight.get())}`
+    () => `composerHeight: ${Math.round(composerHeight.get())}`
   )
   const activeKeyboardHeight = useReanimatedKeyboardAnimation().height
   const activeKeyboardHeightText = useDerivedValue(
-    () => `Active Keyboard Height: ${Math.round(activeKeyboardHeight.get())}`
+    () => `activeKeyboardHeight: ${Math.round(activeKeyboardHeight.get())}`
   )
+  const drag = useSharedValue({ x: 0, y: 0 })
+  const gesture = Gesture.Pan().onChange((event) => {
+    'worklet'
+    console.log('event', event)
+    drag.modify((value) => {
+      return {
+        x: value.x + event.changeX,
+        y: value.y + event.changeY,
+      }
+    })
+  })
   return (
     <FullWindowOverlay>
-      <View
-        style={{
-          gap: 8,
-          backgroundColor: '#111111',
-          marginTop: 100,
-          alignSelf: 'flex-start',
-          padding: 16,
-          borderRadius: 8,
-          position: 'absolute',
-          bottom: '50%',
-          left: 0,
-          width: 250,
-        }}
-        pointerEvents='none'
-      >
-        <AnimatedText value={blankSizeText} />
-        <AnimatedText value={blankSizeFullText} />
-        <AnimatedText value={bottomInsetText} />
-        <AnimatedText value={keyboardHeightText} />
-        <AnimatedText value={keyboardStateText} />
-        <AnimatedText value={translateYText} />
-        <AnimatedText value={scrollYText} />
-        <AnimatedText value={offsetYText} />
-        <AnimatedText value={contentHeightText} />
-        <AnimatedText value={scrollViewHeightText} />
-        <AnimatedText value={composerHeightText} />
-        <AnimatedText value={activeKeyboardHeightText} />
-      </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Animated.View
+          style={{
+            backgroundColor: '#111111',
+            marginTop: 100,
+            alignSelf: 'flex-start',
+            padding: 16,
+            borderRadius: 8,
+            position: 'absolute',
+            bottom: '50%',
+            left: 0,
+            width: 350,
+          }}
+          pointerEvents='none'
+        >
+          <GestureDetector gesture={gesture}>
+            <Animated.View style={{ gap: 8 }}>
+              <AnimatedText value={blankSizeFullText} />
+              {/* <AnimatedText value={keyboardHeightText} /> */}
+              {/* <AnimatedText value={keyboardStateText} /> */}
+              <AnimatedText value={blankSizeText} />
+              <AnimatedText value={translateYText} />
+              <AnimatedText value={composerHeightText} />
+              <AnimatedText value={bottomInsetText} />
+              <AnimatedText value={offsetYText} />
+              {/* <AnimatedText value={contentHeightText} /> */}
+              {/* <AnimatedText value={scrollViewHeightText} /> */}
+              <AnimatedText value={activeKeyboardHeightText} />
+              <AnimatedText value={scrollYText} />
+            </Animated.View>
+          </GestureDetector>
+        </Animated.View>
+      </GestureHandlerRootView>
     </FullWindowOverlay>
   )
 }
