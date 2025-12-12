@@ -166,7 +166,10 @@ class HybridAix: HybridAixSpec, AixContext {
         // This ensures when scrolled to end, the last message is at the top
         let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
 
-        print("[Aix] blankSize: inset=\(inset), cellBeforeBlankViewHeight=\(cellBeforeBlankViewHeight), blankViewHeight=\(blankViewHeight) keyboardHeight=\(keyboardHeight)")
+        print("[Aix][blankSize] inset=\(inset)")
+        print("[Aix][blankSize] cellBeforeBlankViewHeight=\(cellBeforeBlankViewHeight)")
+        print("[Aix][blankSize] blankViewHeight=\(blankViewHeight)")
+        print("[Aix][blankSize] keyboardHeight=\(keyboardHeight)")
         
         return max(0, inset)
     }
@@ -185,6 +188,26 @@ class HybridAix: HybridAixSpec, AixContext {
         scrollView.verticalScrollIndicatorInsets.bottom = inset
     }
     
+    // MARK: - Keyboard Manager
+    
+    private lazy var keyboardManager: KeyboardManager = {
+        let manager = KeyboardManager()
+        manager.delegate = self
+        return manager
+    }()
+    
+    /// Event captured at the start of a keyboard transition
+    private struct KeyboardStartEvent {
+        let scrollY: CGFloat
+        let isOpening: Bool
+        let isInteractive: Bool
+        let targetContentOffsetY: CGFloat?
+        let shouldCollapseBlankSize: Bool
+    }
+    
+    /// Current keyboard start event (nil when no keyboard transition is active)
+    private var startEvent: KeyboardStartEvent? = nil
+    
     // MARK: - Initialization
     
     override init() {
@@ -195,6 +218,9 @@ class HybridAix: HybridAixSpec, AixContext {
         print("[Aix] HybridAix initialized, attaching context to view")
         // Attach this context to our inner view
         view.aixContext = self
+        
+        // Initialize keyboard manager (lazy, will start observing)
+        _ = keyboardManager
     }
     
     // MARK: - Lifecycle
@@ -327,5 +353,36 @@ class HybridAix: HybridAixSpec, AixContext {
         } else {
             queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)
         }
+    }
+}
+
+// MARK: - KeyboardManagerDelegate
+
+extension HybridAix: KeyboardManagerDelegate {
+    func keyboardManager(_ manager: KeyboardManager, didUpdateHeight height: CGFloat, progress: CGFloat) {
+        print("[Aix] Keyboard progress: \(progress), height: \(height)")
+        
+        keyboardHeight = height
+        applyContentInset()
+        
+        // TODO: Interpolate scroll position if startEvent?.targetContentOffsetY is set
+    }
+    
+    func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
+        print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight)")
+        
+        startEvent = KeyboardStartEvent(
+            scrollY: scrollView?.contentOffset.y ?? 0,
+            isOpening: event.isOpening,
+            isInteractive: event.isInteractive,
+            targetContentOffsetY: nil, // TODO: calculate target offset
+            shouldCollapseBlankSize: false
+        )
+    }
+    
+    func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
+        print("[Aix] Keyboard ended")
+        
+        startEvent = nil
     }
 }

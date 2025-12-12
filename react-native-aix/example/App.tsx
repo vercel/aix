@@ -1,10 +1,22 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Aix, AixCellView } from 'react-native-aix';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  TextInput,
+} from 'react-native';
+import { Aix, AixCellView, AixComposer } from 'react-native-aix';
 
 function App(): React.JSX.Element {
   return (
     <View style={styles.container}>
+      <AixComposer>
+        <TextInput
+          style={{ height: 100, backgroundColor: '#111111' }}
+          placeholder="Type something..."
+        />
+      </AixComposer>
       <Aix
         shouldStartAtEnd={true}
         scrollOnComposerSizeUpdate={true}
@@ -14,6 +26,7 @@ function App(): React.JSX.Element {
           contentInsetAdjustmentBehavior="automatic"
           bounces
           alwaysBounceVertical
+          keyboardDismissMode="interactive"
           contentContainerStyle={styles.scrollView}
         >
           {Array.from({ length: 20 }).map((_, index, arr) => (
@@ -34,6 +47,7 @@ function App(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 60,
   },
   scrollView: {
     gap: 12,

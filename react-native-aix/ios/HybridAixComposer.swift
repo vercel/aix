@@ -36,6 +36,13 @@ class HybridAixComposer: HybridAixComposerSpec {
                 owner?.handleWillRemoveFromSuperview()
             }
         }
+        
+        // MARK: - Touch Handling
+        
+        /// Let touches pass through to React Native children
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            return false
+        }
     }
     
     // MARK: - Properties
