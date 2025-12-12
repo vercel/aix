@@ -5,7 +5,11 @@ import { Aix, AixCellView } from 'react-native-aix';
 function App(): React.JSX.Element {
   return (
     <View style={styles.container}>
-      <Aix shouldStartAtEnd={true} scrollOnComposerSizeUpdate={true}>
+      <Aix
+        shouldStartAtEnd={true}
+        scrollOnComposerSizeUpdate={true}
+        style={{ flex: 1 }}
+      >
         <ScrollView
           contentContainerStyle={styles.scrollView}
           contentInsetAdjustmentBehavior="automatic"

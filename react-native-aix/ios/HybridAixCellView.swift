@@ -127,13 +127,8 @@ class HybridAixCellView: HybridAixCellViewSpec {
     
     /// Called when layoutSubviews fires (size may have changed)
     private func handleLayoutChange() {
-        guard let ctx = getAixContext() else { return }
-        
-        // Re-register to ensure context has latest reference
-        ctx.registerCell(self)
-        
-        // If we're the last cell, report size change
-        if isLast {
+        // Only report size changes for the last cell (blank view)
+        if isLast, let ctx = getAixContext() {
             ctx.reportBlankViewSizeChange(size: view.bounds.size, index: Int(index))
         }
     }

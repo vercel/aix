@@ -71,6 +71,8 @@ extension UIView {
 // MARK: - HybridAix (Root Context)
 
 class HybridAix: HybridAixSpec, AixContext {
+
+    private var didScrollToEndInitially = false
     
     // MARK: - Inner View
     
@@ -111,6 +113,9 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Key: cell index, Value: weak reference to cell
     private var cells = NSMapTable<NSNumber, HybridAixCellView>.weakToWeakObjects()
     
+    /// Cached scroll view reference (weak to avoid retain cycles)
+    private weak var cachedScrollView: UIScrollView?
+    
     // MARK: - Context References (weak to avoid retain cycles)
     
     weak var blankView: HybridAixCellView? = nil {
@@ -124,9 +129,16 @@ class HybridAix: HybridAixSpec, AixContext {
     // MARK: - Computed Properties
     
     /// Find the scroll view within our view hierarchy
+    /// We search from the superview (HybridAixComponent) since the scroll view
+    /// is a sibling of our inner view, not a child
     var scrollView: UIScrollView? {
-        let sv = view.findScrollView()
-        print("[Aix] scrollView: \(String(describing: sv))")
+        if let cached = cachedScrollView {
+            return cached
+        }
+        let searchRoot = view.superview ?? view
+        let sv = searchRoot.findScrollView()
+        cachedScrollView = sv
+        print("[Aix] scrollView found: \(String(describing: sv))")
         return sv
     }
     
@@ -200,6 +212,9 @@ class HybridAix: HybridAixSpec, AixContext {
             print("[Aix] Executing queued scrollToEnd for index \(index)")
             scrollToEnd(animated: queued.animated)
             queuedScrollToEnd = nil
+        } else if !didScrollToEndInitially {
+            scrollToEnd(animated: false)
+            didScrollToEndInitially = true
         }
     }
     
