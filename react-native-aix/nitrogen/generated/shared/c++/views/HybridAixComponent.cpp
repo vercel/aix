@@ -25,14 +25,24 @@ namespace margelo::nitro::aix::views {
                                  const HybridAixProps& sourceProps,
                                  const react::RawProps& rawProps):
     react::ViewProps(context, sourceProps, rawProps, filterObjectKeys),
-    isRed([&]() -> CachedProp<bool> {
+    shouldStartAtEnd([&]() -> CachedProp<bool> {
       try {
-        const react::RawValue* rawValue = rawProps.at("isRed", nullptr, nullptr);
-        if (rawValue == nullptr) return sourceProps.isRed;
+        const react::RawValue* rawValue = rawProps.at("shouldStartAtEnd", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.shouldStartAtEnd;
         const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
-        return CachedProp<bool>::fromRawValue(*runtime, value, sourceProps.isRed);
+        return CachedProp<bool>::fromRawValue(*runtime, value, sourceProps.shouldStartAtEnd);
       } catch (const std::exception& exc) {
-        throw std::runtime_error(std::string("Aix.isRed: ") + exc.what());
+        throw std::runtime_error(std::string("Aix.shouldStartAtEnd: ") + exc.what());
+      }
+    }()),
+    scrollOnComposerSizeUpdate([&]() -> CachedProp<bool> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("scrollOnComposerSizeUpdate", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.scrollOnComposerSizeUpdate;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<bool>::fromRawValue(*runtime, value, sourceProps.scrollOnComposerSizeUpdate);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.scrollOnComposerSizeUpdate: ") + exc.what());
       }
     }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> {
@@ -48,12 +58,14 @@ namespace margelo::nitro::aix::views {
 
   HybridAixProps::HybridAixProps(const HybridAixProps& other):
     react::ViewProps(),
-    isRed(other.isRed),
+    shouldStartAtEnd(other.shouldStartAtEnd),
+    scrollOnComposerSizeUpdate(other.scrollOnComposerSizeUpdate),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
-      case hashString("isRed"): return true;
+      case hashString("shouldStartAtEnd"): return true;
+      case hashString("scrollOnComposerSizeUpdate"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

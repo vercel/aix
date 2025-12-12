@@ -1,11 +1,10 @@
 {
-  "uiViewClassName": "Aix",
+  "uiViewClassName": "AixBlankView",
   "supportsRawText": false,
   "bubblingEventTypes": {},
   "directEventTypes": {},
   "validAttributes": {
-    "shouldStartAtEnd": true,
-    "scrollOnComposerSizeUpdate": true,
+    "isLast": true,
     "hybridRef": true
   }
 }

@@ -8,11 +8,21 @@
 #pragma once
 
 // Forward declarations of C++ defined types
+// Forward declaration of `HybridAixBlankViewSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixBlankViewSpec; }
+// Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixComposerSpec; }
 // Forward declaration of `HybridAixSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixSpec; }
+// Forward declaration of `ScrollToEndOnBlankSizeUpdateInput` to properly resolve imports.
+namespace margelo::nitro::aix { struct ScrollToEndOnBlankSizeUpdateInput; }
 
 // Include C++ defined types
+#include "HybridAixBlankViewSpec.hpp"
+#include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
+#include "ScrollToEndOnBlankSizeUpdateInput.hpp"
+#include <functional>
 #include <memory>
 
 // C++ helpers for Swift
@@ -25,6 +35,10 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 #include <NitroModules/DateToChronoDate.hpp>
 
 // Forward declarations of Swift defined types
+// Forward declaration of `HybridAixBlankViewSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixBlankViewSpec_cxx; }
+// Forward declaration of `HybridAixComposerSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixComposerSpec_cxx; }
 // Forward declaration of `HybridAixSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixSpec_cxx; }
 

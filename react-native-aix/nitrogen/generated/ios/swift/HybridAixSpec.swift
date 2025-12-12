@@ -11,7 +11,8 @@ import NitroModules
 /// See ``HybridAixSpec``
 public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Properties
-  var isRed: Bool { get set }
+  var shouldStartAtEnd: Bool { get set }
+  var scrollOnComposerSizeUpdate: Bool { get set }
 
   // Methods
   

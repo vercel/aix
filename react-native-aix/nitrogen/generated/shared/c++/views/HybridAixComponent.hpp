@@ -42,7 +42,8 @@ namespace margelo::nitro::aix::views {
                    const react::RawProps& rawProps);
 
   public:
-    CachedProp<bool> isRed;
+    CachedProp<bool> shouldStartAtEnd;
+    CachedProp<bool> scrollOnComposerSizeUpdate;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> hybridRef;
 
   private:

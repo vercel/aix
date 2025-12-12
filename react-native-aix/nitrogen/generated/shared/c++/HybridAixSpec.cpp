@@ -14,8 +14,10 @@ namespace margelo::nitro::aix {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
-      prototype.registerHybridGetter("isRed", &HybridAixSpec::getIsRed);
-      prototype.registerHybridSetter("isRed", &HybridAixSpec::setIsRed);
+      prototype.registerHybridGetter("shouldStartAtEnd", &HybridAixSpec::getShouldStartAtEnd);
+      prototype.registerHybridSetter("shouldStartAtEnd", &HybridAixSpec::setShouldStartAtEnd);
+      prototype.registerHybridGetter("scrollOnComposerSizeUpdate", &HybridAixSpec::getScrollOnComposerSizeUpdate);
+      prototype.registerHybridSetter("scrollOnComposerSizeUpdate", &HybridAixSpec::setScrollOnComposerSizeUpdate);
     });
   }
 

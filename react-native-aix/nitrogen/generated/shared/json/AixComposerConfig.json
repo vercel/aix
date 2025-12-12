@@ -1,11 +1,9 @@
 {
-  "uiViewClassName": "Aix",
+  "uiViewClassName": "AixComposer",
   "supportsRawText": false,
   "bubblingEventTypes": {},
   "directEventTypes": {},
   "validAttributes": {
-    "shouldStartAtEnd": true,
-    "scrollOnComposerSizeUpdate": true,
     "hybridRef": true
   }
 }

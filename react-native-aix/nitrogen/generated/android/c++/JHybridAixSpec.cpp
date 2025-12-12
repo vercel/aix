@@ -40,14 +40,23 @@ namespace margelo::nitro::aix {
   }
 
   // Properties
-  bool JHybridAixSpec::getIsRed() {
-    static const auto method = javaClassStatic()->getMethod<jboolean()>("isRed");
+  bool JHybridAixSpec::getShouldStartAtEnd() {
+    static const auto method = javaClassStatic()->getMethod<jboolean()>("getShouldStartAtEnd");
     auto __result = method(_javaPart);
     return static_cast<bool>(__result);
   }
-  void JHybridAixSpec::setIsRed(bool isRed) {
-    static const auto method = javaClassStatic()->getMethod<void(jboolean /* isRed */)>("setRed");
-    method(_javaPart, isRed);
+  void JHybridAixSpec::setShouldStartAtEnd(bool shouldStartAtEnd) {
+    static const auto method = javaClassStatic()->getMethod<void(jboolean /* shouldStartAtEnd */)>("setShouldStartAtEnd");
+    method(_javaPart, shouldStartAtEnd);
+  }
+  bool JHybridAixSpec::getScrollOnComposerSizeUpdate() {
+    static const auto method = javaClassStatic()->getMethod<jboolean()>("getScrollOnComposerSizeUpdate");
+    auto __result = method(_javaPart);
+    return static_cast<bool>(__result);
+  }
+  void JHybridAixSpec::setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) {
+    static const auto method = javaClassStatic()->getMethod<void(jboolean /* scrollOnComposerSizeUpdate */)>("setScrollOnComposerSizeUpdate");
+    method(_javaPart, scrollOnComposerSizeUpdate);
   }
 
   // Methods

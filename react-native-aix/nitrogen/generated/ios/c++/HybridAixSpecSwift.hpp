@@ -56,11 +56,17 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    inline bool getIsRed() noexcept override {
-      return _swiftPart.isRed();
+    inline bool getShouldStartAtEnd() noexcept override {
+      return _swiftPart.getShouldStartAtEnd();
     }
-    inline void setIsRed(bool isRed) noexcept override {
-      _swiftPart.setIsRed(std::forward<decltype(isRed)>(isRed));
+    inline void setShouldStartAtEnd(bool shouldStartAtEnd) noexcept override {
+      _swiftPart.setShouldStartAtEnd(std::forward<decltype(shouldStartAtEnd)>(shouldStartAtEnd));
+    }
+    inline bool getScrollOnComposerSizeUpdate() noexcept override {
+      return _swiftPart.getScrollOnComposerSizeUpdate();
+    }
+    inline void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) noexcept override {
+      _swiftPart.setScrollOnComposerSizeUpdate(std::forward<decltype(scrollOnComposerSizeUpdate)>(scrollOnComposerSizeUpdate));
     }
 
   public:

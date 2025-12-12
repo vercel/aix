@@ -17,6 +17,10 @@
 
 #include "JHybridAixSpec.hpp"
 #include "views/JHybridAixStateUpdater.hpp"
+#include "JHybridAixBlankViewSpec.hpp"
+#include "views/JHybridAixBlankViewStateUpdater.hpp"
+#include "JHybridAixComposerSpec.hpp"
+#include "views/JHybridAixComposerStateUpdater.hpp"
 #include <NitroModules/DefaultConstructableObject.hpp>
 
 namespace margelo::nitro::aix {
@@ -30,12 +34,32 @@ int initialize(JavaVM* vm) {
     // Register native JNI methods
     margelo::nitro::aix::JHybridAixSpec::registerNatives();
     margelo::nitro::aix::views::JHybridAixStateUpdater::registerNatives();
+    margelo::nitro::aix::JHybridAixBlankViewSpec::registerNatives();
+    margelo::nitro::aix::views::JHybridAixBlankViewStateUpdater::registerNatives();
+    margelo::nitro::aix::JHybridAixComposerSpec::registerNatives();
+    margelo::nitro::aix::views::JHybridAixComposerStateUpdater::registerNatives();
 
     // Register Nitro Hybrid Objects
     HybridObjectRegistry::registerHybridObjectConstructor(
       "Aix",
       []() -> std::shared_ptr<HybridObject> {
         static DefaultConstructableObject<JHybridAixSpec::javaobject> object("com/margelo/nitro/aix/HybridAix");
+        auto instance = object.create();
+        return instance->cthis()->shared();
+      }
+    );
+    HybridObjectRegistry::registerHybridObjectConstructor(
+      "AixBlankView",
+      []() -> std::shared_ptr<HybridObject> {
+        static DefaultConstructableObject<JHybridAixBlankViewSpec::javaobject> object("com/margelo/nitro/aix/HybridAixBlankView");
+        auto instance = object.create();
+        return instance->cthis()->shared();
+      }
+    );
+    HybridObjectRegistry::registerHybridObjectConstructor(
+      "AixComposer",
+      []() -> std::shared_ptr<HybridObject> {
+        static DefaultConstructableObject<JHybridAixComposerSpec::javaobject> object("com/margelo/nitro/aix/HybridAixComposer");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
