@@ -30,6 +30,11 @@ class HybridAixCellView: HybridAixCellViewSpec {
             owner?.handleDidMoveToSuperview()
         }
         
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            owner?.handleDidMoveToWindow()
+        }
+        
         override func willMove(toSuperview newSuperview: UIView?) {
             super.willMove(toSuperview: newSuperview)
             if newSuperview == nil {
@@ -93,7 +98,14 @@ class HybridAixCellView: HybridAixCellViewSpec {
     
     /// Called when the view is added to a superview
     private func handleDidMoveToSuperview() {
-        guard view.superview != nil else { return }
+        // Don't register here - hierarchy may not be complete yet
+        // Wait for didMoveToWindow instead
+    }
+    
+    /// Called when the view is added to a window (full hierarchy is connected)
+    private func handleDidMoveToWindow() {
+        print("[Aix] CellView didMoveToWindow: index=\(index)")
+        guard view.window != nil else { return }
         
         // Clear cached context since hierarchy changed
         cachedAixContext = nil

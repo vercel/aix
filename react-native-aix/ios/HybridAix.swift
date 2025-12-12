@@ -71,8 +71,22 @@ extension UIView {
 // MARK: - HybridAix (Root Context)
 
 class HybridAix: HybridAixSpec, AixContext {
+    
+    // MARK: - Inner View
+    
+    /// Custom UIView that notifies owner when added to superview
+    /// so we can attach the context to the parent component
+    private final class InnerView: UIView {
+        weak var owner: HybridAix?
+        
+        override func didMoveToSuperview() {
+            super.didMoveToSuperview()
+            owner?.handleDidMoveToSuperview()
+        }
+    }
+    
     /// The root UIView that this context is attached to
-    var view: UIView = UIView()
+    let view: UIView
     
     /// Current keyboard height (will be updated by keyboard events)
     var keyboardHeight: CGFloat = 0
@@ -112,9 +126,7 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Find the scroll view within our view hierarchy
     var scrollView: UIScrollView? {
         let sv = view.findScrollView()
-        if sv != nil {
-            print("[Aix] Found scrollView: \(sv!)")
-        }
+        print("[Aix] scrollView: \(String(describing: sv))")
         return sv
     }
     
@@ -145,10 +157,23 @@ class HybridAix: HybridAixSpec, AixContext {
     // MARK: - Initialization
     
     override init() {
+        let inner = InnerView()
+        self.view = inner
         super.init()
+        inner.owner = self
         print("[Aix] HybridAix initialized, attaching context to view")
-        // Attach this context to the view so children can find it
+        // Attach this context to our inner view
         view.aixContext = self
+    }
+    
+    // MARK: - Lifecycle
+    
+    /// Called when our view is added to the HybridAixComponent
+    private func handleDidMoveToSuperview() {
+        guard let superview = view.superview else { return }
+        print("[Aix] View added to superview: \(type(of: superview)), attaching context")
+        // Attach context to the superview (HybridAixComponent) so children can find it
+        superview.aixContext = self
     }
     
     // MARK: - Public API (called from React Native)
