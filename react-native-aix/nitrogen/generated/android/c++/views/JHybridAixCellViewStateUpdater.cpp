@@ -40,6 +40,10 @@ void JHybridAixCellViewStateUpdater::updateViewProps(jni::alias_ref<jni::JClass>
     view->setIsLast(props.isLast.value);
     // TODO: Set isDirty = false
   }
+  if (props.index.isDirty) {
+    view->setIndex(props.index.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

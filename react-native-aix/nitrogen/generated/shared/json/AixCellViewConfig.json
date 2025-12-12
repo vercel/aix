@@ -5,6 +5,7 @@
   "directEventTypes": {},
   "validAttributes": {
     "isLast": true,
+    "index": true,
     "hybridRef": true
   }
 }

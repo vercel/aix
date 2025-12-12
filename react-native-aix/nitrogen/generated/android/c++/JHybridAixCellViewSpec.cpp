@@ -49,6 +49,15 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jboolean /* isLast */)>("setLast");
     method(_javaPart, isLast);
   }
+  double JHybridAixCellViewSpec::getIndex() {
+    static const auto method = javaClassStatic()->getMethod<double()>("getIndex");
+    auto __result = method(_javaPart);
+    return __result;
+  }
+  void JHybridAixCellViewSpec::setIndex(double index) {
+    static const auto method = javaClassStatic()->getMethod<void(double /* index */)>("setIndex");
+    method(_javaPart, index);
+  }
 
   // Methods
   

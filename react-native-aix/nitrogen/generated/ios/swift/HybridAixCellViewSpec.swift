@@ -12,6 +12,7 @@ import NitroModules
 public protocol HybridAixCellViewSpec_protocol: HybridObject, HybridView {
   // Properties
   var isLast: Bool { get set }
+  var index: Double { get set }
 
   // Methods
   

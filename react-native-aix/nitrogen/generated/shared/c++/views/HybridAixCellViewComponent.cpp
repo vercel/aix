@@ -35,6 +35,16 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("AixCellView.isLast: ") + exc.what());
       }
     }()),
+    index([&]() -> CachedProp<double> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("index", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.index;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<double>::fromRawValue(*runtime, value, sourceProps.index);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("AixCellView.index: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixCellViewSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -49,11 +59,13 @@ namespace margelo::nitro::aix::views {
   HybridAixCellViewProps::HybridAixCellViewProps(const HybridAixCellViewProps& other):
     react::ViewProps(),
     isLast(other.isLast),
+    index(other.index),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixCellViewProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
       case hashString("isLast"): return true;
+      case hashString("index"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

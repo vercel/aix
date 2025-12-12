@@ -43,6 +43,7 @@ namespace margelo::nitro::aix::views {
 
   public:
     CachedProp<bool> isLast;
+    CachedProp<double> index;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixCellViewSpec>& /* ref */)>>> hybridRef;
 
   private:

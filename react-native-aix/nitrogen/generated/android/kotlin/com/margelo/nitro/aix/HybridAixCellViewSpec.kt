@@ -47,6 +47,12 @@ abstract class HybridAixCellViewSpec: HybridView() {
   @set:DoNotStrip
   @set:Keep
   abstract var isLast: Boolean
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var index: Double
 
   // Methods
   

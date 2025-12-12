@@ -76,6 +76,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setIsLast(newViewProps.isLast.value);
     newViewProps.isLast.isDirty = false;
   }
+  // index: number
+  if (newViewProps.index.isDirty) {
+    swiftPart.setIndex(newViewProps.index.value);
+    newViewProps.index.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 

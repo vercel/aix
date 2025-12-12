@@ -52,6 +52,8 @@ namespace margelo::nitro::aix {
     // Properties
     bool getIsLast() override;
     void setIsLast(bool isLast) override;
+    double getIndex() override;
+    void setIndex(double index) override;
 
   public:
     // Methods

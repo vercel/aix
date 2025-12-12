@@ -16,6 +16,8 @@ namespace margelo::nitro::aix {
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridGetter("isLast", &HybridAixCellViewSpec::getIsLast);
       prototype.registerHybridSetter("isLast", &HybridAixCellViewSpec::setIsLast);
+      prototype.registerHybridGetter("index", &HybridAixCellViewSpec::getIndex);
+      prototype.registerHybridSetter("index", &HybridAixCellViewSpec::setIndex);
     });
   }
 

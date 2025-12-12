@@ -9,6 +9,7 @@ export type Aix = HybridView<AixProps, {}, { ios: 'swift'; android: 'kotlin' }>
 
 export interface AixCellViewProps extends HybridViewProps {
   isLast: boolean
+  index: number
 }
 
 export type AixCellView = HybridView<

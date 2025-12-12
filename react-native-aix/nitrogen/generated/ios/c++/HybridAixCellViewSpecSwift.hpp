@@ -62,6 +62,12 @@ namespace margelo::nitro::aix {
     inline void setIsLast(bool isLast) noexcept override {
       _swiftPart.setIsLast(std::forward<decltype(isLast)>(isLast));
     }
+    inline double getIndex() noexcept override {
+      return _swiftPart.getIndex();
+    }
+    inline void setIndex(double index) noexcept override {
+      _swiftPart.setIndex(std::forward<decltype(index)>(index));
+    }
 
   public:
     // Methods

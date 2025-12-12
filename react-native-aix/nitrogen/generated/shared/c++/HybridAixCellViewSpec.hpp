@@ -46,6 +46,8 @@ namespace margelo::nitro::aix {
       // Properties
       virtual bool getIsLast() = 0;
       virtual void setIsLast(bool isLast) = 0;
+      virtual double getIndex() = 0;
+      virtual void setIndex(double index) = 0;
 
     public:
       // Methods

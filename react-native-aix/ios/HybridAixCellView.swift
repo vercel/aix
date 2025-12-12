@@ -13,6 +13,7 @@ import UIKit
 /// and reports size changes to the AixContext
 class HybridAixCellView: HybridAixCellViewSpec {
     
+    
     // MARK: - Inner View
     
     /// Custom UIView that notifies owner when layout changes
@@ -44,7 +45,7 @@ class HybridAixCellView: HybridAixCellViewSpec {
     let view: UIView
     
     /// The index of this cell in the list
-    var index: Int = 0 {
+    var index: Double = 0 {
         didSet {
             if oldValue != index {
                 updateRegistration()
@@ -72,6 +73,8 @@ class HybridAixCellView: HybridAixCellViewSpec {
         self.view = inner
         super.init()
         inner.owner = self
+        print("HybridAixCellView init: index=\(index), isLast=\(isLast)")
+        getAixContext()?.registerCell(self)
     }
     
     // MARK: - Context Access
@@ -119,7 +122,7 @@ class HybridAixCellView: HybridAixCellViewSpec {
         
         // If we're the last cell, report size change
         if isLast {
-            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: index)
+            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: Int(index))
         }
     }
     
@@ -138,7 +141,7 @@ class HybridAixCellView: HybridAixCellViewSpec {
         if isLast {
             // This cell is now the last one - become the blank view
             ctx.blankView = self
-            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: index)
+            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: Int(index))
         } else if ctx.blankView === self {
             // This cell is no longer last - clear blank view reference
             ctx.blankView = nil

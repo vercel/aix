@@ -111,7 +111,11 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Find the scroll view within our view hierarchy
     var scrollView: UIScrollView? {
-        return view.findScrollView()
+        let sv = view.findScrollView()
+        if sv != nil {
+            print("[Aix] Found scrollView: \(sv!)")
+        }
+        return sv
     }
     
     /// Height of the composer view
@@ -142,6 +146,7 @@ class HybridAix: HybridAixSpec, AixContext {
     
     override init() {
         super.init()
+        print("[Aix] HybridAix initialized, attaching context to view")
         // Attach this context to the view so children can find it
         view.aixContext = self
     }
@@ -153,7 +158,7 @@ class HybridAix: HybridAixSpec, AixContext {
     /// when the layout is ready
     func scrollToEndOnBlankSizeUpdate(index: Int) {
         // If the blank view is already at this index, scroll immediately
-        if let blankView = blankView, index == blankView.index {
+        if let blankView = blankView, index == Int(blankView.index) {
             scrollToEnd(animated: true)
         } else {
             // Otherwise queue the scroll for when the blank view updates
@@ -164,8 +169,10 @@ class HybridAix: HybridAixSpec, AixContext {
     // MARK: - AixContext Protocol
     
     func reportBlankViewSizeChange(size: CGSize, index: Int) {
+        print("[Aix] reportBlankViewSizeChange: size=\(size), index=\(index)")
         // Check if we have a queued scroll waiting for this index
         if let queued = queuedScrollToEnd, index == queued.index {
+            print("[Aix] Executing queued scrollToEnd for index \(index)")
             scrollToEnd(animated: queued.animated)
             queuedScrollToEnd = nil
         }
@@ -173,27 +180,34 @@ class HybridAix: HybridAixSpec, AixContext {
     
     func registerCell(_ cell: HybridAixCellView) {
         cells.setObject(cell, forKey: NSNumber(value: cell.index))
+
+        print("[Aix] registerCell: index=\(cell.index), isLast=\(cell.isLast)")
         
         // If this cell is marked as last, update our blank view reference
         if cell.isLast {
+            print("[Aix] Setting blankView to cell at index \(cell.index)")
             blankView = cell
         }
     }
     
     func unregisterCell(_ cell: HybridAixCellView) {
+        print("[Aix] unregisterCell: index=\(cell.index), isLast=\(cell.isLast)")
         cells.removeObject(forKey: NSNumber(value: cell.index))
         
         // If this was our blank view, clear it
         if blankView === cell {
+            print("[Aix] Clearing blankView (was cell at index \(cell.index))")
             blankView = nil
         }
     }
     
     func registerComposerView(_ composerView: HybridAixComposer) {
+        print("[Aix] registerComposerView: \(composerView)")
         self.composerView = composerView
     }
     
     func unregisterComposerView(_ composerView: HybridAixComposer) {
+        print("[Aix] unregisterComposerView: \(composerView)")
         if self.composerView === composerView {
             self.composerView = nil
         }
@@ -234,7 +248,7 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Queue a scroll to end, will execute when blank view at index is ready
     func queueScrollToEnd(index: Int, animated: Bool = true) {
-        if let blankView = blankView, blankView.isLast && index == blankView.index {
+        if let blankView = blankView, blankView.isLast && index == Int(blankView.index) {
             scrollToEnd(animated: animated)
         } else {
             queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)

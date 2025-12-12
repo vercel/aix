@@ -124,6 +124,17 @@ open class HybridAixCellViewSpec_cxx {
       self.__implementation.isLast = newValue
     }
   }
+  
+  public final var index: Double {
+    @inline(__always)
+    get {
+      return self.__implementation.index
+    }
+    @inline(__always)
+    set {
+      self.__implementation.index = newValue
+    }
+  }
 
   // Methods
   public final func getView() -> UnsafeMutableRawPointer {
