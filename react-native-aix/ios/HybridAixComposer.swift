@@ -3,7 +3,7 @@
 import Foundation
 import UIKit
 
-class HybridAixComposer : HybridAixBlankViewSpec {
+class HybridAixComposer : HybrixAixCellViewSpec {
   // UIView
   var view: UIView = UIView()
 

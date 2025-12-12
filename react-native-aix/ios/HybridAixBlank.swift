@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-class HybridAixBlankView : HybridAixBlankViewSpec {
+class HybrixAixCellView : HybrixAixCellViewSpec {
     private final class InnerView: UIView {
-        weak var owner: HybridAixBlankView?
+        weak var owner: HybrixAixCellView?
 
         override func layoutSubviews() {
             super.layoutSubviews()

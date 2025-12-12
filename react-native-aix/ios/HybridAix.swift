@@ -12,7 +12,7 @@ import ObjectiveC.runtime
 private var aixContextKey: UInt8 = 0
 
 protocol AixContext: AnyObject {
-    var blankView: HybridAixBlankView? { get set }
+    var blankView: HybrixAixCellView? { get set }
     var composerView: HybridAixComposer? { get set }
     
     func reportBlankViewSizeChange(size: CGSize, index: Int)
@@ -69,7 +69,7 @@ class HybridAix: HybridAixSpec, AixContext {
 
     private var queuedScrollToEnd: QueuedScrollToEnd? = nil
     
-    weak var blankView = nil as HybridAixBlankView? {
+    weak var blankView = nil as HybrixAixCellView? {
         didSet {
             
         }

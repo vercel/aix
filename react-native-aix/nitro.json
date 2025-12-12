@@ -14,8 +14,8 @@
       "kotlin": "HybridAix"
     },
     "AixBlankView": {
-      "swift": "HybridAixBlankView",
-      "kotlin": "HybridAixBlankView"
+      "swift": "HybrixAixCellView",
+      "kotlin": "HybrixAixCellView"
     },
     "AixComposer": {
       "swift": "HybridAixComposer",
