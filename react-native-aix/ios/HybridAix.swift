@@ -155,13 +155,18 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Calculate the blank size - the space needed to push content up
     /// so the last message can scroll to the top of the visible area
     var blankSize: CGFloat {
-        let blankViewHeight = blankView?.view.bounds.height ?? 0
+        guard let scrollView, let blankView else { return 0 }
         
-        guard let scrollView = scrollView else { return 0 }
+        let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
+        let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
+        let blankViewHeight = blankView.view.frame.height
+        
         
         // The inset is: scrollable area height - blank view height - keyboard height
         // This ensures when scrolled to end, the last message is at the top
-        let inset = scrollView.bounds.height - blankViewHeight - keyboardHeight
+        let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
+
+        print("[Aix] blankSize: inset=\(inset), cellBeforeBlankViewHeight=\(cellBeforeBlankViewHeight), blankViewHeight=\(blankViewHeight) keyboardHeight=\(keyboardHeight)")
         
         return max(0, inset)
     }
@@ -169,6 +174,15 @@ class HybridAix: HybridAixSpec, AixContext {
     /// The content inset for the bottom of the scroll view
     var contentInsetBottom: CGFloat {
         return blankSize + keyboardHeight + composerHeight
+    }
+    
+    /// Apply the current content inset to the scroll view
+    func applyContentInset() {
+        guard let scrollView = scrollView else { return }
+        let inset = contentInsetBottom
+        print("[Aix] Applying contentInset.bottom = \(inset)")
+        scrollView.contentInset.bottom = inset
+        scrollView.verticalScrollIndicatorInsets.bottom = inset
     }
     
     // MARK: - Initialization
@@ -209,9 +223,23 @@ class HybridAix: HybridAixSpec, AixContext {
     }
     
     // MARK: - AixContext Protocol
+
+    private var lastReportedBlankViewSize = (size: CGSize.zero, index: 0)
     
     func reportBlankViewSizeChange(size: CGSize, index: Int) {
-        print("[Aix] reportBlankViewSizeChange: size=\(size), index=\(index)")
+        let didAlreadyUpdate = size.height == lastReportedBlankViewSize.size.height && size.width == lastReportedBlankViewSize.size.width && index == lastReportedBlankViewSize.index
+        if didAlreadyUpdate {
+            print("[Aix] [reportBlankViewSizeChange][duplicate]: size=\(size), index=\(index)")
+            return
+        }
+
+        lastReportedBlankViewSize = (size: size, index: index)
+
+        print("[Aix] reportBlankViewSizeChange: size=\(size), index=\(index) - updating")
+        
+        // Update scroll view insets
+        applyContentInset()
+        
         // Check if we have a queued scroll waiting for this index
         if let queued = queuedScrollToEnd, index == queued.index {
             print("[Aix] Executing queued scrollToEnd for index \(index)")

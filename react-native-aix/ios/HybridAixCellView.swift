@@ -81,7 +81,6 @@ class HybridAixCellView: HybridAixCellViewSpec {
         self.view = inner
         super.init()
         inner.owner = self
-        print("HybridAixCellView init: index=\(index), isLast=\(isLast)")
         getAixContext()?.registerCell(self)
     }
     
