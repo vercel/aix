@@ -15,7 +15,6 @@ import {
   useSetLastAnimatableMessage,
   useFirstMessageAnimation,
   useMessageBlankSize,
-  useMessageListContext,
   useChatAnimation,
   useSyncLayoutHandler,
 } from 'ai-chat'
@@ -35,6 +34,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context'
+import { Debugger } from 'ai-chat/debugger'
 
 export default function App() {
   const chatId = '1'
@@ -50,6 +50,7 @@ export default function App() {
               {messages.length > 0 && <List data={messages} />}
             </View>
             <Composer onSend={submit} />
+            <Debugger />
           </ChatProvider>
         </View>
       </KeyboardProvider>

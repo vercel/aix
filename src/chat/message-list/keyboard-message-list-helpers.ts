@@ -142,7 +142,7 @@ export function getValuesOnMove(
   'worklet'
   let offsetY: number | undefined = undefined
   // Transform adds inset as the keyboard opens (positive Y tracks upward movement)
-  let translateY = eProgress * vAmtToTransform
+  const translateY = eProgress * vAmtToTransform
 
   // Check if this is the first time this function is called for this animation
   const isFirstMove = scrollAtStart.get() === -1
