@@ -1,5 +1,5 @@
 //
-//  HybridAixComposer.swift
+//  HybridAixBlank.swift
 //  Pods
 //
 //  Created by Fernando Rojo on 12/11/2025.
@@ -8,16 +8,16 @@
 import Foundation
 import UIKit
 
-/// HybridAixComposer wraps the chat composer input
-/// It registers itself with the AixContext so the context can track composer height
-/// for calculating content insets
-class HybridAixComposer: HybridAixComposerSpec {
+/// HybridAixCellView wraps each list item in the chat (the "blank" cell at the end)
+/// It tracks its index and whether it's the last item,
+/// and reports size changes to the AixContext
+class HybridAixCellView: HybridAixCellViewSpec {
     
     // MARK: - Inner View
     
     /// Custom UIView that notifies owner when layout changes
     private final class InnerView: UIView {
-        weak var owner: HybridAixComposer?
+        weak var owner: HybridAixCellView?
         
         override func layoutSubviews() {
             super.layoutSubviews()
@@ -40,8 +40,27 @@ class HybridAixComposer: HybridAixComposerSpec {
     
     // MARK: - Properties
     
-    /// The UIView for this composer
+    /// The UIView for this cell
     let view: UIView
+    
+    /// The index of this cell in the list
+    var index: Int = 0 {
+        didSet {
+            if oldValue != index {
+                updateRegistration()
+            }
+        }
+    }
+    
+    /// Whether this is the last cell in the list
+    /// When true, this cell becomes the "blank view" used for calculating scroll offsets
+    var isLast: Bool = false {
+        didSet {
+            if oldValue != isLast {
+                updateBlankViewStatus()
+            }
+        }
+    }
     
     /// Cached reference to the AixContext (found on first access)
     private weak var cachedAixContext: AixContext?
@@ -78,7 +97,7 @@ class HybridAixComposer: HybridAixComposerSpec {
         
         // Register with the new context
         if let ctx = getAixContext() {
-            ctx.registerComposerView(self)
+            ctx.registerCell(self)
         }
     }
     
@@ -86,22 +105,43 @@ class HybridAixComposer: HybridAixComposerSpec {
     private func handleWillRemoveFromSuperview() {
         // Unregister from context before removal
         if let ctx = cachedAixContext {
-            ctx.unregisterComposerView(self)
+            ctx.unregisterCell(self)
         }
         cachedAixContext = nil
     }
     
     /// Called when layoutSubviews fires (size may have changed)
     private func handleLayoutChange() {
-        // The context reads composerHeight from our view.bounds
-        // so it will automatically get the updated size
-        // We could add a callback here if needed for scroll updates
+        guard let ctx = getAixContext() else { return }
+        
+        // Re-register to ensure context has latest reference
+        ctx.registerCell(self)
+        
+        // If we're the last cell, report size change
+        if isLast {
+            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: index)
+        }
     }
     
-    // MARK: - Deinitialization
+    // MARK: - Registration
     
-    deinit {
-        // Ensure we unregister when deallocated
-        cachedAixContext?.unregisterComposerView(self)
+    /// Update registration with context (called when index changes)
+    private func updateRegistration() {
+        guard let ctx = getAixContext() else { return }
+        ctx.registerCell(self)
+    }
+    
+    /// Update blank view status (called when isLast changes)
+    private func updateBlankViewStatus() {
+        guard let ctx = getAixContext() else { return }
+        
+        if isLast {
+            // This cell is now the last one - become the blank view
+            ctx.blankView = self
+            ctx.reportBlankViewSizeChange(size: view.bounds.size, index: index)
+        } else if ctx.blankView === self {
+            // This cell is no longer last - clear blank view reference
+            ctx.blankView = nil
+        }
     }
 }

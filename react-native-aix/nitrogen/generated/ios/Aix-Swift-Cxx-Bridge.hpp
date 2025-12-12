@@ -8,29 +8,25 @@
 #pragma once
 
 // Forward declarations of C++ defined types
-// Forward declaration of `HybridAixBlankViewSpec` to properly resolve imports.
-namespace margelo::nitro::aix { class HybridAixBlankViewSpec; }
+// Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixComposerSpec; }
 // Forward declaration of `HybridAixSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixSpec; }
-// Forward declaration of `ScrollToEndOnBlankSizeUpdateInput` to properly resolve imports.
-namespace margelo::nitro::aix { struct ScrollToEndOnBlankSizeUpdateInput; }
 
 // Forward declarations of Swift defined types
-// Forward declaration of `HybridAixBlankViewSpec_cxx` to properly resolve imports.
-namespace Aix { class HybridAixBlankViewSpec_cxx; }
+// Forward declaration of `HybridAixCellViewSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixCellViewSpec_cxx; }
 // Forward declaration of `HybridAixComposerSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixComposerSpec_cxx; }
 // Forward declaration of `HybridAixSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixSpec_cxx; }
 
 // Include C++ defined types
-#include "HybridAixBlankViewSpec.hpp"
+#include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
-#include "ScrollToEndOnBlankSizeUpdateInput.hpp"
-#include <functional>
 #include <memory>
 
 /**
@@ -39,28 +35,6 @@ namespace Aix { class HybridAixSpec_cxx; }
  */
 namespace margelo::nitro::aix::bridge::swift {
 
-  // pragma MARK: std::function<void(const ScrollToEndOnBlankSizeUpdateInput& /* input */)>
-  /**
-   * Specialized version of `std::function<void(const ScrollToEndOnBlankSizeUpdateInput&)>`.
-   */
-  using Func_void_ScrollToEndOnBlankSizeUpdateInput = std::function<void(const ScrollToEndOnBlankSizeUpdateInput& /* input */)>;
-  /**
-   * Wrapper class for a `std::function<void(const ScrollToEndOnBlankSizeUpdateInput& / * input * /)>`, this can be used from Swift.
-   */
-  class Func_void_ScrollToEndOnBlankSizeUpdateInput_Wrapper final {
-  public:
-    explicit Func_void_ScrollToEndOnBlankSizeUpdateInput_Wrapper(std::function<void(const ScrollToEndOnBlankSizeUpdateInput& /* input */)>&& func): _function(std::make_unique<std::function<void(const ScrollToEndOnBlankSizeUpdateInput& /* input */)>>(std::move(func))) {}
-    inline void call(ScrollToEndOnBlankSizeUpdateInput input) const noexcept {
-      _function->operator()(input);
-    }
-  private:
-    std::unique_ptr<std::function<void(const ScrollToEndOnBlankSizeUpdateInput& /* input */)>> _function;
-  } SWIFT_NONCOPYABLE;
-  Func_void_ScrollToEndOnBlankSizeUpdateInput create_Func_void_ScrollToEndOnBlankSizeUpdateInput(void* NON_NULL swiftClosureWrapper) noexcept;
-  inline Func_void_ScrollToEndOnBlankSizeUpdateInput_Wrapper wrap_Func_void_ScrollToEndOnBlankSizeUpdateInput(Func_void_ScrollToEndOnBlankSizeUpdateInput value) noexcept {
-    return Func_void_ScrollToEndOnBlankSizeUpdateInput_Wrapper(std::move(value));
-  }
-  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   /**
    * Specialized version of `std::shared_ptr<HybridAixSpec>`.
@@ -73,39 +47,17 @@ namespace margelo::nitro::aix::bridge::swift {
   using std__weak_ptr_HybridAixSpec_ = std::weak_ptr<HybridAixSpec>;
   inline std__weak_ptr_HybridAixSpec_ weakify_std__shared_ptr_HybridAixSpec_(const std::shared_ptr<HybridAixSpec>& strong) noexcept { return strong; }
   
-  // pragma MARK: std::function<void(bool /* isLast */)>
+  // pragma MARK: std::shared_ptr<HybridAixCellViewSpec>
   /**
-   * Specialized version of `std::function<void(bool)>`.
+   * Specialized version of `std::shared_ptr<HybridAixCellViewSpec>`.
    */
-  using Func_void_bool = std::function<void(bool /* isLast */)>;
-  /**
-   * Wrapper class for a `std::function<void(bool / * isLast * /)>`, this can be used from Swift.
-   */
-  class Func_void_bool_Wrapper final {
-  public:
-    explicit Func_void_bool_Wrapper(std::function<void(bool /* isLast */)>&& func): _function(std::make_unique<std::function<void(bool /* isLast */)>>(std::move(func))) {}
-    inline void call(bool isLast) const noexcept {
-      _function->operator()(isLast);
-    }
-  private:
-    std::unique_ptr<std::function<void(bool /* isLast */)>> _function;
-  } SWIFT_NONCOPYABLE;
-  Func_void_bool create_Func_void_bool(void* NON_NULL swiftClosureWrapper) noexcept;
-  inline Func_void_bool_Wrapper wrap_Func_void_bool(Func_void_bool value) noexcept {
-    return Func_void_bool_Wrapper(std::move(value));
-  }
+  using std__shared_ptr_HybridAixCellViewSpec_ = std::shared_ptr<HybridAixCellViewSpec>;
+  std::shared_ptr<HybridAixCellViewSpec> create_std__shared_ptr_HybridAixCellViewSpec_(void* NON_NULL swiftUnsafePointer) noexcept;
+  void* NON_NULL get_std__shared_ptr_HybridAixCellViewSpec_(std__shared_ptr_HybridAixCellViewSpec_ cppType);
   
-  // pragma MARK: std::shared_ptr<HybridAixBlankViewSpec>
-  /**
-   * Specialized version of `std::shared_ptr<HybridAixBlankViewSpec>`.
-   */
-  using std__shared_ptr_HybridAixBlankViewSpec_ = std::shared_ptr<HybridAixBlankViewSpec>;
-  std::shared_ptr<HybridAixBlankViewSpec> create_std__shared_ptr_HybridAixBlankViewSpec_(void* NON_NULL swiftUnsafePointer) noexcept;
-  void* NON_NULL get_std__shared_ptr_HybridAixBlankViewSpec_(std__shared_ptr_HybridAixBlankViewSpec_ cppType);
-  
-  // pragma MARK: std::weak_ptr<HybridAixBlankViewSpec>
-  using std__weak_ptr_HybridAixBlankViewSpec_ = std::weak_ptr<HybridAixBlankViewSpec>;
-  inline std__weak_ptr_HybridAixBlankViewSpec_ weakify_std__shared_ptr_HybridAixBlankViewSpec_(const std::shared_ptr<HybridAixBlankViewSpec>& strong) noexcept { return strong; }
+  // pragma MARK: std::weak_ptr<HybridAixCellViewSpec>
+  using std__weak_ptr_HybridAixCellViewSpec_ = std::weak_ptr<HybridAixCellViewSpec>;
+  inline std__weak_ptr_HybridAixCellViewSpec_ weakify_std__shared_ptr_HybridAixCellViewSpec_(const std::shared_ptr<HybridAixCellViewSpec>& strong) noexcept { return strong; }
   
   // pragma MARK: std::shared_ptr<HybridAixComposerSpec>
   /**

@@ -11,20 +11,38 @@ import ObjectiveC.runtime
 
 private var aixContextKey: UInt8 = 0
 
+/// Protocol that defines the Aix context interface for child views to communicate with
 protocol AixContext: AnyObject {
-    var blankView: HybrixAixCellView? { get set }
+    /// The blank view (last cell) - used for calculating blank size
+    var blankView: HybridAixCellView? { get set }
+    /// The composer view
     var composerView: HybridAixComposer? { get set }
     
+    /// Called when the blank view's size changes
     func reportBlankViewSizeChange(size: CGSize, index: Int)
     
+    /// Register a cell with the context
+    func registerCell(_ cell: HybridAixCellView)
+    
+    /// Unregister a cell from the context
+    func unregisterCell(_ cell: HybridAixCellView)
+    
+    /// Register the composer view
+    func registerComposerView(_ composerView: HybridAixComposer)
+    
+    /// Unregister the composer view
+    func unregisterComposerView(_ composerView: HybridAixComposer)
 }
 
 extension UIView {
+    /// Get/set the Aix context associated with this view
+    /// Uses OBJC_ASSOCIATION_ASSIGN to avoid retain cycles (weak reference behavior)
     var aixContext: AixContext? {
         get { objc_getAssociatedObject(self, &aixContextKey) as? AixContext }
         set { objc_setAssociatedObject(self, &aixContextKey, newValue, .OBJC_ASSOCIATION_ASSIGN) }
     }
 
+    /// Walk up the view hierarchy to find the nearest AixContext
     func useAixContext() -> AixContext? {
         var node: UIView? = self
         while let current = node {
@@ -36,6 +54,7 @@ extension UIView {
         return nil
     }
 
+    /// Recursively search subviews to find a UIScrollView
     func findScrollView() -> UIScrollView? {
         if let scrollView = self as? UIScrollView {
             return scrollView
@@ -49,81 +68,176 @@ extension UIView {
     }
 }
 
+// MARK: - HybridAix (Root Context)
+
 class HybridAix: HybridAixSpec, AixContext {
+    /// The root UIView that this context is attached to
     var view: UIView = UIView()
+    
+    /// Current keyboard height (will be updated by keyboard events)
     var keyboardHeight: CGFloat = 0
     
-    // props
+    // MARK: - Props (from Nitro spec)
     var shouldStartAtEnd: Bool = true
     var scrollOnComposerSizeUpdate: Bool = false
 
-    private struct BlankSizeMeasurement {
-        var height: CGFloat
-        var index: Int
-    }
-
+    // MARK: - Private Types
+    
     private struct QueuedScrollToEnd {
         var index: Int
         var animated: Bool
     }
 
+    // MARK: - Private State
+    
+    /// Queued scroll operation waiting for blank view to update
     private var queuedScrollToEnd: QueuedScrollToEnd? = nil
     
-    weak var blankView = nil as HybrixAixCellView? {
+    /// Registered cells - using NSMapTable for weak references to avoid retain cycles
+    /// Key: cell index, Value: weak reference to cell
+    private var cells = NSMapTable<NSNumber, HybridAixCellView>.weakToWeakObjects()
+    
+    // MARK: - Context References (weak to avoid retain cycles)
+    
+    weak var blankView: HybridAixCellView? = nil {
         didSet {
-            
+            // Could add observers or callbacks here when blank view changes
         }
-    }
-    weak var composerView = nil as HybridAixComposer?
-    weak var scrollView: UIScrollView? {
-        return view.findScrollView()
-    }
-    var blankSize: CGFloat {
-        var blankViewSize = blankView?.view.bounds.height ?? 0
-
-        // height of the parent scrollable area minus blankViewSize
-        guard let scrollView = scrollView else { return 0 }
-
-        return scrollView.bounds.height - blankViewSize - keyboardHeight
     }
     
-    override init() {
-        super.init()
-        view.aixContext = self
+    weak var composerView: HybridAixComposer? = nil
+    
+    // MARK: - Computed Properties
+    
+    /// Find the scroll view within our view hierarchy
+    var scrollView: UIScrollView? {
+        return view.findScrollView()
     }
-
-    func scrollToEndOnBlankSizeUpdate(index: Int) {
-        if let blankView, index == blankView.index {
-          scrollToEnd(animated: true)
-        } else {
-          queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: true)
-        }
-    }
-
-    func reportBlankViewSizeChange(size: CGSize, index: Int) {
-        if let queuedScrollToEnd = queuedScrollToEnd, index == queuedScrollToEnd.index {
-            scrollToEnd(animated: queuedScrollToEnd.animated)
-            self.queuedScrollToEnd = nil
-        }
-    }
-
+    
+    /// Height of the composer view
     private var composerHeight: CGFloat {
         return composerView?.view.bounds.height ?? 0
     }
-    var scrollViewContentOffsetBottom: CGFloat {
-        var bottom = blankSize + keyboardHeight + composerHeight
+    
+    /// Calculate the blank size - the space needed to push content up
+    /// so the last message can scroll to the top of the visible area
+    var blankSize: CGFloat {
+        let blankViewHeight = blankView?.view.bounds.height ?? 0
         
-        return bottom
+        guard let scrollView = scrollView else { return 0 }
+        
+        // The inset is: scrollable area height - blank view height - keyboard height
+        // This ensures when scrolled to end, the last message is at the top
+        let inset = scrollView.bounds.height - blankViewHeight - keyboardHeight
+        
+        return max(0, inset)
     }
     
+    /// The content inset for the bottom of the scroll view
+    var contentInsetBottom: CGFloat {
+        return blankSize + keyboardHeight + composerHeight
+    }
+    
+    // MARK: - Initialization
+    
+    override init() {
+        super.init()
+        // Attach this context to the view so children can find it
+        view.aixContext = self
+    }
+    
+    // MARK: - Public API (called from React Native)
+    
+    /// Request to scroll to end when the blank view at the given index updates
+    /// This is called when the user sends a message and we want to scroll
+    /// when the layout is ready
+    func scrollToEndOnBlankSizeUpdate(index: Int) {
+        // If the blank view is already at this index, scroll immediately
+        if let blankView = blankView, index == blankView.index {
+            scrollToEnd(animated: true)
+        } else {
+            // Otherwise queue the scroll for when the blank view updates
+            queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: true)
+        }
+    }
+    
+    // MARK: - AixContext Protocol
+    
+    func reportBlankViewSizeChange(size: CGSize, index: Int) {
+        // Check if we have a queued scroll waiting for this index
+        if let queued = queuedScrollToEnd, index == queued.index {
+            scrollToEnd(animated: queued.animated)
+            queuedScrollToEnd = nil
+        }
+    }
+    
+    func registerCell(_ cell: HybridAixCellView) {
+        cells.setObject(cell, forKey: NSNumber(value: cell.index))
+        
+        // If this cell is marked as last, update our blank view reference
+        if cell.isLast {
+            blankView = cell
+        }
+    }
+    
+    func unregisterCell(_ cell: HybridAixCellView) {
+        cells.removeObject(forKey: NSNumber(value: cell.index))
+        
+        // If this was our blank view, clear it
+        if blankView === cell {
+            blankView = nil
+        }
+    }
+    
+    func registerComposerView(_ composerView: HybridAixComposer) {
+        self.composerView = composerView
+    }
+    
+    func unregisterComposerView(_ composerView: HybridAixComposer) {
+        if self.composerView === composerView {
+            self.composerView = nil
+        }
+    }
+    
+    // MARK: - Cell Access
+    
+    /// Get a cell by its index
+    func getCell(index: Int) -> HybridAixCellView? {
+        return cells.object(forKey: NSNumber(value: index))
+    }
+    
+    /// Find the last cell (the one marked as isLast)
+    func findLastCell() -> HybridAixCellView? {
+        // Iterate through all cells to find the one marked as last
+        let enumerator = cells.objectEnumerator()
+        while let cell = enumerator?.nextObject() as? HybridAixCellView {
+            if cell.isLast {
+                return cell
+            }
+        }
+        return nil
+    }
+    
+    // MARK: - Scrolling
+    
+    /// Scroll the scroll view to the end (bottom)
     private func scrollToEnd(animated: Bool) {
-        let offset = blankSize
         guard let scrollView = scrollView else { return }
-
+        
+        // Calculate the offset to show the bottom of content
         let bottomOffset = CGPoint(
             x: 0,
-            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + offset)
+            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom)
         )
         scrollView.setContentOffset(bottomOffset, animated: animated)
+    }
+    
+    /// Queue a scroll to end, will execute when blank view at index is ready
+    func queueScrollToEnd(index: Int, animated: Bool = true) {
+        if let blankView = blankView, blankView.isLast && index == blankView.index {
+            scrollToEnd(animated: animated)
+        } else {
+            queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)
+        }
     }
 }

@@ -35,15 +35,15 @@ target_sources(
   # Shared Nitrogen C++ sources
   ../nitrogen/generated/shared/c++/HybridAixSpec.cpp
   ../nitrogen/generated/shared/c++/views/HybridAixComponent.cpp
-  ../nitrogen/generated/shared/c++/HybridAixBlankViewSpec.cpp
-  ../nitrogen/generated/shared/c++/views/HybridAixBlankViewComponent.cpp
+  ../nitrogen/generated/shared/c++/HybridAixCellViewSpec.cpp
+  ../nitrogen/generated/shared/c++/views/HybridAixCellViewComponent.cpp
   ../nitrogen/generated/shared/c++/HybridAixComposerSpec.cpp
   ../nitrogen/generated/shared/c++/views/HybridAixComposerComponent.cpp
   # Android-specific Nitrogen C++ sources
   ../nitrogen/generated/android/c++/JHybridAixSpec.cpp
   ../nitrogen/generated/android/c++/views/JHybridAixStateUpdater.cpp
-  ../nitrogen/generated/android/c++/JHybridAixBlankViewSpec.cpp
-  ../nitrogen/generated/android/c++/views/JHybridAixBlankViewStateUpdater.cpp
+  ../nitrogen/generated/android/c++/JHybridAixCellViewSpec.cpp
+  ../nitrogen/generated/android/c++/views/JHybridAixCellViewStateUpdater.cpp
   ../nitrogen/generated/android/c++/JHybridAixComposerSpec.cpp
   ../nitrogen/generated/android/c++/views/JHybridAixComposerStateUpdater.cpp
 )

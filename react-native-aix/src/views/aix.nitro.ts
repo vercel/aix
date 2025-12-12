@@ -1,50 +1,26 @@
-import type {
-  HybridView,
-  HybridViewProps,
-  HybridViewMethods,
-} from 'react-native-nitro-modules'
+import type { HybridView, HybridViewProps } from 'react-native-nitro-modules'
 
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
   scrollOnComposerSizeUpdate: boolean
 }
 
-export interface ScrollToEndOnBlankSizeUpdateInput {
-  forIndex: number
-}
+export type Aix = HybridView<AixProps, {}, { ios: 'swift'; android: 'kotlin' }>
 
-export interface AixMethods extends HybridViewMethods {
-  scrollToEndOnBlankSizeUpdate: (
-    input: ScrollToEndOnBlankSizeUpdateInput
-  ) => void
-}
-
-export type Aix = HybridView<
-  AixProps,
-  AixMethods,
-  { ios: 'swift'; android: 'kotlin' }
->
-
-export interface AixBlankViewProps extends HybridViewProps {
+export interface AixCellViewProps extends HybridViewProps {
   isLast: boolean
 }
 
-export interface AixBlankViewMethods extends HybridViewMethods {
-  setIsLast: (isLast: boolean) => void
-}
-
-export type AixBlankView = HybridView<
-  AixBlankViewProps,
-  AixBlankViewMethods,
+export type AixCellView = HybridView<
+  AixCellViewProps,
+  {},
   { ios: 'swift'; android: 'kotlin' }
 >
 
 export interface AixComposerProps extends HybridViewProps {}
 
-export interface AixComposerMethods extends HybridViewMethods {}
-
 export type AixComposer = HybridView<
   AixComposerProps,
-  AixComposerMethods,
+  {},
   { ios: 'swift'; android: 'kotlin' }
 >

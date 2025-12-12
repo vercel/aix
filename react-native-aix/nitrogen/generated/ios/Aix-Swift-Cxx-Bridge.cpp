@@ -9,21 +9,13 @@
 
 // Include C++ implementation defined types
 #include "Aix-Swift-Cxx-Umbrella.hpp"
-#include "HybridAixBlankViewSpecSwift.hpp"
+#include "HybridAixCellViewSpecSwift.hpp"
 #include "HybridAixComposerSpecSwift.hpp"
 #include "HybridAixSpecSwift.hpp"
 #include <NitroModules/NitroDefines.hpp>
 
 namespace margelo::nitro::aix::bridge::swift {
 
-  // pragma MARK: std::function<void(const ScrollToEndOnBlankSizeUpdateInput& /* input */)>
-  Func_void_ScrollToEndOnBlankSizeUpdateInput create_Func_void_ScrollToEndOnBlankSizeUpdateInput(void* NON_NULL swiftClosureWrapper) noexcept {
-    auto swiftClosure = Aix::Func_void_ScrollToEndOnBlankSizeUpdateInput::fromUnsafe(swiftClosureWrapper);
-    return [swiftClosure = std::move(swiftClosure)](const ScrollToEndOnBlankSizeUpdateInput& input) mutable -> void {
-      swiftClosure.call(input);
-    };
-  }
-  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   std::shared_ptr<HybridAixSpec> create_std__shared_ptr_HybridAixSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
     Aix::HybridAixSpec_cxx swiftPart = Aix::HybridAixSpec_cxx::fromUnsafe(swiftUnsafePointer);
@@ -40,27 +32,19 @@ namespace margelo::nitro::aix::bridge::swift {
     return swiftPart.toUnsafe();
   }
   
-  // pragma MARK: std::function<void(bool /* isLast */)>
-  Func_void_bool create_Func_void_bool(void* NON_NULL swiftClosureWrapper) noexcept {
-    auto swiftClosure = Aix::Func_void_bool::fromUnsafe(swiftClosureWrapper);
-    return [swiftClosure = std::move(swiftClosure)](bool isLast) mutable -> void {
-      swiftClosure.call(isLast);
-    };
+  // pragma MARK: std::shared_ptr<HybridAixCellViewSpec>
+  std::shared_ptr<HybridAixCellViewSpec> create_std__shared_ptr_HybridAixCellViewSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
+    Aix::HybridAixCellViewSpec_cxx swiftPart = Aix::HybridAixCellViewSpec_cxx::fromUnsafe(swiftUnsafePointer);
+    return std::make_shared<margelo::nitro::aix::HybridAixCellViewSpecSwift>(swiftPart);
   }
-  
-  // pragma MARK: std::shared_ptr<HybridAixBlankViewSpec>
-  std::shared_ptr<HybridAixBlankViewSpec> create_std__shared_ptr_HybridAixBlankViewSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
-    Aix::HybridAixBlankViewSpec_cxx swiftPart = Aix::HybridAixBlankViewSpec_cxx::fromUnsafe(swiftUnsafePointer);
-    return std::make_shared<margelo::nitro::aix::HybridAixBlankViewSpecSwift>(swiftPart);
-  }
-  void* NON_NULL get_std__shared_ptr_HybridAixBlankViewSpec_(std__shared_ptr_HybridAixBlankViewSpec_ cppType) {
-    std::shared_ptr<margelo::nitro::aix::HybridAixBlankViewSpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::aix::HybridAixBlankViewSpecSwift>(cppType);
+  void* NON_NULL get_std__shared_ptr_HybridAixCellViewSpec_(std__shared_ptr_HybridAixCellViewSpec_ cppType) {
+    std::shared_ptr<margelo::nitro::aix::HybridAixCellViewSpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::aix::HybridAixCellViewSpecSwift>(cppType);
     #ifdef NITRO_DEBUG
     if (swiftWrapper == nullptr) [[unlikely]] {
-      throw std::runtime_error("Class \"HybridAixBlankViewSpec\" is not implemented in Swift!");
+      throw std::runtime_error("Class \"HybridAixCellViewSpec\" is not implemented in Swift!");
     }
     #endif
-    Aix::HybridAixBlankViewSpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
+    Aix::HybridAixCellViewSpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
     return swiftPart.toUnsafe();
   }
   

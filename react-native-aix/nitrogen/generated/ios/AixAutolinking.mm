@@ -11,7 +11,7 @@
 #import <type_traits>
 
 #include "HybridAixSpecSwift.hpp"
-#include "HybridAixBlankViewSpecSwift.hpp"
+#include "HybridAixCellViewSpecSwift.hpp"
 #include "HybridAixComposerSpecSwift.hpp"
 
 @interface AixAutolinking : NSObject
@@ -31,9 +31,9 @@
     }
   );
   HybridObjectRegistry::registerHybridObjectConstructor(
-    "AixBlankView",
+    "AixCellView",
     []() -> std::shared_ptr<HybridObject> {
-      std::shared_ptr<HybridAixBlankViewSpec> hybridObject = Aix::AixAutolinking::createAixBlankView();
+      std::shared_ptr<HybridAixCellViewSpec> hybridObject = Aix::AixAutolinking::createAixCellView();
       return hybridObject;
     }
   );

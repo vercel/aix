@@ -17,8 +17,8 @@
 
 #include "JHybridAixSpec.hpp"
 #include "views/JHybridAixStateUpdater.hpp"
-#include "JHybridAixBlankViewSpec.hpp"
-#include "views/JHybridAixBlankViewStateUpdater.hpp"
+#include "JHybridAixCellViewSpec.hpp"
+#include "views/JHybridAixCellViewStateUpdater.hpp"
 #include "JHybridAixComposerSpec.hpp"
 #include "views/JHybridAixComposerStateUpdater.hpp"
 #include <NitroModules/DefaultConstructableObject.hpp>
@@ -34,8 +34,8 @@ int initialize(JavaVM* vm) {
     // Register native JNI methods
     margelo::nitro::aix::JHybridAixSpec::registerNatives();
     margelo::nitro::aix::views::JHybridAixStateUpdater::registerNatives();
-    margelo::nitro::aix::JHybridAixBlankViewSpec::registerNatives();
-    margelo::nitro::aix::views::JHybridAixBlankViewStateUpdater::registerNatives();
+    margelo::nitro::aix::JHybridAixCellViewSpec::registerNatives();
+    margelo::nitro::aix::views::JHybridAixCellViewStateUpdater::registerNatives();
     margelo::nitro::aix::JHybridAixComposerSpec::registerNatives();
     margelo::nitro::aix::views::JHybridAixComposerStateUpdater::registerNatives();
 
@@ -49,9 +49,9 @@ int initialize(JavaVM* vm) {
       }
     );
     HybridObjectRegistry::registerHybridObjectConstructor(
-      "AixBlankView",
+      "AixCellView",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixBlankViewSpec::javaobject> object("com/margelo/nitro/aix/HybridAixBlankView");
+        static DefaultConstructableObject<JHybridAixCellViewSpec::javaobject> object("com/margelo/nitro/aix/HybridAixCellView");
         auto instance = object.create();
         return instance->cthis()->shared();
       }

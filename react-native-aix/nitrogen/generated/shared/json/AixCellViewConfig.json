@@ -1,5 +1,5 @@
 {
-  "uiViewClassName": "AixBlankView",
+  "uiViewClassName": "AixCellView",
   "supportsRawText": false,
   "bubblingEventTypes": {},
   "directEventTypes": {},

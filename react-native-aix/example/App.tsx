@@ -1,13 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Aix } from 'react-native-aix';
 
 function App(): React.JSX.Element {
-  return (
-    <View style={styles.container}>
-        <Aix isRed={true} style={styles.view} testID="aix" />
-    </View>
-  );
+  return <View style={styles.container}></View>;
 }
 
 const styles = StyleSheet.create({
@@ -18,7 +13,8 @@ const styles = StyleSheet.create({
   },
   view: {
     width: 200,
-    height: 200
-  }});
+    height: 200,
+  },
+});
 
 export default App;
