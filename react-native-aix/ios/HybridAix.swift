@@ -513,17 +513,14 @@ extension HybridAix: KeyboardManagerDelegate {
     }
     
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        let shouldShiftContentUp: Bool = {
-            guard let scrollView else { return false }
-            let scrolledNearEndThreshold: CGFloat = 100
-            let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
-            return blankSize == 0 && distFromEnd < scrolledNearEndThreshold
-        }()
+        guard let scrollView else { return nil }
+        let scrolledNearEndThreshold: CGFloat = 100
+        let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
+        let shouldShiftContentUp = blankSize == 0 && distFromEnd < scrolledNearEndThreshold
 
         
         if shouldShiftContentUp {
-             print("[Aix] getContentOffsetYWhenOpening: shouldShiftContentUp=\(shouldShiftContentUp)")
-            return (scrollY, scrollY + keyboardHeightWhenOpen)    
+            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen)    
         }
         return nil
     }
