@@ -258,10 +258,10 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Apply the current content inset to the scroll view
     func applyContentInset() {
         guard let scrollView = scrollView else { return }
-        let inset = contentInsetBottom
-        print("[Aix] Applying contentInset.bottom = \(inset)")
-        scrollView.contentInset.bottom = inset
-        scrollView.verticalScrollIndicatorInsets.bottom = inset
+        if scrollView.contentInset.bottom != contentInsetBottom {
+          print("[Aix] Applying contentInset.bottom = \(contentInsetBottom)")
+          scrollView.contentInset.bottom = contentInsetBottom
+        }
     }
     
     // MARK: - Keyboard Manager

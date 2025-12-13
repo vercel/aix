@@ -27,11 +27,13 @@ function App(): React.JSX.Element {
         }}
       >
         <ScrollView
+          // TODO support this?
           // contentInsetAdjustmentBehavior="automatic"
           bounces
           alwaysBounceVertical
           keyboardDismissMode="interactive"
           contentContainerStyle={styles.scrollView}
+          scrollIndicatorInsets={{ bottom: 0 - 200 }}
         >
           {Array.from({ length: 20 }).map((_, index, arr) => {
             const isLast = index === arr.length - 1;
@@ -41,7 +43,7 @@ function App(): React.JSX.Element {
                   style={[
                     styles.view,
                     {
-                      height: 200,
+                      height: 100,
                       backgroundColor: index % 2 === 0 ? 'blue' : 'pink',
                     },
                   ]}
@@ -50,7 +52,7 @@ function App(): React.JSX.Element {
             );
           })}
         </ScrollView>
-        <View
+        {/* <View
           style={{
             position: 'absolute',
             inset: 0,
@@ -58,7 +60,7 @@ function App(): React.JSX.Element {
             top: 'auto',
             height: 314,
           }}
-        />
+        /> */}
       </Aix>
     </View>
   );
