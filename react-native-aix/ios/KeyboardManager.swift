@@ -19,6 +19,9 @@ protocol KeyboardManagerDelegate: AnyObject {
     /// Called when keyboard animation starts
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent)
     
+    /// Called when an ongoing keyboard animation becomes interactive (user started scrolling to dismiss)
+    func keyboardManagerDidBecomeInteractive(_ manager: KeyboardManager)
+    
     /// Called when keyboard animation ends
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager)
 }
@@ -92,18 +95,61 @@ class KeyboardManager {
     // MARK: - Notification Handlers
     
     @objc private func keyboardWillShow(_ notification: Notification) {
+        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+        print("[KeyboardManager] keyboardWillShow - duration: \(duration), hasEvent: \(currentEvent != nil)")
+        
+        // Only handle if we don't already have an event (prevents duplicate from keyboardWillChangeFrame)
+        guard currentEvent == nil else { return }
         handleNotification(notification, isShowing: true)
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {
+        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+        print("[KeyboardManager] keyboardWillHide - duration: \(duration), hasEvent: \(currentEvent != nil)")
+        
+        // Only handle if we don't already have an event (prevents duplicate from keyboardWillChangeFrame)
+        guard currentEvent == nil else { return }
         handleNotification(notification, isShowing: false)
     }
     
     @objc private func keyboardWillChangeFrame(_ notification: Notification) {
-        // Only handle if we don't already have an event
-        if currentEvent == nil {
-            handleNotification(notification, isShowing: nil)
+        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+        let curve = (notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? Int) ?? -1
+        let isInteractive = duration == 0
+        
+        print("[KeyboardManager] keyboardWillChangeFrame - duration: \(duration), curve: \(curve), isInteractive: \(isInteractive), hasEvent: \(currentEvent != nil)")
+        
+        // If we already have an event that's NOT interactive, but this frame change IS interactive,
+        // then the user started an interactive dismissal - notify delegate
+        if let event = currentEvent, !event.isInteractive && isInteractive {
+            print("[KeyboardManager] Detected transition to interactive mode")
+            upgradeToInteractive()
+            return
         }
+        
+        // Only handle if we don't already have an event AND it's an interactive event (duration == 0)
+        guard currentEvent == nil else { return }
+        
+        // For non-interactive events, let keyboardWillShow/Hide handle it
+        guard isInteractive else { return }
+        
+        handleNotification(notification, isShowing: nil)
+    }
+    
+    /// Upgrades the current event to interactive mode
+    private func upgradeToInteractive() {
+        guard let event = currentEvent, !event.isInteractive else { return }
+        
+        // Create a new event with isInteractive = true
+        let interactiveEvent = KeyboardEvent(
+            startHeight: event.startHeight,
+            targetHeight: event.targetHeight,
+            isOpening: event.isOpening,
+            isInteractive: true
+        )
+        currentEvent = interactiveEvent
+        
+        delegate?.keyboardManagerDidBecomeInteractive(self)
     }
     
     private func handleNotification(_ notification: Notification, isShowing: Bool?) {
@@ -116,13 +162,18 @@ class KeyboardManager {
         let targetHeight = max(0, screenHeight - endFrame.origin.y)
         let isOpening = isShowing ?? (targetHeight > currentHeight)
         
+        // Determine if this is an interactive dismissal by checking animation duration
+        // Interactive dismissals have duration == 0 because animation follows user's finger
+        let duration = (userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+        let isInteractive = duration == 0
+        
         findKeyboardView()
         
         let event = KeyboardEvent(
             startHeight: currentHeight,
             targetHeight: targetHeight,
             isOpening: isOpening,
-            isInteractive: isShowing == nil
+            isInteractive: isInteractive
         )
         
         currentEvent = event

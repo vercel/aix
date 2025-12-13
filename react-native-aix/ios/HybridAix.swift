@@ -121,6 +121,12 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Cached scroll view reference (weak to avoid retain cycles)
     private weak var cachedScrollView: UIScrollView?
     
+    /// Flag to track if we've set up the pan gesture observer
+    private var didSetupPanGestureObserver = false
+    
+    /// Flag to track if we're currently in an interactive keyboard dismiss
+    private var isInInteractiveDismiss = false
+    
     // MARK: - Context References (weak to avoid retain cycles)
     
     weak var blankView: HybridAixCellView? = nil {
@@ -144,7 +150,67 @@ class HybridAix: HybridAixSpec, AixContext {
         let sv = searchRoot.findScrollView()
         cachedScrollView = sv
         print("[Aix] scrollView found: \(String(describing: sv))")
+        
+        // Set up pan gesture observer when we find the scroll view
+        if sv != nil && !didSetupPanGestureObserver {
+            setupPanGestureObserver()
+        }
+        
         return sv
+    }
+    
+    /// Set up observer on scroll view's pan gesture to detect interactive keyboard dismiss
+    private func setupPanGestureObserver() {
+        guard let scrollView = cachedScrollView else { return }
+        didSetupPanGestureObserver = true
+        
+        scrollView.panGestureRecognizer.addTarget(self, action: #selector(handlePanGesture(_:)))
+        print("[Aix] Pan gesture observer set up")
+    }
+    
+    /// Handle pan gesture state changes to detect interactive keyboard dismiss
+    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+        guard let scrollView = cachedScrollView,
+              scrollView.keyboardDismissMode == .interactive,
+              keyboardHeight > 0 else { return }
+        
+        switch gesture.state {
+        case .began, .changed:
+            let velocity = gesture.velocity(in: scrollView)
+            
+            // User is scrolling down (positive velocity.y) while keyboard is visible
+            if velocity.y > 0 && !isInInteractiveDismiss {
+                print("[Aix] Interactive keyboard dismiss detected! velocity.y=\(velocity.y)")
+                startInteractiveKeyboardDismiss()
+            }
+            
+        case .ended, .cancelled, .failed:
+            if isInInteractiveDismiss {
+                print("[Aix] Interactive gesture ended")
+                // The keyboard manager will handle the end via notifications
+            }
+            
+        default:
+            break
+        }
+    }
+    
+    /// Start tracking an interactive keyboard dismiss
+    private func startInteractiveKeyboardDismiss() {
+        guard !isInInteractiveDismiss else { return }
+        isInInteractiveDismiss = true
+        
+        let scrollY = scrollView?.contentOffset.y ?? 0
+        
+        print("[Aix] Starting interactive keyboard dismiss from height=\(keyboardHeight)")
+        
+        startEvent = KeyboardStartEvent(
+            scrollY: scrollY,
+            isOpening: false,
+            isInteractive: true,
+            interpolateContentOffsetY: (scrollY, scrollY - 100),
+            shouldCollapseBlankSize: false
+        )
     }
     
     /// Height of the composer view
@@ -200,7 +266,7 @@ class HybridAix: HybridAixSpec, AixContext {
     private struct KeyboardStartEvent {
         let scrollY: CGFloat
         let isOpening: Bool
-        let isInteractive: Bool
+        var isInteractive: Bool
         let interpolateContentOffsetY: (CGFloat, CGFloat)?
         let shouldCollapseBlankSize: Bool
     }
@@ -375,13 +441,26 @@ extension HybridAix: KeyboardManagerDelegate {
     }
     
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
-        print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight)")
+        print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight), alreadyInteractive=\(isInInteractiveDismiss)")
 
-        let isInteractive = event.isInteractive
-
-        if isInteractive {
-            print("[Aix] Keyboard started: isInteractive")
+        // If we're already in an interactive dismiss (detected via pan gesture),
+        // don't overwrite the event - just log and return
+        if isInInteractiveDismiss && !event.isOpening {
+            print("[Aix] Keyboard notification received during interactive dismiss - keeping existing event")
+            return
         }
+        
+        // Detect interactive dismissal by checking if:
+        // 1. Keyboard is closing (not opening)
+        // 2. Scroll view has interactive keyboard dismiss mode
+        // 3. User is actively scrolling (pan gesture is in progress)
+        var isInteractive = event.isInteractive || isInInteractiveDismiss
+        
+        if !event.isOpening && !isInteractive {
+            isInteractive = isInteractiveDismissInProgress()
+        }
+        
+        print("[Aix] Keyboard started: isInteractive=\(isInteractive)")
 
         let scrollY = scrollView?.contentOffset.y ?? 0
         var interpolateContentOffsetY = (scrollY, scrollY - 100)
@@ -397,6 +476,23 @@ extension HybridAix: KeyboardManagerDelegate {
             interpolateContentOffsetY: interpolateContentOffsetY,
             shouldCollapseBlankSize: false
         )
+    }
+    
+    /// Check if an interactive keyboard dismiss is in progress by examining scroll view state
+    private func isInteractiveDismissInProgress() -> Bool {
+        guard let scrollView = scrollView else { return false }
+        
+        // Check if scroll view has interactive keyboard dismiss mode
+        guard scrollView.keyboardDismissMode == .interactive else { return false }
+        
+        // Check if pan gesture is active (user is scrolling)
+        let panGesture = scrollView.panGestureRecognizer
+        let gestureState = panGesture.state
+        
+        print("[Aix] Checking interactive: keyboardDismissMode=\(scrollView.keyboardDismissMode.rawValue), panState=\(gestureState.rawValue)")
+        
+        // Pan gesture states: .began = 1, .changed = 2
+        return gestureState == .began || gestureState == .changed
     }
 
     func calculateInterpolateContentOffsetY(isOpening: Bool, scrollY: CGFloat) -> (CGFloat, CGFloat)? {
@@ -414,9 +510,20 @@ extension HybridAix: KeyboardManagerDelegate {
         return nil
     }
     
+    func keyboardManagerDidBecomeInteractive(_ manager: KeyboardManager) {
+        print("[Aix] Keyboard became interactive!")
+        
+        // Update the existing startEvent to mark it as interactive
+        if var event = startEvent {
+            event.isInteractive = true
+            startEvent = event
+        }
+    }
+    
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
         print("[Aix] Keyboard ended")
         
         startEvent = nil
+        isInInteractiveDismiss = false
     }
 }
