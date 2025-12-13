@@ -105,8 +105,8 @@ class HybridAix: HybridAixSpec, AixContext {
     var scrollOnComposerSizeUpdate: Bool = false
     var scrollEndReachedThreshold: Double? = 200
 
-    var scrollEndBlankSizeThreshold: Double {
-
+    var keyboardOpenBlankSizeThreshold: Double {
+        return 0
     }
 
     // MARK: - Private Types
@@ -224,10 +224,8 @@ class HybridAix: HybridAixSpec, AixContext {
     private var composerHeight: CGFloat {
         return composerView?.view.bounds.height ?? 0
     }
-    
-    /// Calculate the blank size - the space needed to push content up
-    /// so the last message can scroll to the top of the visible area
-    var blankSize: CGFloat {
+
+    private func calculateBlankSize(keyboardHeight: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
         
         let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
@@ -240,6 +238,12 @@ class HybridAix: HybridAixSpec, AixContext {
         let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
         
         return max(0, inset)
+    }
+    
+    /// Calculate the blank size - the space needed to push content up
+    /// so the last message can scroll to the top of the visible area
+    var blankSize: CGFloat {
+        return calculateBlankSize(keyboardHeight: keyboardHeight)
     }
     
     /// The content inset for the bottom of the scroll view
@@ -517,11 +521,17 @@ extension HybridAix: KeyboardManagerDelegate {
         guard let scrollView else { return nil } 
         let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
         let shouldShiftContentUp = blankSize == 0 && distFromEnd < (scrollEndReachedThreshold ?? 200)
-
         
         if shouldShiftContentUp {
             return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen)    
         }
+
+        let blankSizeWhenKeyboardIsOpen = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
+        if blankSize > 0, blankSizeWhenKeyboardIsOpen < keyboardOpenBlankSizeThreshold {
+            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen)    
+        }
+
+
         return nil
     }
     func calculateInterpolateContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
