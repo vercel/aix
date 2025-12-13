@@ -201,7 +201,7 @@ class HybridAix: HybridAixSpec, AixContext {
         let scrollY: CGFloat
         let isOpening: Bool
         let isInteractive: Bool
-        let targetContentOffsetY: CGFloat?
+        let interpolateContentOffsetY: (CGFloat, CGFloat)?
         let shouldCollapseBlankSize: Bool
     }
     
@@ -364,21 +364,35 @@ extension HybridAix: KeyboardManagerDelegate {
         
         keyboardHeight = height
         applyContentInset()
+
+        if let (startY, endY) = startEvent?.interpolateContentOffsetY {
+            let newScrollY = startY + (endY - startY) * progress
+            scrollView?.setContentOffset(CGPoint(x: 0, y: newScrollY), animated: false)
+        }
+        
         
         // TODO: Interpolate scroll position if startEvent?.targetContentOffsetY is set
     }
     
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
         print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight)")
+
+        let scrollY = scrollView?.contentOffset.y ?? 0
+        var interpolateContentOffsetY = (scrollY, scrollY - 100)
+        
+        if event.isOpening {
+            interpolateContentOffsetY = (scrollY, scrollY + 100)
+        }
         
         startEvent = KeyboardStartEvent(
-            scrollY: scrollView?.contentOffset.y ?? 0,
+            scrollY: scrollY,
             isOpening: event.isOpening,
             isInteractive: event.isInteractive,
-            targetContentOffsetY: 100, // TODO: calculate target offset
+            interpolateContentOffsetY: interpolateContentOffsetY,
             shouldCollapseBlankSize: false
         )
     }
+    
     
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
         print("[Aix] Keyboard ended")
