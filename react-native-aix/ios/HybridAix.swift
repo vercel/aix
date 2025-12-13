@@ -377,6 +377,12 @@ extension HybridAix: KeyboardManagerDelegate {
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
         print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight)")
 
+        let isInteractive = event.isInteractive
+
+        if isInteractive {
+            print("[Aix] Keyboard started: isInteractive")
+        }
+
         let scrollY = scrollView?.contentOffset.y ?? 0
         var interpolateContentOffsetY = (scrollY, scrollY - 100)
         
@@ -387,12 +393,26 @@ extension HybridAix: KeyboardManagerDelegate {
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
             isOpening: event.isOpening,
-            isInteractive: event.isInteractive,
+            isInteractive: isInteractive,
             interpolateContentOffsetY: interpolateContentOffsetY,
             shouldCollapseBlankSize: false
         )
     }
+
+    func calculateInterpolateContentOffsetY(isOpening: Bool, scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        if isOpening {
+            return calculateInterpolateContentOffsetYWhenOpening(scrollY: scrollY)
+        } else {
+            return calculateInterpolateContentOffsetYWhenClosing(scrollY: scrollY)
+        }
+    }
     
+    func calculateInterpolateContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        return nil
+    }
+    func calculateInterpolateContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        return nil
+    }
     
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
         print("[Aix] Keyboard ended")
