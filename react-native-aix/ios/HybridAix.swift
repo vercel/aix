@@ -105,6 +105,10 @@ class HybridAix: HybridAixSpec, AixContext {
     var scrollOnComposerSizeUpdate: Bool = false
     var scrollEndReachedThreshold: Double? = 200
 
+    var scrollEndBlankSizeThreshold: Double {
+
+    }
+
     // MARK: - Private Types
     
     private struct QueuedScrollToEnd {
@@ -234,11 +238,6 @@ class HybridAix: HybridAixSpec, AixContext {
         // The inset is: scrollable area height - blank view height - keyboard height
         // This ensures when scrolled to end, the last message is at the top
         let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
-
-        print("[Aix][blankSize] inset=\(inset)")
-        print("[Aix][blankSize] cellBeforeBlankViewHeight=\(cellBeforeBlankViewHeight)")
-        print("[Aix][blankSize] blankViewHeight=\(blankViewHeight)")
-        print("[Aix][blankSize] keyboardHeight=\(keyboardHeight)")
         
         return max(0, inset)
     }

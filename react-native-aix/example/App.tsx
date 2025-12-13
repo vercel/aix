@@ -34,7 +34,7 @@ function App(): React.JSX.Element {
             const isLast = index === arr.length - 1;
             return (
               <AixCellView key={index} index={index} isLast={isLast}>
-                <View style={[styles.view, isLast && { height: 600 }]}></View>
+                <View style={[styles.view, isLast && { height: 200 }]}></View>
               </AixCellView>
             );
           })}

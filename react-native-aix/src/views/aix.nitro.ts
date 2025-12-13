@@ -12,6 +12,19 @@ export interface AixProps extends HybridViewProps {
    *
    */
   scrollEndReachedThreshold?: number
+  /**
+   * Scroll end blank size threshold.
+   *
+   * If the blank size is less than this threshold, then the content will collapse to the keyboard when the keyboard is opened.
+   *
+   * You likely don't need to customize this much.
+   *
+   * Default: 0
+   *
+   * TODO we might want to implement this, but i'm not sure.
+   *
+   * By default, the content will collapse to the keyboard on opening if the blank size is less than half the size of the scroll view parent, and greater than the keyboard height.
+   */
 }
 
 export type Aix = HybridView<AixProps, {}, { ios: 'swift'; android: 'kotlin' }>
