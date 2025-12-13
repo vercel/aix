@@ -97,6 +97,7 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Current keyboard height (will be updated by keyboard events)
     var keyboardHeight: CGFloat = 0
+    var keyboardHeightWhenOpen: CGFloat = 0
     
     // MARK: - Props (from Nitro spec)
     var shouldStartAtEnd: Bool = true
@@ -443,6 +444,12 @@ extension HybridAix: KeyboardManagerDelegate {
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
         print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight), alreadyInteractive=\(isInInteractiveDismiss)")
 
+        // Capture the target height when keyboard is opening - this is a snapshot, not reactive to each frame
+        if event.isOpening {
+            keyboardHeightWhenOpen = event.targetHeight
+            print("[Aix] Set keyboardHeightWhenOpen=\(keyboardHeightWhenOpen)")
+        }
+
         // If we're already in an interactive dismiss (detected via pan gesture),
         // don't overwrite the event - just log and return
         if isInInteractiveDismiss && !event.isOpening {
@@ -463,17 +470,12 @@ extension HybridAix: KeyboardManagerDelegate {
         print("[Aix] Keyboard started: isInteractive=\(isInteractive)")
 
         let scrollY = scrollView?.contentOffset.y ?? 0
-        var interpolateContentOffsetY = (scrollY, scrollY - 100)
-        
-        if event.isOpening {
-            interpolateContentOffsetY = (scrollY, scrollY + 100)
-        }
-        
+
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
             isOpening: event.isOpening,
             isInteractive: isInteractive,
-            interpolateContentOffsetY: interpolateContentOffsetY,
+            interpolateContentOffsetY: calculateInterpolateContentOffsetY(isOpening: event.isOpening, scrollY: scrollY),
             shouldCollapseBlankSize: false
         )
     }
@@ -497,13 +499,32 @@ extension HybridAix: KeyboardManagerDelegate {
 
     func calculateInterpolateContentOffsetY(isOpening: Bool, scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         if isOpening {
-            return calculateInterpolateContentOffsetYWhenOpening(scrollY: scrollY)
+            return getContentOffsetYWhenOpening(scrollY: scrollY)
         } else {
             return calculateInterpolateContentOffsetYWhenClosing(scrollY: scrollY)
         }
     }
+
+    private func isScrolledNearEnd() -> Bool {
+        guard let scrollView = scrollView else { return false }
+        let scrollY = scrollView.contentOffset.y
+        print("[Aix] isScrolledNearEnd: scrollY=\(scrollY)")
+        return false
+    }
     
-    func calculateInterpolateContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+    func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        let shouldShiftContentUp: Bool = {
+            guard let scrollView else { return false }
+            let scrolledNearEndThreshold: CGFloat = 100
+            let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
+            return blankSize == 0 && distFromEnd < scrolledNearEndThreshold
+        }()
+
+        
+        if shouldShiftContentUp {
+             print("[Aix] getContentOffsetYWhenOpening: shouldShiftContentUp=\(shouldShiftContentUp)")
+            return (scrollY, scrollY + keyboardHeightWhenOpen)    
+        }
         return nil
     }
     func calculateInterpolateContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {

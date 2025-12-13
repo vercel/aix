@@ -29,15 +29,14 @@ function App(): React.JSX.Element {
           keyboardDismissMode="interactive"
           contentContainerStyle={styles.scrollView}
         >
-          {Array.from({ length: 20 }).map((_, index, arr) => (
-            <AixCellView
-              key={index}
-              index={index}
-              isLast={index === arr.length - 1}
-            >
-              <View style={styles.view}></View>
-            </AixCellView>
-          ))}
+          {Array.from({ length: 20 }).map((_, index, arr) => {
+            const isLast = index === arr.length - 1;
+            return (
+              <AixCellView key={index} index={index} isLast={isLast}>
+                <View style={[styles.view, isLast && { height: 600 }]}></View>
+              </AixCellView>
+            );
+          })}
         </ScrollView>
       </Aix>
     </View>
