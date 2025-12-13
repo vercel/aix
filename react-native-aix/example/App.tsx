@@ -22,9 +22,12 @@ function App(): React.JSX.Element {
         scrollOnComposerSizeUpdate={true}
         scrollEndReachedThreshold={200}
         style={{ flex: 1 }}
+        onLayout={e => {
+          console.log('[onLayout]', e.nativeEvent.layout.height);
+        }}
       >
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
+          // contentInsetAdjustmentBehavior="automatic"
           bounces
           alwaysBounceVertical
           keyboardDismissMode="interactive"
@@ -34,11 +37,28 @@ function App(): React.JSX.Element {
             const isLast = index === arr.length - 1;
             return (
               <AixCellView key={index} index={index} isLast={isLast}>
-                <View style={[styles.view, isLast && { height: 200 }]}></View>
+                <View
+                  style={[
+                    styles.view,
+                    {
+                      height: 200,
+                      backgroundColor: index % 2 === 0 ? 'blue' : 'pink',
+                    },
+                  ]}
+                ></View>
               </AixCellView>
             );
           })}
         </ScrollView>
+        <View
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'red',
+            top: 'auto',
+            height: 314,
+          }}
+        />
       </Aix>
     </View>
   );
@@ -49,13 +69,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 60,
   },
-  scrollView: {
-    gap: 12,
-  },
+  scrollView: {},
   view: {
     width: 200,
-    height: 200,
-    backgroundColor: 'blue',
+    height: 100,
   },
 });
 

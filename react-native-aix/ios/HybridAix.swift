@@ -236,6 +236,10 @@ class HybridAix: HybridAixSpec, AixContext {
         // The inset is: scrollable area height - blank view height - keyboard height
         // This ensures when scrolled to end, the last message is at the top
         let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
+
+        print("[Aix][calculateBlankSize] scrollView.bounds.height=\(scrollView.bounds.height)")
+        print("[Aix][calculateBlankSize] blankViewHeight=\(blankViewHeight)")
+        print("[Aix][calculateBlankSize] cellBeforeBlankViewHeight=\(cellBeforeBlankViewHeight)")
         
         return max(0, inset)
     }
@@ -432,8 +436,6 @@ class HybridAix: HybridAixSpec, AixContext {
 
 extension HybridAix: KeyboardManagerDelegate {
     func keyboardManager(_ manager: KeyboardManager, didUpdateHeight height: CGFloat, progress: CGFloat) {
-        print("[Aix][delegate] Keyboard progress: \(progress), height: \(height) startEvent \(startEvent?.scrollY)")
-        
         keyboardHeight = height
         applyContentInset()
 
@@ -520,15 +522,20 @@ extension HybridAix: KeyboardManagerDelegate {
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard let scrollView else { return nil } 
         let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
-        let shouldShiftContentUp = blankSize == 0 && distFromEnd < (scrollEndReachedThreshold ?? 200)
+        let isScrolledNearEnd = distFromEnd <= (scrollEndReachedThreshold ?? 200)
+        let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         if shouldShiftContentUp {
             return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen)    
         }
 
         let blankSizeWhenKeyboardIsOpen = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
-        if blankSize > 0, blankSizeWhenKeyboardIsOpen < keyboardOpenBlankSizeThreshold {
-            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen)    
+        print("[getContentOffsetYWhenOpening] \(blankSize), \(blankSizeWhenKeyboardIsOpen) \(keyboardHeightWhenOpen) \(contentInsetBottom)")
+        // if blankSize > 0, blankSizeWhenKeyboardIsOpen <= keyboardOpenBlankSizeThreshold {
+        //     return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen)    
+        // }
+        if blankSize > 0, blankSize <= keyboardHeightWhenOpen, isScrolledNearEnd {
+            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen)    
         }
 
 
