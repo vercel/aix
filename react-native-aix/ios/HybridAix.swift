@@ -71,6 +71,7 @@ extension UIView {
 // MARK: - HybridAix (Root Context)
 
 class HybridAix: HybridAixSpec, AixContext {
+    
 
     private var didScrollToEndInitially = false
     
@@ -102,6 +103,7 @@ class HybridAix: HybridAixSpec, AixContext {
     // MARK: - Props (from Nitro spec)
     var shouldStartAtEnd: Bool = true
     var scrollOnComposerSizeUpdate: Bool = false
+    var scrollEndReachedThreshold: Double? = 200
 
     // MARK: - Private Types
     
@@ -513,10 +515,9 @@ extension HybridAix: KeyboardManagerDelegate {
     }
     
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        guard let scrollView else { return nil }
-        let scrolledNearEndThreshold: CGFloat = 100
+        guard let scrollView else { return nil } 
         let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
-        let shouldShiftContentUp = blankSize == 0 && distFromEnd < scrolledNearEndThreshold
+        let shouldShiftContentUp = blankSize == 0 && distFromEnd < (scrollEndReachedThreshold ?? 200)
 
         
         if shouldShiftContentUp {

@@ -54,6 +54,8 @@ namespace margelo::nitro::aix {
     void setShouldStartAtEnd(bool shouldStartAtEnd) override;
     bool getScrollOnComposerSizeUpdate() override;
     void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) override;
+    std::optional<double> getScrollEndReachedThreshold() override;
+    void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) override;
 
   public:
     // Methods

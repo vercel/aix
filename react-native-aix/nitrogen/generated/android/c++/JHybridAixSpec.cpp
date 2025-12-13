@@ -9,7 +9,7 @@
 
 
 
-
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -57,6 +57,15 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) {
     static const auto method = javaClassStatic()->getMethod<void(jboolean /* scrollOnComposerSizeUpdate */)>("setScrollOnComposerSizeUpdate");
     method(_javaPart, scrollOnComposerSizeUpdate);
+  }
+  std::optional<double> JHybridAixSpec::getScrollEndReachedThreshold() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JDouble>()>("getScrollEndReachedThreshold");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->value()) : std::nullopt;
+  }
+  void JHybridAixSpec::setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* scrollEndReachedThreshold */)>("setScrollEndReachedThreshold");
+    method(_javaPart, scrollEndReachedThreshold.has_value() ? jni::JDouble::valueOf(scrollEndReachedThreshold.value()) : nullptr);
   }
 
   // Methods

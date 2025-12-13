@@ -81,6 +81,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setScrollOnComposerSizeUpdate(newViewProps.scrollOnComposerSizeUpdate.value);
     newViewProps.scrollOnComposerSizeUpdate.isDirty = false;
   }
+  // scrollEndReachedThreshold: optional
+  if (newViewProps.scrollEndReachedThreshold.isDirty) {
+    swiftPart.setScrollEndReachedThreshold(newViewProps.scrollEndReachedThreshold.value);
+    newViewProps.scrollEndReachedThreshold.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 

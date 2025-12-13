@@ -16,10 +16,10 @@
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
 
+#include <optional>
 #include <memory>
 #include "HybridAixSpec.hpp"
 #include <functional>
-#include <optional>
 
 namespace margelo::nitro::aix::views {
 
@@ -44,6 +44,7 @@ namespace margelo::nitro::aix::views {
   public:
     CachedProp<bool> shouldStartAtEnd;
     CachedProp<bool> scrollOnComposerSizeUpdate;
+    CachedProp<std::optional<double>> scrollEndReachedThreshold;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> hybridRef;
 
   private:

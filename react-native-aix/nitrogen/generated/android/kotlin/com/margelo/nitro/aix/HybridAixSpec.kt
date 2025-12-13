@@ -53,6 +53,12 @@ abstract class HybridAixSpec: HybridView() {
   @set:DoNotStrip
   @set:Keep
   abstract var scrollOnComposerSizeUpdate: Boolean
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var scrollEndReachedThreshold: Double?
 
   // Methods
   

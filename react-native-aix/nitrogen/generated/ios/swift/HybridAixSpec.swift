@@ -13,6 +13,7 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Properties
   var shouldStartAtEnd: Bool { get set }
   var scrollOnComposerSizeUpdate: Bool { get set }
+  var scrollEndReachedThreshold: Double? { get set }
 
   // Methods
   

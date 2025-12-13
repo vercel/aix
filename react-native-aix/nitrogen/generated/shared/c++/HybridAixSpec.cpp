@@ -18,6 +18,8 @@ namespace margelo::nitro::aix {
       prototype.registerHybridSetter("shouldStartAtEnd", &HybridAixSpec::setShouldStartAtEnd);
       prototype.registerHybridGetter("scrollOnComposerSizeUpdate", &HybridAixSpec::getScrollOnComposerSizeUpdate);
       prototype.registerHybridSetter("scrollOnComposerSizeUpdate", &HybridAixSpec::setScrollOnComposerSizeUpdate);
+      prototype.registerHybridGetter("scrollEndReachedThreshold", &HybridAixSpec::getScrollEndReachedThreshold);
+      prototype.registerHybridSetter("scrollEndReachedThreshold", &HybridAixSpec::setScrollEndReachedThreshold);
     });
   }
 

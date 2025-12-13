@@ -20,6 +20,7 @@ function App(): React.JSX.Element {
       <Aix
         shouldStartAtEnd={true}
         scrollOnComposerSizeUpdate={true}
+        scrollEndReachedThreshold={200}
         style={{ flex: 1 }}
       >
         <ScrollView

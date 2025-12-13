@@ -135,6 +135,23 @@ open class HybridAixSpec_cxx {
       self.__implementation.scrollOnComposerSizeUpdate = newValue
     }
   }
+  
+  public final var scrollEndReachedThreshold: bridge.std__optional_double_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = self.__implementation.scrollEndReachedThreshold {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.scrollEndReachedThreshold = newValue.value
+    }
+  }
 
   // Methods
   public final func getView() -> UnsafeMutableRawPointer {

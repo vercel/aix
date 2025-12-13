@@ -6,6 +6,7 @@
   "validAttributes": {
     "shouldStartAtEnd": true,
     "scrollOnComposerSizeUpdate": true,
+    "scrollEndReachedThreshold": true,
     "hybridRef": true
   }
 }

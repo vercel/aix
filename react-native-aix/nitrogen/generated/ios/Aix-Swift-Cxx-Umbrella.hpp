@@ -20,6 +20,7 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
 #include <memory>
+#include <optional>
 
 // C++ helpers for Swift
 #include "Aix-Swift-Cxx-Bridge.hpp"

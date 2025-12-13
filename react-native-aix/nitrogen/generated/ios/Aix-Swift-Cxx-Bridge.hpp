@@ -28,6 +28,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
 #include <memory>
+#include <optional>
 
 /**
  * Contains specialized versions of C++ templated types so they can be accessed from Swift,
@@ -35,6 +36,21 @@ namespace Aix { class HybridAixSpec_cxx; }
  */
 namespace margelo::nitro::aix::bridge::swift {
 
+  // pragma MARK: std::optional<double>
+  /**
+   * Specialized version of `std::optional<double>`.
+   */
+  using std__optional_double_ = std::optional<double>;
+  inline std::optional<double> create_std__optional_double_(const double& value) noexcept {
+    return std::optional<double>(value);
+  }
+  inline bool has_value_std__optional_double_(const std::optional<double>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline double get_std__optional_double_(const std::optional<double>& optional) noexcept {
+    return *optional;
+  }
+  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   /**
    * Specialized version of `std::shared_ptr<HybridAixSpec>`.

@@ -15,7 +15,7 @@
 
 
 
-
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -48,6 +48,8 @@ namespace margelo::nitro::aix {
       virtual void setShouldStartAtEnd(bool shouldStartAtEnd) = 0;
       virtual bool getScrollOnComposerSizeUpdate() = 0;
       virtual void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) = 0;
+      virtual std::optional<double> getScrollEndReachedThreshold() = 0;
+      virtual void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) = 0;
 
     public:
       // Methods

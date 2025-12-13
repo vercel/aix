@@ -45,6 +45,16 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.scrollOnComposerSizeUpdate: ") + exc.what());
       }
     }()),
+    scrollEndReachedThreshold([&]() -> CachedProp<std::optional<double>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("scrollEndReachedThreshold", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.scrollEndReachedThreshold;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<double>>::fromRawValue(*runtime, value, sourceProps.scrollEndReachedThreshold);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.scrollEndReachedThreshold: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -60,12 +70,14 @@ namespace margelo::nitro::aix::views {
     react::ViewProps(),
     shouldStartAtEnd(other.shouldStartAtEnd),
     scrollOnComposerSizeUpdate(other.scrollOnComposerSizeUpdate),
+    scrollEndReachedThreshold(other.scrollEndReachedThreshold),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
       case hashString("shouldStartAtEnd"): return true;
       case hashString("scrollOnComposerSizeUpdate"): return true;
+      case hashString("scrollEndReachedThreshold"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

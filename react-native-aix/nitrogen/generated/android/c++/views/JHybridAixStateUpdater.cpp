@@ -44,6 +44,10 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setScrollOnComposerSizeUpdate(props.scrollOnComposerSizeUpdate.value);
     // TODO: Set isDirty = false
   }
+  if (props.scrollEndReachedThreshold.isDirty) {
+    view->setScrollEndReachedThreshold(props.scrollEndReachedThreshold.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

@@ -14,7 +14,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 
 
 
-
+#include <optional>
 
 #include "Aix-Swift-Cxx-Umbrella.hpp"
 
@@ -67,6 +67,13 @@ namespace margelo::nitro::aix {
     }
     inline void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) noexcept override {
       _swiftPart.setScrollOnComposerSizeUpdate(std::forward<decltype(scrollOnComposerSizeUpdate)>(scrollOnComposerSizeUpdate));
+    }
+    inline std::optional<double> getScrollEndReachedThreshold() noexcept override {
+      auto __result = _swiftPart.getScrollEndReachedThreshold();
+      return __result;
+    }
+    inline void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) noexcept override {
+      _swiftPart.setScrollEndReachedThreshold(scrollEndReachedThreshold);
     }
 
   public:
