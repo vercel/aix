@@ -360,7 +360,7 @@ class HybridAix: HybridAixSpec, AixContext {
 
 extension HybridAix: KeyboardManagerDelegate {
     func keyboardManager(_ manager: KeyboardManager, didUpdateHeight height: CGFloat, progress: CGFloat) {
-        print("[Aix] Keyboard progress: \(progress), height: \(height)")
+        print("[Aix][delegate] Keyboard progress: \(progress), height: \(height) startEvent \(startEvent?.scrollY)")
         
         keyboardHeight = height
         applyContentInset()
@@ -375,7 +375,7 @@ extension HybridAix: KeyboardManagerDelegate {
             scrollY: scrollView?.contentOffset.y ?? 0,
             isOpening: event.isOpening,
             isInteractive: event.isInteractive,
-            targetContentOffsetY: nil, // TODO: calculate target offset
+            targetContentOffsetY: 100, // TODO: calculate target offset
             shouldCollapseBlankSize: false
         )
     }
