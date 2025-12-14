@@ -38,7 +38,10 @@ function App(): React.JSX.Element {
                 style={[
                   styles.view,
                   {
-                    height: index % 2 === 1 ? 150 : 300,
+                    height:
+                      index % 2 === 1
+                        ? Math.random() * 150 + 100
+                        : Math.random() * 300 + 100,
                     backgroundColor: index % 2 === 0 ? '#333' : '#222222',
                   },
                 ]}
