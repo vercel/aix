@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,10 +9,11 @@ import {
 } from 'react-native';
 import { Aix, AixCellView, AixComposer, AixRef } from 'react-native-aix';
 import { callback } from 'react-native-nitro-modules';
-const length = 20;
 
 function App(): React.JSX.Element {
   const aix = useRef<AixRef | null>(null);
+
+  const [numMessages, setNumMessages] = useState(20);
 
   return (
     <Aix
@@ -29,7 +30,7 @@ function App(): React.JSX.Element {
         keyboardDismissMode="interactive"
         contentContainerStyle={styles.scrollView}
       >
-        {Array.from({ length }).map((_, index, arr) => {
+        {Array.from({ length: numMessages }).map((_, index, arr) => {
           const isLast = index === arr.length - 1;
           return (
             <AixCellView key={index} index={index} isLast={isLast}>
@@ -66,7 +67,9 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={() => {
-            aix.current?.scrollToIndexWhenBlankSizeReady(length - 1);
+            const nextNumMessages = numMessages + 2;
+            setNumMessages(nextNumMessages);
+            aix.current?.scrollToIndexWhenBlankSizeReady(nextNumMessages - 1);
           }}
         />
       </AixComposer>
