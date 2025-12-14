@@ -193,7 +193,6 @@ class HybridAix: HybridAixSpec, AixContext {
             
         case .ended, .cancelled, .failed:
             if isInInteractiveDismiss {
-                print("[Aix] Interactive gesture ended")
                 // The keyboard manager will handle the end via notifications
             }
             
@@ -236,11 +235,6 @@ class HybridAix: HybridAixSpec, AixContext {
         // The inset is: scrollable area height - blank view height - keyboard height
         // This ensures when scrolled to end, the last message is at the top
         let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
-
-        print("[Aix][calculateBlankSize] scrollView.bounds.height=\(scrollView.bounds.height)")
-        print("[Aix][calculateBlankSize] blankViewHeight=\(blankViewHeight)")
-        print("[Aix][calculateBlankSize] cellBeforeBlankViewHeight=\(cellBeforeBlankViewHeight)")
-        
         return max(0, inset)
     }
     
@@ -452,14 +446,14 @@ extension HybridAix: KeyboardManagerDelegate {
         print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight), alreadyInteractive=\(isInInteractiveDismiss)")
 
         // Capture the target height when keyboard is opening - this is a snapshot, not reactive to each frame
-        if event.isOpening {
+        if event.isOpening, event.targetHeight > 0 {
             keyboardHeightWhenOpen = event.targetHeight
             print("[Aix] Set keyboardHeightWhenOpen=\(keyboardHeightWhenOpen)")
         }
 
         // If we're already in an interactive dismiss (detected via pan gesture),
         // don't overwrite the event - just log and return
-        if isInInteractiveDismiss && !event.isOpening {
+        if isInInteractiveDismiss {
             print("[Aix] Keyboard notification received during interactive dismiss - keeping existing event")
             return
         }
@@ -478,11 +472,19 @@ extension HybridAix: KeyboardManagerDelegate {
 
         let scrollY = scrollView?.contentOffset.y ?? 0
 
+        let interpolateContentOffsetY = {
+            if event.isOpening {
+                return self.getContentOffsetYWhenOpening(scrollY: scrollY)
+            } else {
+                return self.getContentOffsetYWhenClosing(scrollY: scrollY)
+            }
+        }()
+
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
             isOpening: event.isOpening,
             isInteractive: isInteractive,
-            interpolateContentOffsetY: calculateInterpolateContentOffsetY(isOpening: event.isOpening, scrollY: scrollY),
+            interpolateContentOffsetY: interpolateContentOffsetY,
             shouldCollapseBlankSize: false
         )
     }
@@ -502,21 +504,6 @@ extension HybridAix: KeyboardManagerDelegate {
         
         // Pan gesture states: .began = 1, .changed = 2
         return gestureState == .began || gestureState == .changed
-    }
-
-    func calculateInterpolateContentOffsetY(isOpening: Bool, scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        if isOpening {
-            return getContentOffsetYWhenOpening(scrollY: scrollY)
-        } else {
-            return calculateInterpolateContentOffsetYWhenClosing(scrollY: scrollY)
-        }
-    }
-
-    private func isScrolledNearEnd() -> Bool {
-        guard let scrollView = scrollView else { return false }
-        let scrollY = scrollView.contentOffset.y
-        print("[Aix] isScrolledNearEnd: scrollY=\(scrollY)")
-        return false
     }
     
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
@@ -541,7 +528,7 @@ extension HybridAix: KeyboardManagerDelegate {
 
         return nil
     }
-    func calculateInterpolateContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+    func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         return nil
     }
     

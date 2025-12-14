@@ -33,7 +33,7 @@ function App(): React.JSX.Element {
           alwaysBounceVertical
           keyboardDismissMode="interactive"
           contentContainerStyle={styles.scrollView}
-          scrollIndicatorInsets={{ bottom: 0 - 200 }}
+          scrollIndicatorInsets={{ bottom: 0 }}
         >
           {Array.from({ length: 20 }).map((_, index, arr) => {
             const isLast = index === arr.length - 1;
@@ -43,7 +43,7 @@ function App(): React.JSX.Element {
                   style={[
                     styles.view,
                     {
-                      height: 100,
+                      height: 300,
                       backgroundColor: index % 2 === 0 ? 'blue' : 'pink',
                     },
                   ]}
