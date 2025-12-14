@@ -29,7 +29,7 @@ function App(): React.JSX.Element {
                   style={[
                     styles.view,
                     {
-                      height: index % 2 === 1 ? 300 : 600,
+                      height: index % 2 === 1 ? 40 : 100,
                       backgroundColor: index % 2 === 0 ? '#333' : '#222222',
                     },
                   ]}
@@ -40,15 +40,15 @@ function App(): React.JSX.Element {
             );
           })}
         </ScrollView>
-        <AixComposer
-          style={{ position: 'absolute', bottom: 20, left: 0, right: 0 }}
-        >
-          <TextInput
-            style={{ height: 80, backgroundColor: '#111111' }}
-            placeholder="Type something..."
-          />
-        </AixComposer>
       </Aix>
+      <AixComposer
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+      >
+        <TextInput
+          style={{ height: 80, backgroundColor: '#111111' }}
+          placeholder="Type something..."
+        />
+      </AixComposer>
     </View>
   );
 }

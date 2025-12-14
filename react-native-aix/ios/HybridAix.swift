@@ -451,14 +451,8 @@ extension HybridAix: KeyboardManagerDelegate {
         let hasInterpolation = startEvent.interpolateContentOffsetY != nil
         
         print("[Aix][didUpdateHeight] isClosing=\(isClosing), hasInterpolation=\(hasInterpolation), progress=\(progress)")
-        
-        // When closing with interpolation, skip applyContentInset to prevent UIKit from 
-        // clamping the scroll position. We'll apply the final inset in keyboardManagerDidEndAnimation.
-        if !(isClosing && hasInterpolation) {
-            applyContentInset()
-        } else {
-            print("[Aix][didUpdateHeight] SKIPPING applyContentInset during close")
-        }
+
+        applyContentInset()
 
         if let (startY, endY) = startEvent.interpolateContentOffsetY {
             let newScrollY = startY + (endY - startY) * progress
@@ -475,7 +469,7 @@ extension HybridAix: KeyboardManagerDelegate {
         let isOpening = event.isOpening
 
         // Capture the target height when keyboard is opening - this is a snapshot, not reactive to each frame
-        if isOpening, event.targetHeight > 0 {
+        if isOpening, event.targetHeight > keyboardHeightWhenOpen {
             keyboardHeightWhenOpen = event.targetHeight
             print("[Aix] Set keyboardHeightWhenOpen=\(keyboardHeightWhenOpen)")
         }
@@ -551,7 +545,7 @@ extension HybridAix: KeyboardManagerDelegate {
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         if shouldShiftContentUp {
-            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen + composerHeight)    
+            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight)    
         }
 
         let blankSizeWhenKeyboardIsOpen = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
