@@ -218,8 +218,7 @@ class HybridAix: HybridAixSpec, AixContext {
             scrollY: scrollY,
             isOpening: false,
             isInteractive: true,
-            interpolateContentOffsetY: interpolation,
-            shouldCollapseBlankSize: false
+            interpolateContentOffsetY: interpolation, 
         )
     }
     
@@ -296,7 +295,6 @@ class HybridAix: HybridAixSpec, AixContext {
         let isOpening: Bool
         var isInteractive: Bool
         let interpolateContentOffsetY: (CGFloat, CGFloat)?
-        let shouldCollapseBlankSize: Bool
     }
     
     /// Current keyboard start event (nil when no keyboard transition is active)
@@ -412,18 +410,7 @@ class HybridAix: HybridAixSpec, AixContext {
     func getCell(index: Int) -> HybridAixCellView? {
         return cells.object(forKey: NSNumber(value: index))
     }
-    
-    /// Find the last cell (the one marked as isLast)
-    func findLastCell() -> HybridAixCellView? {
-        // Iterate through all cells to find the one marked as last
-        let enumerator = cells.objectEnumerator()
-        while let cell = enumerator?.nextObject() as? HybridAixCellView {
-            if cell.isLast {
-                return cell
-            }
-        }
-        return nil
-    }
+
     
     // MARK: - Scrolling
     
@@ -527,7 +514,6 @@ extension HybridAix: KeyboardManagerDelegate {
             isOpening: event.isOpening,
             isInteractive: isInteractive,
             interpolateContentOffsetY: interpolateContentOffsetY,
-            shouldCollapseBlankSize: false
         )
         
         print("[Aix][keyboardManagerDidStartAnimation] startEvent: \(String(describing: startEvent))")

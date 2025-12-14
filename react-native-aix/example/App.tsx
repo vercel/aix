@@ -29,7 +29,7 @@ function App(): React.JSX.Element {
                   style={[
                     styles.view,
                     {
-                      height: index % 2 === 1 ? 300 : 200,
+                      height: index % 2 === 1 ? 300 : 600,
                       backgroundColor: index % 2 === 0 ? '#333' : '#222222',
                     },
                   ]}
