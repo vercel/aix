@@ -245,18 +245,22 @@ class HybridAix: HybridAixSpec, AixContext {
     }
     
     /// The content inset for the bottom of the scroll view
-    var contentInsetBottom: CGFloat {
+    
+    private func calculateContentInsetBottom(keyboardHeight: CGFloat) -> CGFloat {
         return blankSize + keyboardHeight + composerHeight
+    }
+    var contentInsetBottom: CGFloat {
+        return calculateContentInsetBottom(keyboardHeight: keyboardHeight)
     }
     
     /// Apply the current content inset to the scroll view
-    func applyContentInset() {
+    func applyContentInset(contentInsetBottom overrideContentInsetBottom: CGFloat? = nil) {
         guard let scrollView = scrollView else { return }
         if scrollView.contentInset.bottom != contentInsetBottom {
             let scrollYBefore = scrollView.contentOffset.y
             let oldInset = scrollView.contentInset.bottom
             
-            scrollView.contentInset.bottom = contentInsetBottom
+            scrollView.contentInset.bottom = overrideContentInsetBottom ?? self.contentInsetBottom
             
             let scrollYAfter = scrollView.contentOffset.y
             
@@ -446,25 +450,40 @@ class HybridAix: HybridAixSpec, AixContext {
 extension HybridAix: KeyboardManagerDelegate {
     func keyboardManager(_ manager: KeyboardManager, didUpdateHeight height: CGFloat, progress: CGFloat) {
         keyboardHeight = height
+        guard let startEvent else { 
+            print("[Aix][didUpdateHeight] NO startEvent, returning early")
+            return 
+        }
         
-        // Only apply content inset during keyboard OPEN animation
-        // During close, keep the inset inflated to prevent UIKit from clamping scroll position
-        let isClosing = startEvent?.isOpening == false
-        if !isClosing {
+        let isClosing = !startEvent.isOpening
+        let hasInterpolation = startEvent.interpolateContentOffsetY != nil
+        
+        print("[Aix][didUpdateHeight] isClosing=\(isClosing), hasInterpolation=\(hasInterpolation), progress=\(progress)")
+        
+        // When closing with interpolation, skip applyContentInset to prevent UIKit from 
+        // clamping the scroll position. We'll apply the final inset in keyboardManagerDidEndAnimation.
+        if !(isClosing && hasInterpolation) {
             applyContentInset()
+        } else {
+            print("[Aix][didUpdateHeight] SKIPPING applyContentInset during close")
         }
 
-        if let (startY, endY) = startEvent?.interpolateContentOffsetY {
+        if let (startY, endY) = startEvent.interpolateContentOffsetY {
             let newScrollY = startY + (endY - startY) * progress
+            print("[Aix][didUpdateHeight] INTERPOLATING: startY=\(startY), endY=\(endY), progress=\(progress) -> newScrollY=\(newScrollY)")
             scrollView?.setContentOffset(CGPoint(x: 0, y: newScrollY), animated: false)
+        } else {
+            print("[Aix][didUpdateHeight] NO interpolation values")
         }
     }
     
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
-        print("[Aix] Keyboard started: isOpening=\(event.isOpening), target=\(event.targetHeight), alreadyInteractive=\(isInInteractiveDismiss)")
+        print("[Aix][keyboardManagerDidStartAnimation] \(String(describing: event))")
+
+        let isOpening = event.isOpening
 
         // Capture the target height when keyboard is opening - this is a snapshot, not reactive to each frame
-        if event.isOpening, event.targetHeight > 0 {
+        if isOpening, event.targetHeight > 0 {
             keyboardHeightWhenOpen = event.targetHeight
             print("[Aix] Set keyboardHeightWhenOpen=\(keyboardHeightWhenOpen)")
         }
@@ -482,7 +501,7 @@ extension HybridAix: KeyboardManagerDelegate {
         // 3. User is actively scrolling (pan gesture is in progress)
         var isInteractive = event.isInteractive || isInInteractiveDismiss
         
-        if !event.isOpening && !isInteractive {
+        if !isOpening && !isInteractive {
             isInteractive = isInteractiveDismissInProgress()
         }
         
@@ -505,6 +524,8 @@ extension HybridAix: KeyboardManagerDelegate {
             interpolateContentOffsetY: interpolateContentOffsetY,
             shouldCollapseBlankSize: false
         )
+        
+        print("[Aix][keyboardManagerDidStartAnimation] SET startEvent: isOpening=\(event.isOpening), scrollY=\(scrollY), interpolation=\(String(describing: interpolateContentOffsetY))")
     }
     
     /// Check if an interactive keyboard dismiss is in progress by examining scroll view state
@@ -547,7 +568,30 @@ extension HybridAix: KeyboardManagerDelegate {
         return nil
     }
     func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        return nil
+        guard let scrollView = scrollView else { return nil }
+        guard keyboardHeightWhenOpen > 0 else { return nil }
+        
+        // Calculate how much content inset will decrease when keyboard closes
+        // inset_with_keyboard = blankSize(keyboard) + keyboardHeight + composer
+        // inset_without_keyboard = blankSize(0) + 0 + composer
+        let blankSizeWithKeyboard = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
+        let blankSizeWithoutKeyboard = calculateBlankSize(keyboardHeight: 0)
+        
+        // Net inset decrease = (blankSizeWithKeyboard + keyboardHeight) - blankSizeWithoutKeyboard
+        // When content is tall (blankSize stays 0): decrease = keyboardHeight
+        // When content is short (blankSize absorbs): decrease ≈ 0
+        let insetDecrease = (blankSizeWithKeyboard + keyboardHeightWhenOpen) - blankSizeWithoutKeyboard
+        
+        // To keep the visual content position stable, we need to decrease scrollY 
+        // by the same amount the inset decreases
+        let targetScrollY = max(0, scrollY - insetDecrease)
+        
+        print("[Aix] getContentOffsetYWhenClosing: scrollY=\(scrollY) -> \(targetScrollY), insetDecrease=\(insetDecrease)")
+        
+        // Only interpolate if there's actually movement needed
+        guard abs(scrollY - targetScrollY) > 1 else { return nil }
+        
+        return (scrollY, targetScrollY)
     }
     
     func keyboardManagerDidBecomeInteractive(_ manager: KeyboardManager) {
