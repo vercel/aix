@@ -203,6 +203,7 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Start tracking an interactive keyboard dismiss
     private func startInteractiveKeyboardDismiss() {
+        return // this is totally broken rn, full of false positives
         guard !isInInteractiveDismiss else { return }
         isInInteractiveDismiss = true
         
@@ -234,7 +235,6 @@ class HybridAix: HybridAixSpec, AixContext {
         let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
         let blankViewHeight = blankView.view.frame.height
         
-        
         // The inset is: scrollable area height - blank view height - keyboard height
         // This ensures when scrolled to end, the last message is at the top
         let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
@@ -249,11 +249,11 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// The content inset for the bottom of the scroll view
     
-    private func calculateContentInsetBottom(keyboardHeight: CGFloat) -> CGFloat {
+    private func calculateContentInsetBottom(keyboardHeight: CGFloat, blankSize: CGFloat) -> CGFloat {
         return blankSize + keyboardHeight + composerHeight
     }
     var contentInsetBottom: CGFloat {
-        return calculateContentInsetBottom(keyboardHeight: keyboardHeight)
+        return calculateContentInsetBottom(keyboardHeight: self.keyboardHeight, blankSize: self.blankSize)
     }
     
     /// Apply the current content inset to the scroll view
@@ -528,7 +528,7 @@ extension HybridAix: KeyboardManagerDelegate {
             shouldCollapseBlankSize: false
         )
         
-        print("[Aix][keyboardManagerDidStartAnimation] SET startEvent: isOpening=\(event.isOpening), scrollY=\(scrollY), interpolation=\(String(describing: interpolateContentOffsetY))")
+        print("[Aix][keyboardManagerDidStartAnimation] startEvent: \(String(describing: startEvent))")
     }
     
     /// Check if an interactive keyboard dismiss is in progress by examining scroll view state
@@ -547,11 +547,18 @@ extension HybridAix: KeyboardManagerDelegate {
         // Pan gesture states: .began = 1, .changed = 2
         return gestureState == .began || gestureState == .changed
     }
+
+    var distFromEnd: CGFloat {
+        guard let scrollView = scrollView else { return 0 }
+        return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y
+    }
+    func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
+        return distFromEnd <= (scrollEndReachedThreshold ?? 200)
+    }
     
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard let scrollView else { return nil } 
-        let distFromEnd = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollY
-        let isScrolledNearEnd = distFromEnd <= (scrollEndReachedThreshold ?? 200)
+        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         if shouldShiftContentUp {
@@ -573,14 +580,22 @@ extension HybridAix: KeyboardManagerDelegate {
     func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard let scrollView = scrollView else { return nil }
         guard keyboardHeightWhenOpen > 0 else { return nil }
+        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+
+        if !isScrolledNearEnd {
+            print("[Aix] getContentOffsetYWhenClosing: not scrolled near end, returning nil")
+            return nil
+        }
+
+        print("[Aix][getContentOffsetYWhenClosing][distFromEnd] \(distFromEnd)")
         
         // Calculate how much content inset will decrease when keyboard closes
         let blankSizeWithKeyboard = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
         let blankSizeWithoutKeyboard = calculateBlankSize(keyboardHeight: 0)
         
         // Calculate actual content insets (including composer)
-        let insetWithKeyboard = blankSizeWithKeyboard + keyboardHeightWhenOpen + composerHeight
-        let insetWithoutKeyboard = blankSizeWithoutKeyboard + 0 + composerHeight
+        let insetWithKeyboard = calculateContentInsetBottom(keyboardHeight: keyboardHeightWhenOpen, blankSize: blankSizeWithKeyboard)
+        let insetWithoutKeyboard = calculateContentInsetBottom(keyboardHeight: 0, blankSize: blankSizeWithoutKeyboard)
         let insetDecrease = insetWithKeyboard - insetWithoutKeyboard
         
         // To keep the visual content position stable, we need to decrease scrollY 

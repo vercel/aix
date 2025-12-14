@@ -5,6 +5,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   TextInput,
+  Text,
 } from 'react-native';
 import { Aix, AixCellView, AixComposer } from 'react-native-aix';
 
@@ -43,11 +44,13 @@ function App(): React.JSX.Element {
                   style={[
                     styles.view,
                     {
-                      height: 300,
-                      backgroundColor: index % 2 === 0 ? 'blue' : 'pink',
+                      height: index % 2 === 1 ? 300 : 100,
+                      backgroundColor: index % 2 === 0 ? '#333' : '#222222',
                     },
                   ]}
-                ></View>
+                >
+                  <Text style={{ color: '#ffffff' }}>{index}</Text>
+                </View>
               </AixCellView>
             );
           })}
@@ -74,6 +77,8 @@ const styles = StyleSheet.create({
   scrollView: {},
   view: {
     width: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
     height: 100,
   },
 });
