@@ -208,13 +208,16 @@ class HybridAix: HybridAixSpec, AixContext {
         
         let scrollY = scrollView?.contentOffset.y ?? 0
         
-        print("[Aix] Starting interactive keyboard dismiss from height=\(keyboardHeight)")
+        print("[Aix] Starting interactive keyboard dismiss from height=\(keyboardHeight), scrollY=\(scrollY)")
+        
+        // Calculate proper interpolation values (same as non-interactive close)
+        let interpolation = getContentOffsetYWhenClosing(scrollY: scrollY)
         
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
             isOpening: false,
             isInteractive: true,
-            interpolateContentOffsetY: (scrollY, scrollY - 100),
+            interpolateContentOffsetY: interpolation,
             shouldCollapseBlankSize: false
         )
     }
@@ -572,21 +575,24 @@ extension HybridAix: KeyboardManagerDelegate {
         guard keyboardHeightWhenOpen > 0 else { return nil }
         
         // Calculate how much content inset will decrease when keyboard closes
-        // inset_with_keyboard = blankSize(keyboard) + keyboardHeight + composer
-        // inset_without_keyboard = blankSize(0) + 0 + composer
         let blankSizeWithKeyboard = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
         let blankSizeWithoutKeyboard = calculateBlankSize(keyboardHeight: 0)
         
-        // Net inset decrease = (blankSizeWithKeyboard + keyboardHeight) - blankSizeWithoutKeyboard
-        // When content is tall (blankSize stays 0): decrease = keyboardHeight
-        // When content is short (blankSize absorbs): decrease ≈ 0
-        let insetDecrease = (blankSizeWithKeyboard + keyboardHeightWhenOpen) - blankSizeWithoutKeyboard
+        // Calculate actual content insets (including composer)
+        let insetWithKeyboard = blankSizeWithKeyboard + keyboardHeightWhenOpen + composerHeight
+        let insetWithoutKeyboard = blankSizeWithoutKeyboard + 0 + composerHeight
+        let insetDecrease = insetWithKeyboard - insetWithoutKeyboard
         
         // To keep the visual content position stable, we need to decrease scrollY 
         // by the same amount the inset decreases
         let targetScrollY = max(0, scrollY - insetDecrease)
         
-        print("[Aix] getContentOffsetYWhenClosing: scrollY=\(scrollY) -> \(targetScrollY), insetDecrease=\(insetDecrease)")
+        print("[Aix] getContentOffsetYWhenClosing:")
+        print("[Aix]   keyboardHeightWhenOpen=\(keyboardHeightWhenOpen), composerHeight=\(composerHeight)")
+        print("[Aix]   blankSizeWithKeyboard=\(blankSizeWithKeyboard), blankSizeWithoutKeyboard=\(blankSizeWithoutKeyboard)")
+        print("[Aix]   insetWithKeyboard=\(insetWithKeyboard), insetWithoutKeyboard=\(insetWithoutKeyboard)")
+        print("[Aix]   insetDecrease=\(insetDecrease)")
+        print("[Aix]   scrollY=\(scrollY) -> targetScrollY=\(targetScrollY)")
         
         // Only interpolate if there's actually movement needed
         guard abs(scrollY - targetScrollY) > 1 else { return nil }
@@ -606,10 +612,6 @@ extension HybridAix: KeyboardManagerDelegate {
     
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
         print("[Aix] Keyboard ended")
-        
-        // Apply final content inset now that animation is complete
-        // (we skip this during close animation to prevent scroll clamping)
-        applyContentInset()
         
         startEvent = nil
         isInInteractiveDismiss = false
