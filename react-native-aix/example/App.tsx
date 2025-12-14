@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  TextInput,
-  Text,
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, Text } from 'react-native';
 import { Aix, AixCellView, AixComposer } from 'react-native-aix';
 
 function App(): React.JSX.Element {
@@ -48,10 +41,10 @@ function App(): React.JSX.Element {
           })}
         </ScrollView>
         <AixComposer
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+          style={{ position: 'absolute', bottom: 20, left: 0, right: 0 }}
         >
           <TextInput
-            style={{ height: 100, backgroundColor: '#111111' }}
+            style={{ height: 80, backgroundColor: '#111111' }}
             placeholder="Type something..."
           />
         </AixComposer>
