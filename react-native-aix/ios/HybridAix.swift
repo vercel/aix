@@ -225,7 +225,9 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Height of the composer view
     private var composerHeight: CGFloat {
-        return composerView?.view.bounds.height ?? 0
+        let h = composerView?.view.bounds.height ?? 0
+        print("[Aix] composerHeight: \(h)")
+        return max(0, h)
     }
 
     private func calculateBlankSize(keyboardHeight: CGFloat) -> CGFloat {
@@ -237,7 +239,7 @@ class HybridAix: HybridAixSpec, AixContext {
         
         // The inset is: scrollable area height - blank view height - keyboard height
         // This ensures when scrolled to end, the last message is at the top
-        let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight
+        let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight - composerHeight
         return max(0, inset)
     }
     
@@ -550,7 +552,7 @@ extension HybridAix: KeyboardManagerDelegate {
 
     var distFromEnd: CGFloat {
         guard let scrollView = scrollView else { return 0 }
-        return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y
+        return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y - composerHeight
     }
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
@@ -563,7 +565,7 @@ extension HybridAix: KeyboardManagerDelegate {
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         if shouldShiftContentUp {
-            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen)    
+            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom + keyboardHeightWhenOpen + composerHeight)    
         }
 
         let blankSizeWhenKeyboardIsOpen = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
@@ -572,7 +574,7 @@ extension HybridAix: KeyboardManagerDelegate {
         //     return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen)    
         // }
         if blankSize > 0, blankSize <= keyboardHeightWhenOpen, isScrolledNearEnd {
-            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen)    
+            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight)    
         }
 
 
