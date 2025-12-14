@@ -12,11 +12,16 @@ import { callback } from 'react-native-nitro-modules';
 const length = 20;
 
 function App(): React.JSX.Element {
+  const aix = useRef<AixRef | null>(null);
+
   return (
     <Aix
       shouldStartAtEnd={true}
       scrollOnComposerSizeUpdate={true}
       style={styles.container}
+      hybridRef={callback(ref => {
+        aix.current = ref;
+      })}
     >
       <ScrollView
         bounces
@@ -61,7 +66,7 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={() => {
-            aix.current?.scrollToEnd();
+            aix.current?.scrollToIndexWhenBlankSizeReady(length - 1);
           }}
         />
       </AixComposer>

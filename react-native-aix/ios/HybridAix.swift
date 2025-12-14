@@ -79,7 +79,10 @@ class HybridAix: HybridAixSpec, AixContext {
     }
     
     func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?) throws {
-        scrollToEndOnBlankSizeUpdate(index: Int(index))
+        DispatchQueue.main.async { [weak self] in
+            self?.scrollToEndOnBlankSizeUpdate(index: Int(index))
+        }
+        
     }
 
     private var didScrollToEndInitially = false
