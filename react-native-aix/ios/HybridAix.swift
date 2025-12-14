@@ -253,8 +253,23 @@ class HybridAix: HybridAixSpec, AixContext {
     func applyContentInset() {
         guard let scrollView = scrollView else { return }
         if scrollView.contentInset.bottom != contentInsetBottom {
-          print("[Aix] Applying contentInset.bottom = \(contentInsetBottom)")
-          scrollView.contentInset.bottom = contentInsetBottom
+            let scrollYBefore = scrollView.contentOffset.y
+            let oldInset = scrollView.contentInset.bottom
+            
+            scrollView.contentInset.bottom = contentInsetBottom
+            
+            let scrollYAfter = scrollView.contentOffset.y
+            
+            // Only log when UIKit auto-adjusted the scroll position (the bug we're hunting)
+            if scrollYBefore != scrollYAfter {
+                let maxScrollYBefore = scrollView.contentSize.height - scrollView.bounds.height + oldInset
+                let maxScrollYAfter = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
+                print("[Aix] ⚠️ SCROLL JUMP DETECTED")
+                print("[Aix]    inset: \(oldInset) -> \(contentInsetBottom) (delta: \(contentInsetBottom - oldInset))")
+                print("[Aix]    scrollY: \(scrollYBefore) -> \(scrollYAfter) (delta: \(scrollYAfter - scrollYBefore))")
+                print("[Aix]    maxScrollY: \(maxScrollYBefore) -> \(maxScrollYAfter)")
+                print("[Aix]    exceeded max? \(scrollYBefore > maxScrollYAfter)")
+            }
         }
     }
     
@@ -431,15 +446,18 @@ class HybridAix: HybridAixSpec, AixContext {
 extension HybridAix: KeyboardManagerDelegate {
     func keyboardManager(_ manager: KeyboardManager, didUpdateHeight height: CGFloat, progress: CGFloat) {
         keyboardHeight = height
-        applyContentInset()
+        
+        // Only apply content inset during keyboard OPEN animation
+        // During close, keep the inset inflated to prevent UIKit from clamping scroll position
+        let isClosing = startEvent?.isOpening == false
+        if !isClosing {
+            applyContentInset()
+        }
 
         if let (startY, endY) = startEvent?.interpolateContentOffsetY {
             let newScrollY = startY + (endY - startY) * progress
             scrollView?.setContentOffset(CGPoint(x: 0, y: newScrollY), animated: false)
         }
-        
-        
-        // TODO: Interpolate scroll position if startEvent?.targetContentOffsetY is set
     }
     
     func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
@@ -544,6 +562,10 @@ extension HybridAix: KeyboardManagerDelegate {
     
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
         print("[Aix] Keyboard ended")
+        
+        // Apply final content inset now that animation is complete
+        // (we skip this during close animation to prevent scroll clamping)
+        applyContentInset()
         
         startEvent = nil
         isInInteractiveDismiss = false
