@@ -103,7 +103,7 @@ class HybridAix: HybridAixSpec, AixContext {
     // MARK: - Props (from Nitro spec)
     var shouldStartAtEnd: Bool = true
     var scrollOnComposerSizeUpdate: Bool = false
-    var scrollEndReachedThreshold: Double? = 200
+    var scrollEndReachedThreshold: Double?
 
     var keyboardOpenBlankSizeThreshold: Double {
         return 0
@@ -553,12 +553,13 @@ extension HybridAix: KeyboardManagerDelegate {
         return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y
     }
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
-        return distFromEnd <= (scrollEndReachedThreshold ?? 200)
+        return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
     }
     
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard let scrollView else { return nil } 
         let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+        print("[Aix][getContentOffsetYWhenOpening][isScrolledNearEnd] \(isScrolledNearEnd), distFromEnd=\(distFromEnd) blankSize=\(blankSize)")
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         if shouldShiftContentUp {

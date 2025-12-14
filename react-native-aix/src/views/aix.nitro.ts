@@ -8,7 +8,9 @@ export interface AixProps extends HybridViewProps {
    *
    * If the scroll view is scrolled to the end of the content, and the content is less than this threshold, the content will be shifted up when the keyboard is opened.
    *
-   * Default: 200
+   * By default, it will be the greater of the current blank size, or 200.
+   *
+   * TODO make this a more adaptive prop, like { strategy: 'blank-size', min: 200 } | { strategy: 'fixed', value: 200 }
    *
    */
   scrollEndReachedThreshold?: number

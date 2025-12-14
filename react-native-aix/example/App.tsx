@@ -21,7 +21,6 @@ function App(): React.JSX.Element {
       <Aix
         shouldStartAtEnd={true}
         scrollOnComposerSizeUpdate={true}
-        scrollEndReachedThreshold={200}
         style={{ flex: 1 }}
         onLayout={e => {
           console.log('[onLayout]', e.nativeEvent.layout.height);
