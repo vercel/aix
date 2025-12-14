@@ -61,7 +61,13 @@ abstract class HybridAixSpec: HybridView() {
   abstract var scrollEndReachedThreshold: Double?
 
   // Methods
+  @DoNotStrip
+  @Keep
+  abstract fun scrollToEnd(animated: Boolean?): Unit
   
+  @DoNotStrip
+  @Keep
+  abstract fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?): Unit
 
   private external fun initHybrid(): HybridData
 

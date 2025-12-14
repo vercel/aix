@@ -154,6 +154,42 @@ open class HybridAixSpec_cxx {
   }
 
   // Methods
+  @inline(__always)
+  public final func scrollToEnd(animated: bridge.std__optional_bool_) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.scrollToEnd(animated: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(animated) {
+          let __unwrapped = bridge.get_std__optional_bool_(animated)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }())
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func scrollToIndexWhenBlankSizeReady(index: Double, animated: bridge.std__optional_bool_) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.scrollToIndexWhenBlankSizeReady(index: index, animated: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(animated) {
+          let __unwrapped = bridge.get_std__optional_bool_(animated)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }())
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
   public final func getView() -> UnsafeMutableRawPointer {
     return Unmanaged.passRetained(__implementation.view).toOpaque()
   }

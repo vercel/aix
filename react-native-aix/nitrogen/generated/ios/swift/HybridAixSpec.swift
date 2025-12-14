@@ -16,7 +16,8 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var scrollEndReachedThreshold: Double? { get set }
 
   // Methods
-  
+  func scrollToEnd(animated: Bool?) throws -> Void
+  func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?) throws -> Void
 }
 
 public extension HybridAixSpec_protocol {

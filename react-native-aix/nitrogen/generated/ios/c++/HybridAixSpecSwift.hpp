@@ -78,7 +78,18 @@ namespace margelo::nitro::aix {
 
   public:
     // Methods
-    
+    inline void scrollToEnd(std::optional<bool> animated) override {
+      auto __result = _swiftPart.scrollToEnd(animated);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated) override {
+      auto __result = _swiftPart.scrollToIndexWhenBlankSizeReady(std::forward<decltype(index)>(index), animated);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
 
   private:
     Aix::HybridAixSpec_cxx _swiftPart;

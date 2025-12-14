@@ -69,6 +69,13 @@ namespace margelo::nitro::aix {
   }
 
   // Methods
-  
+  void JHybridAixSpec::scrollToEnd(std::optional<bool> animated) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToEnd");
+    method(_javaPart, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
+  }
+  void JHybridAixSpec::scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated) {
+    static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToIndexWhenBlankSizeReady");
+    method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
+  }
 
 } // namespace margelo::nitro::aix

@@ -19,6 +19,8 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
+#include <NitroModules/Result.hpp>
+#include <exception>
 #include <memory>
 #include <optional>
 

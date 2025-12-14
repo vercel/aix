@@ -71,7 +71,16 @@ extension UIView {
 // MARK: - HybridAix (Root Context)
 
 class HybridAix: HybridAixSpec, AixContext {
+    func scrollToEnd(animated: Bool?) {
+        // Dispatch to main thread since this may be called from RN background thread
+        DispatchQueue.main.async { [weak self] in
+            self?.scrollToEndInternal(animated: animated)
+        }
+    }
     
+    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?) throws {
+        scrollToEndOnBlankSizeUpdate(index: Int(index))
+    }
 
     private var didScrollToEndInitially = false
     
@@ -281,6 +290,20 @@ class HybridAix: HybridAixSpec, AixContext {
         }
     }
     
+    
+    private func scrollToEndInternal(animated: Bool?) {
+        guard let scrollView = self.scrollView else { return }
+        
+        // Calculate the offset to show the bottom of content
+        let bottomOffset = CGPoint(
+            x: 0,
+            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + self.contentInsetBottom)
+        )
+        print("[Aix] scrolling to end: bottomOffset=\(bottomOffset)")
+        scrollView.setContentOffset(bottomOffset, animated: animated ?? true)
+    }
+
+    
     // MARK: - Keyboard Manager
     
     private lazy var keyboardManager: KeyboardManager = {
@@ -330,13 +353,13 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Request to scroll to end when the blank view at the given index updates
     /// This is called when the user sends a message and we want to scroll
     /// when the layout is ready
-    func scrollToEndOnBlankSizeUpdate(index: Int) {
+    func scrollToEndOnBlankSizeUpdate(index: Int, animated: Bool = true) {
         // If the blank view is already at this index, scroll immediately
         if let blankView, index == Int(blankView.index) {
-            scrollToEnd(animated: true)
+            scrollToEndInternal(animated: animated)
         } else {
             // Otherwise queue the scroll for when the blank view updates
-            queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: true)
+            queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)
         }
     }
     
@@ -361,10 +384,10 @@ class HybridAix: HybridAixSpec, AixContext {
         // Check if we have a queued scroll waiting for this index
         if let queued = queuedScrollToEnd, index == queued.index {
             print("[Aix] Executing queued scrollToEnd for index \(index)")
-            scrollToEnd(animated: queued.animated)
+            scrollToEndInternal(animated: queued.animated)
             queuedScrollToEnd = nil
         } else if !didScrollToEndInitially {
-            scrollToEnd(animated: false)
+            scrollToEndInternal(animated: false)
             didScrollToEndInitially = true
         }
     }
@@ -414,23 +437,10 @@ class HybridAix: HybridAixSpec, AixContext {
     
     // MARK: - Scrolling
     
-    /// Scroll the scroll view to the end (bottom)
-    private func scrollToEnd(animated: Bool) {
-        guard let scrollView = scrollView else { return }
-        
-        // Calculate the offset to show the bottom of content
-        let bottomOffset = CGPoint(
-            x: 0,
-            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom)
-        )
-        print("[Aix] scrolling to end: bottomOffset=\(bottomOffset)")
-        scrollView.setContentOffset(bottomOffset, animated: animated)
-    }
-    
     /// Queue a scroll to end, will execute when blank view at index is ready
     func queueScrollToEnd(index: Int, animated: Bool = true) {
         if let blankView = blankView, blankView.isLast && index == Int(blankView.index) {
-            scrollToEnd(animated: animated)
+            scrollToEndInternal(animated: animated)
         } else {
             queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)
         }

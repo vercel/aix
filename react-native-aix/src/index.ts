@@ -10,7 +10,7 @@ import type {
 
 export const Aix = getHostComponent<AixProps, {}>('Aix', () => AixConfig)
 
-export type AixRef = HybridRef<AixProps, {}>
+export type AixRef = HybridRef<AixProps, AixMethods>
 
 export const AixCellView = getHostComponent<AixCellViewProps, {}>(
   'AixCellView',

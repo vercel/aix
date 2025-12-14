@@ -1,55 +1,71 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TextInput, Text } from 'react-native';
-import { Aix, AixCellView, AixComposer } from 'react-native-aix';
+import React, { useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  Text,
+  Button,
+} from 'react-native';
+import { Aix, AixCellView, AixComposer, AixRef } from 'react-native-aix';
+import { callback } from 'react-native-nitro-modules';
+const length = 20;
 
 function App(): React.JSX.Element {
   return (
-    <View style={styles.container}>
-      <Aix
-        shouldStartAtEnd={true}
-        scrollOnComposerSizeUpdate={true}
-        style={{ flex: 1 }}
-        onLayout={e => {
-          console.log('[onLayout]', e.nativeEvent.layout.height);
+    <Aix
+      shouldStartAtEnd={true}
+      scrollOnComposerSizeUpdate={true}
+      style={styles.container}
+    >
+      <ScrollView
+        bounces
+        alwaysBounceVertical
+        keyboardDismissMode="interactive"
+        contentContainerStyle={styles.scrollView}
+      >
+        {Array.from({ length }).map((_, index, arr) => {
+          const isLast = index === arr.length - 1;
+          return (
+            <AixCellView key={index} index={index} isLast={isLast}>
+              <View
+                style={[
+                  styles.view,
+                  {
+                    height: index % 2 === 1 ? 150 : 300,
+                    backgroundColor: index % 2 === 0 ? '#333' : '#222222',
+                  },
+                ]}
+              >
+                <Text style={{ color: '#ffffff' }}>{index}</Text>
+              </View>
+            </AixCellView>
+          );
+        })}
+      </ScrollView>
+      <AixComposer
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingHorizontal: 16,
+          height: 100,
+          paddingBottom: 40,
+          backgroundColor: '#111111',
+          flexDirection: 'row',
         }}
       >
-        <ScrollView
-          // TODO support this?
-          // contentInsetAdjustmentBehavior="automatic"
-          bounces
-          alwaysBounceVertical
-          keyboardDismissMode="interactive"
-          contentContainerStyle={styles.scrollView}
-        >
-          {Array.from({ length: 20 }).map((_, index, arr) => {
-            const isLast = index === arr.length - 1;
-            return (
-              <AixCellView key={index} index={index} isLast={isLast}>
-                <View
-                  style={[
-                    styles.view,
-                    {
-                      height: index % 2 === 1 ? 40 : 100,
-                      backgroundColor: index % 2 === 0 ? '#333' : '#222222',
-                    },
-                  ]}
-                >
-                  <Text style={{ color: '#ffffff' }}>{index}</Text>
-                </View>
-              </AixCellView>
-            );
-          })}
-        </ScrollView>
-        <AixComposer
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-        >
-          <TextInput
-            style={{ height: 80, backgroundColor: '#111111' }}
-            placeholder="Type something..."
-          />
-        </AixComposer>
-      </Aix>
-    </View>
+        <TextInput style={{ flex: 1 }} placeholder="Type something..." />
+
+        <Button
+          title="Scroll to last"
+          onPress={() => {
+            aix.current?.scrollToEnd();
+          }}
+        />
+      </AixComposer>
+    </Aix>
   );
 }
 

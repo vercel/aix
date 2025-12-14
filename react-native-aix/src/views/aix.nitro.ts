@@ -1,4 +1,8 @@
-import type { HybridView, HybridViewProps } from 'react-native-nitro-modules'
+import type {
+  HybridView,
+  HybridViewProps,
+  HybridViewMethods,
+} from 'react-native-nitro-modules'
 
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
@@ -29,7 +33,16 @@ export interface AixProps extends HybridViewProps {
    */
 }
 
-export type Aix = HybridView<AixProps, {}, { ios: 'swift'; android: 'kotlin' }>
+export interface AixMethods extends HybridViewMethods {
+  scrollToEnd(animated?: boolean): void
+  scrollToIndexWhenBlankSizeReady(index: number, animated?: boolean): void
+}
+
+export type Aix = HybridView<
+  AixProps,
+  AixMethods,
+  { ios: 'swift'; android: 'kotlin' }
+>
 
 export interface AixCellViewProps extends HybridViewProps {
   isLast: boolean

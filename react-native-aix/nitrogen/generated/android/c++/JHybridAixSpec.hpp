@@ -59,7 +59,8 @@ namespace margelo::nitro::aix {
 
   public:
     // Methods
-    
+    void scrollToEnd(std::optional<bool> animated) override;
+    void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated) override;
 
   private:
     friend HybridBase;

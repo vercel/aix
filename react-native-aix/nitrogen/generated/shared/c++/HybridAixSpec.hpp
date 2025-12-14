@@ -53,7 +53,8 @@ namespace margelo::nitro::aix {
 
     public:
       // Methods
-      
+      virtual void scrollToEnd(std::optional<bool> animated) = 0;
+      virtual void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated) = 0;
 
     protected:
       // Hybrid Setup
