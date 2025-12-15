@@ -70,11 +70,6 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={async () => {
-            // aix.current?.scrollToIndexWhenBlankSizeReady(
-            //   numMessages - 1,
-            //   true,
-            //   true,
-            // );
             if (!Keyboard.isVisible()) {
               return aix.current?.scrollToEnd();
             }
@@ -82,11 +77,6 @@ function App(): React.JSX.Element {
             Keyboard.dismiss();
             const nextNumMessages = numMessages + 2;
             setNumMessages(nextNumMessages);
-            // aix.current?.scrollToIndexWhenBlankSizeReady(
-            //   numMessages - 1,
-            //   true,
-            //   false,
-            // );
           }}
         />
       </View>
