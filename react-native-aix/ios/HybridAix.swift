@@ -79,8 +79,12 @@ class HybridAix: HybridAixSpec, AixContext {
     }
     
     func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
+        print("[Aix][scrollToIndexWhenBlankSizeReady] index=\(index), animated=\(animated ?? true), waitForKeyboardToEnd=\(waitForKeyboardToEnd ?? true)")
+
+        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? true)
         DispatchQueue.main.async { [weak self] in
-            self?.scrollToEndOnBlankSizeUpdate(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? true)
+            self?.flushQueuedScrollToEnd()
+            
         }
         
     }
@@ -344,16 +348,6 @@ class HybridAix: HybridAixSpec, AixContext {
         superview.aixContext = self
     }
     
-    // MARK: - Public API (called from React Native)
-    
-    /// Request to scroll to end when the blank view at the given index updates
-    /// This is called when the user sends a message and we want to scroll
-    /// when the layout is ready
-    func scrollToEndOnBlankSizeUpdate(index: Int, animated: Bool, waitForKeyboardToEnd: Bool) {
-        queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated, waitForKeyboardToEnd: waitForKeyboardToEnd)
-        flushQueuedScrollToEnd()
-    }
-    
     // MARK: - AixContext Protocol
 
     private var lastReportedBlankViewSize = (size: CGSize.zero, index: 0)
@@ -479,13 +473,21 @@ extension HybridAix: KeyboardManagerDelegate {
 
         let scrollY = scrollView?.contentOffset.y ?? 0
 
-        let interpolateContentOffsetY = {
+        var interpolateContentOffsetY = {
             if event.isOpening {
                 return self.getContentOffsetYWhenOpening(scrollY: scrollY)
             } else {
                 return self.getContentOffsetYWhenClosing(scrollY: scrollY)
             }
         }()
+        
+        if queuedScrollToEnd != nil {
+            // don't interpolate the keyboard if we're planning to scroll to end
+            interpolateContentOffsetY = nil
+        }
+
+        print("[Aix] keyboardManagerDidStartAnimation: interpolateContentOffsetY=\(String(describing: interpolateContentOffsetY))")
+        print("[Aix] keyboardManagerDidStartAnimation: queuedScrollToEnd=\(queuedScrollToEnd != nil)")
 
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
@@ -493,7 +495,7 @@ extension HybridAix: KeyboardManagerDelegate {
             isInteractive: isInteractive,
             interpolateContentOffsetY: interpolateContentOffsetY,
         )
-        
+
     }
     
     /// Check if an interactive keyboard dismiss is in progress by examining scroll view state

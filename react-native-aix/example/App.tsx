@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,7 +12,7 @@ import { Aix, AixCellView, AixComposer, AixRef } from 'react-native-aix';
 import { callback } from 'react-native-nitro-modules';
 
 const list = Array.from({ length: 10_000 }, (_, index) => ({
-  height: index % 2 === 1 ? Math.random() * 100 + 20 : Math.random() * 400 + 50,
+  height: index % 2 === 1 ? 400 * 2 : 180 * 2,
   backgroundColor: index % 2 === 0 ? '#333' : '#222222',
 }));
 
@@ -20,6 +20,12 @@ function App(): React.JSX.Element {
   const aix = useRef<AixRef | null>(null);
 
   const [numMessages, setNumMessages] = useState(20);
+
+  const shouldScrollToEnd = useRef(false);
+
+  useEffect(() => {
+    aix.current?.scrollToIndexWhenBlankSizeReady(numMessages - 1, true, false);
+  }, [numMessages]);
 
   return (
     <Aix
@@ -63,18 +69,24 @@ function App(): React.JSX.Element {
 
         <Button
           title="Scroll to last"
-          onPress={() => {
+          onPress={async () => {
+            // aix.current?.scrollToIndexWhenBlankSizeReady(
+            //   numMessages - 1,
+            //   true,
+            //   true,
+            // );
             if (!Keyboard.isVisible()) {
               return aix.current?.scrollToEnd();
             }
+            shouldScrollToEnd.current = true;
             Keyboard.dismiss();
             const nextNumMessages = numMessages + 2;
             setNumMessages(nextNumMessages);
-            aix.current?.scrollToIndexWhenBlankSizeReady(
-              nextNumMessages - 1,
-              true,
-              false,
-            );
+            // aix.current?.scrollToIndexWhenBlankSizeReady(
+            //   numMessages - 1,
+            //   true,
+            //   false,
+            // );
           }}
         />
       </View>
