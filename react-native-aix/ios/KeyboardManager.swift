@@ -39,6 +39,19 @@ class KeyboardManager {
         let isInteractive: Bool
     }
     
+    /// Weak target wrapper to avoid CADisplayLink retain cycle
+    private class DisplayLinkTarget {
+        weak var owner: KeyboardManager?
+        
+        init(owner: KeyboardManager) {
+            self.owner = owner
+        }
+        
+        @objc func handleDisplayLink(_ displayLink: CADisplayLink) {
+            owner?.trackFrame()
+        }
+    }
+    
     // MARK: - Properties
     
     weak var delegate: KeyboardManagerDelegate?
@@ -52,6 +65,7 @@ class KeyboardManager {
     // MARK: - Private Properties
     
     private var displayLink: CADisplayLink?
+    private var displayLinkTarget: DisplayLinkTarget?
     private weak var keyboardView: UIView?
     
     // MARK: - Initialization
@@ -95,18 +109,12 @@ class KeyboardManager {
     // MARK: - Notification Handlers
     
     @objc private func keyboardWillShow(_ notification: Notification) {
-        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
-        print("[KeyboardManager] keyboardWillShow - duration: \(duration), hasEvent: \(currentEvent != nil)")
-        
         // Only handle if we don't already have an event (prevents duplicate from keyboardWillChangeFrame)
         guard currentEvent == nil else { return }
         handleNotification(notification, isShowing: true)
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {
-        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
-        print("[KeyboardManager] keyboardWillHide - duration: \(duration), hasEvent: \(currentEvent != nil)")
-        
         // Only handle if we don't already have an event (prevents duplicate from keyboardWillChangeFrame)
         guard currentEvent == nil else { return }
         handleNotification(notification, isShowing: false)
@@ -114,15 +122,11 @@ class KeyboardManager {
     
     @objc private func keyboardWillChangeFrame(_ notification: Notification) {
         let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
-        let curve = (notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? Int) ?? -1
         let isInteractive = duration == 0
-        
-        print("[KeyboardManager] keyboardWillChangeFrame - duration: \(duration), curve: \(curve), isInteractive: \(isInteractive), hasEvent: \(currentEvent != nil)")
         
         // If we already have an event that's NOT interactive, but this frame change IS interactive,
         // then the user started an interactive dismissal - notify delegate
         if let event = currentEvent, !event.isInteractive && isInteractive {
-            print("[KeyboardManager] Detected transition to interactive mode")
             upgradeToInteractive()
             return
         }
@@ -167,6 +171,7 @@ class KeyboardManager {
         let duration = (userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
         let isInteractive = duration == 0
         
+        // Find keyboard view (needed for frame-by-frame tracking)
         findKeyboardView()
         
         let event = KeyboardEvent(
@@ -188,7 +193,7 @@ class KeyboardManager {
         if keyboardView != nil { return }
         
         for window in UIApplication.shared.windows {
-            let windowName = String(describing: type(of: window))
+            let windowName = NSStringFromClass(type(of: window))
             
             if windowName.contains("UIRemoteKeyboardWindow") {
                 if let hostView = findViewOfType(in: window, typeName: "UIInputSetHostView") {
@@ -219,12 +224,16 @@ class KeyboardManager {
         }
     }
     
-    private func findViewOfType(in view: UIView, typeName: String) -> UIView? {
-        if String(describing: type(of: view)).contains(typeName) {
+    private func findViewOfType(in view: UIView, typeName: String, maxDepth: Int = 5) -> UIView? {
+        // Use NSStringFromClass which is more efficient than String(describing:)
+        let className = NSStringFromClass(type(of: view))
+        if className.contains(typeName) {
             return view
         }
+        // Limit search depth - keyboard views are never deeply nested
+        guard maxDepth > 0 else { return nil }
         for subview in view.subviews {
-            if let found = findViewOfType(in: subview, typeName: typeName) {
+            if let found = findViewOfType(in: subview, typeName: typeName, maxDepth: maxDepth - 1) {
                 return found
             }
         }
@@ -236,18 +245,22 @@ class KeyboardManager {
     private func startTracking() {
         guard displayLink == nil else { return }
         
-        displayLink = CADisplayLink(target: self, selector: #selector(trackFrame))
+        // Use weak target wrapper to avoid retain cycle
+        let target = DisplayLinkTarget(owner: self)
+        displayLinkTarget = target
+        displayLink = CADisplayLink(target: target, selector: #selector(DisplayLinkTarget.handleDisplayLink(_:)))
         displayLink?.add(to: .main, forMode: .common)
     }
     
     private func stopTracking() {
         displayLink?.invalidate()
         displayLink = nil
+        displayLinkTarget = nil
         currentEvent = nil
         delegate?.keyboardManagerDidEndAnimation(self)
     }
     
-    @objc private func trackFrame() {
+    private func trackFrame() {
         guard let event = currentEvent else {
             stopTracking()
             return

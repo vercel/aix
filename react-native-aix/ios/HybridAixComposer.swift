@@ -78,7 +78,6 @@ class HybridAixComposer: HybridAixComposerSpec {
     
     /// Called when the view is added to a window (full hierarchy is connected)
     private func handleDidMoveToWindow() {
-        print("[Aix] Composer didMoveToWindow")
         guard view.window != nil else { return }
         
         // Clear cached context since hierarchy changed
