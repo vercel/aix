@@ -526,17 +526,17 @@ extension HybridAix: KeyboardManagerDelegate {
         guard let scrollView else { return nil } 
         let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
+
+        let shiftContentUpToY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight
         
         if shouldShiftContentUp {
-            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight)    
+            return (scrollY, shiftContentUpToY)    
         }
 
-        let blankSizeWhenKeyboardIsOpen = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen)
-        // if blankSize > 0, blankSizeWhenKeyboardIsOpen <= keyboardOpenBlankSizeThreshold {
-        //     return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen)    
-        // }
-        if blankSize > 0, blankSize <= keyboardHeightWhenOpen, isScrolledNearEnd {
-            return (scrollY, scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight)    
+        let hasBlankSizeLessThanOpenKeyboardHeight = blankSize > 0 && blankSize <= keyboardHeightWhenOpen
+
+        if hasBlankSizeLessThanOpenKeyboardHeight && isScrolledNearEnd {
+            return (scrollY, shiftContentUpToY)    
         }
 
 
