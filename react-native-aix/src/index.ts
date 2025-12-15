@@ -6,6 +6,7 @@ import type {
   AixCellViewProps,
   AixComposerProps,
   AixProps,
+  AixMethods,
 } from './views/aix.nitro'
 
 export const Aix = getHostComponent<AixProps, {}>('Aix', () => AixConfig)

@@ -78,9 +78,9 @@ class HybridAix: HybridAixSpec, AixContext {
         }
     }
     
-    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?) throws {
+    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
         DispatchQueue.main.async { [weak self] in
-            self?.scrollToEndOnBlankSizeUpdate(index: Int(index))
+            self?.scrollToEndOnBlankSizeUpdate(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? true)
         }
         
     }
@@ -123,9 +123,10 @@ class HybridAix: HybridAixSpec, AixContext {
 
     // MARK: - Private Types
     
-    private struct QueuedScrollToEnd {
+    struct QueuedScrollToEnd {
         var index: Int
         var animated: Bool
+        var waitForKeyboardToEnd: Bool
     }
 
     // MARK: - Private State
@@ -273,23 +274,7 @@ class HybridAix: HybridAixSpec, AixContext {
     func applyContentInset(contentInsetBottom overrideContentInsetBottom: CGFloat? = nil) {
         guard let scrollView = scrollView else { return }
         if scrollView.contentInset.bottom != contentInsetBottom {
-            let scrollYBefore = scrollView.contentOffset.y
-            let oldInset = scrollView.contentInset.bottom
-            
             scrollView.contentInset.bottom = overrideContentInsetBottom ?? self.contentInsetBottom
-            
-            let scrollYAfter = scrollView.contentOffset.y
-            
-            // Only log when UIKit auto-adjusted the scroll position (the bug we're hunting)
-            if scrollYBefore != scrollYAfter {
-                let maxScrollYBefore = scrollView.contentSize.height - scrollView.bounds.height + oldInset
-                let maxScrollYAfter = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
-                print("[Aix] ⚠️ SCROLL JUMP DETECTED")
-                print("[Aix]    inset: \(oldInset) -> \(contentInsetBottom) (delta: \(contentInsetBottom - oldInset))")
-                print("[Aix]    scrollY: \(scrollYBefore) -> \(scrollYAfter) (delta: \(scrollYAfter - scrollYBefore))")
-                print("[Aix]    maxScrollY: \(maxScrollYBefore) -> \(maxScrollYAfter)")
-                print("[Aix]    exceeded max? \(scrollYBefore > maxScrollYAfter)")
-            }
         }
     }
     
@@ -356,14 +341,9 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Request to scroll to end when the blank view at the given index updates
     /// This is called when the user sends a message and we want to scroll
     /// when the layout is ready
-    func scrollToEndOnBlankSizeUpdate(index: Int, animated: Bool = true) {
-        // If the blank view is already at this index, scroll immediately
-        if let blankView, index == Int(blankView.index) {
-            scrollToEndInternal(animated: animated)
-        } else {
-            // Otherwise queue the scroll for when the blank view updates
-            queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)
-        }
+    func scrollToEndOnBlankSizeUpdate(index: Int, animated: Bool, waitForKeyboardToEnd: Bool) {
+        queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated, waitForKeyboardToEnd: waitForKeyboardToEnd)
+        flushQueuedScrollToEnd()
     }
     
     // MARK: - AixContext Protocol
@@ -385,14 +365,13 @@ class HybridAix: HybridAixSpec, AixContext {
         applyContentInset()
         
         // Check if we have a queued scroll waiting for this index
-        if let queued = queuedScrollToEnd, index == queued.index {
-            print("[Aix] Executing queued scrollToEnd for index \(index)")
-            scrollToEndInternal(animated: queued.animated)
-            queuedScrollToEnd = nil
-        } else if !didScrollToEndInitially {
+        if !didScrollToEndInitially {
             scrollToEndInternal(animated: false)
             didScrollToEndInitially = true
-        }
+        } else if let queued = queuedScrollToEnd, index == queued.index {
+            print("[Aix][reportBlankViewSizeChange][flushing]")
+            flushQueuedScrollToEnd()
+        } 
     }
     
     func registerCell(_ cell: HybridAixCellView) {
@@ -439,13 +418,21 @@ class HybridAix: HybridAixSpec, AixContext {
 
     
     // MARK: - Scrolling
+
+    func getIsQueuedScrollToEndReady(queuedScrollToEnd: QueuedScrollToEnd) -> Bool {
+        guard let blankView else { return false }
+        if queuedScrollToEnd.waitForKeyboardToEnd == true && startEvent != nil {
+            print("[Aix] Queued scroll to end is not ready, waiting for keyboard to end")
+            return false
+        }
+        return blankView.isLast && queuedScrollToEnd.index == Int(blankView.index)
+    }
     
-    /// Queue a scroll to end, will execute when blank view at index is ready
-    func queueScrollToEnd(index: Int, animated: Bool = true) {
-        if let blankView = blankView, blankView.isLast && index == Int(blankView.index) {
-            scrollToEndInternal(animated: animated)
-        } else {
-            queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated)
+
+    func flushQueuedScrollToEnd(force: Bool = false) {
+        if let queuedScrollToEnd, (force || getIsQueuedScrollToEndReady(queuedScrollToEnd: queuedScrollToEnd)) {
+            scrollToEndInternal(animated: queuedScrollToEnd.animated)
+            self.queuedScrollToEnd = nil
         }
     }
 }
@@ -623,8 +610,14 @@ extension HybridAix: KeyboardManagerDelegate {
     
     func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
         print("[Aix] Keyboard ended")
-        
+
         startEvent = nil
         isInInteractiveDismiss = false
+
+        if queuedScrollToEnd?.waitForKeyboardToEnd == true {
+            print("[Aix] Keyboard ended, flushing queued scroll to end")
+            flushQueuedScrollToEnd(force: true)
+        }
+        
     }
 }

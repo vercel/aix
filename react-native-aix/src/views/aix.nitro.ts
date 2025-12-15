@@ -35,7 +35,11 @@ export interface AixProps extends HybridViewProps {
 
 export interface AixMethods extends HybridViewMethods {
   scrollToEnd(animated?: boolean): void
-  scrollToIndexWhenBlankSizeReady(index: number, animated?: boolean): void
+  scrollToIndexWhenBlankSizeReady(
+    index: number,
+    animated?: boolean,
+    waitForKeyboardToEnd?: boolean
+  ): void
 }
 
 export type Aix = HybridView<

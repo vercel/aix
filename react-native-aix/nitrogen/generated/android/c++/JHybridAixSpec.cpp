@@ -73,9 +73,9 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToEnd");
     method(_javaPart, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
   }
-  void JHybridAixSpec::scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated) {
-    static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToIndexWhenBlankSizeReady");
-    method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
+  void JHybridAixSpec::scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) {
+    static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */, jni::alias_ref<jni::JBoolean> /* waitForKeyboardToEnd */)>("scrollToIndexWhenBlankSizeReady");
+    method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr, waitForKeyboardToEnd.has_value() ? jni::JBoolean::valueOf(waitForKeyboardToEnd.value()) : nullptr);
   }
 
 } // namespace margelo::nitro::aix

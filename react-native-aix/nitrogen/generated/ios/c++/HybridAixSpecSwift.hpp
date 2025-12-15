@@ -84,8 +84,8 @@ namespace margelo::nitro::aix {
         std::rethrow_exception(__result.error());
       }
     }
-    inline void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated) override {
-      auto __result = _swiftPart.scrollToIndexWhenBlankSizeReady(std::forward<decltype(index)>(index), animated);
+    inline void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) override {
+      auto __result = _swiftPart.scrollToIndexWhenBlankSizeReady(std::forward<decltype(index)>(index), animated, waitForKeyboardToEnd);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

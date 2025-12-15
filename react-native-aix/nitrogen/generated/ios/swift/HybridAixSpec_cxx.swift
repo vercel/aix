@@ -173,11 +173,18 @@ open class HybridAixSpec_cxx {
   }
   
   @inline(__always)
-  public final func scrollToIndexWhenBlankSizeReady(index: Double, animated: bridge.std__optional_bool_) -> bridge.Result_void_ {
+  public final func scrollToIndexWhenBlankSizeReady(index: Double, animated: bridge.std__optional_bool_, waitForKeyboardToEnd: bridge.std__optional_bool_) -> bridge.Result_void_ {
     do {
       try self.__implementation.scrollToIndexWhenBlankSizeReady(index: index, animated: { () -> Bool? in
         if bridge.has_value_std__optional_bool_(animated) {
           let __unwrapped = bridge.get_std__optional_bool_(animated)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }(), waitForKeyboardToEnd: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(waitForKeyboardToEnd) {
+          let __unwrapped = bridge.get_std__optional_bool_(waitForKeyboardToEnd)
           return __unwrapped
         } else {
           return nil

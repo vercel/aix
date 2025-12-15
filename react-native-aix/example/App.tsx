@@ -6,9 +6,15 @@ import {
   TextInput,
   Text,
   Button,
+  Keyboard,
 } from 'react-native';
 import { Aix, AixCellView, AixComposer, AixRef } from 'react-native-aix';
 import { callback } from 'react-native-nitro-modules';
+
+const list = Array.from({ length: 10_000 }, (_, index) => ({
+  height: index % 2 === 1 ? Math.random() * 100 + 20 : Math.random() * 400 + 50,
+  backgroundColor: index % 2 === 0 ? '#333' : '#222222',
+}));
 
 function App(): React.JSX.Element {
   const aix = useRef<AixRef | null>(null);
@@ -34,33 +40,21 @@ function App(): React.JSX.Element {
           const isLast = index === arr.length - 1;
           return (
             <AixCellView key={index} index={index} isLast={isLast}>
-              <View
-                style={[
-                  styles.view,
-                  {
-                    height:
-                      index % 2 === 1
-                        ? Math.random() * 150 + 100
-                        : Math.random() * 300 + 100,
-                    backgroundColor: index % 2 === 0 ? '#333' : '#222222',
-                  },
-                ]}
-              >
+              <View style={[styles.view, list[index]]}>
                 <Text style={{ color: '#ffffff' }}>{index}</Text>
               </View>
             </AixCellView>
           );
         })}
       </ScrollView>
-      <AixComposer
+      <View
         style={{
           position: 'absolute',
-          bottom: 0,
+          top: 80,
           left: 0,
           right: 0,
           paddingHorizontal: 16,
           height: 100,
-          paddingBottom: 40,
           backgroundColor: '#111111',
           flexDirection: 'row',
         }}
@@ -70,12 +64,20 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={() => {
+            if (!Keyboard.isVisible()) {
+              return aix.current?.scrollToEnd();
+            }
+            Keyboard.dismiss();
             const nextNumMessages = numMessages + 2;
             setNumMessages(nextNumMessages);
-            aix.current?.scrollToIndexWhenBlankSizeReady(nextNumMessages - 1);
+            aix.current?.scrollToIndexWhenBlankSizeReady(
+              nextNumMessages - 1,
+              true,
+              false,
+            );
           }}
         />
-      </AixComposer>
+      </View>
     </Aix>
   );
 }
