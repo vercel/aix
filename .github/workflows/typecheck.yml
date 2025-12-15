@@ -22,5 +22,3 @@ jobs:
 
       - name: Typecheck
         run: bun run tsc --noEmit
-
-

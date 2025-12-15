@@ -12,9 +12,14 @@
 // Forward declaration of `HybridAixSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixSpec_cxx; }
 
-
+// Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
+// Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 
 #include <optional>
+#include "AixAdditionalContentInsetsProp.hpp"
+#include "AixAdditionalContentInsets.hpp"
 
 #include "Aix-Swift-Cxx-Umbrella.hpp"
 
@@ -74,6 +79,13 @@ namespace margelo::nitro::aix {
     }
     inline void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) noexcept override {
       _swiftPart.setScrollEndReachedThreshold(scrollEndReachedThreshold);
+    }
+    inline std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() noexcept override {
+      auto __result = _swiftPart.getAdditionalContentInsets();
+      return __result;
+    }
+    inline void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) noexcept override {
+      _swiftPart.setAdditionalContentInsets(additionalContentInsets);
     }
 
   public:

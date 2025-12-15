@@ -48,6 +48,10 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setScrollEndReachedThreshold(props.scrollEndReachedThreshold.value);
     // TODO: Set isDirty = false
   }
+  if (props.additionalContentInsets.isDirty) {
+    view->setAdditionalContentInsets(props.additionalContentInsets.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

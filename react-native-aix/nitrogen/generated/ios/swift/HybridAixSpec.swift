@@ -14,6 +14,7 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var shouldStartAtEnd: Bool { get set }
   var scrollOnComposerSizeUpdate: Bool { get set }
   var scrollEndReachedThreshold: Double? { get set }
+  var additionalContentInsets: AixAdditionalContentInsetsProp? { get set }
 
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void

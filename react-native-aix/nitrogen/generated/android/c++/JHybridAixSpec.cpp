@@ -7,9 +7,16 @@
 
 #include "JHybridAixSpec.hpp"
 
-
+// Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
+// Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 
 #include <optional>
+#include "AixAdditionalContentInsetsProp.hpp"
+#include "JAixAdditionalContentInsetsProp.hpp"
+#include "AixAdditionalContentInsets.hpp"
+#include "JAixAdditionalContentInsets.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -66,6 +73,15 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* scrollEndReachedThreshold */)>("setScrollEndReachedThreshold");
     method(_javaPart, scrollEndReachedThreshold.has_value() ? jni::JDouble::valueOf(scrollEndReachedThreshold.value()) : nullptr);
+  }
+  std::optional<AixAdditionalContentInsetsProp> JHybridAixSpec::getAdditionalContentInsets() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixAdditionalContentInsetsProp>()>("getAdditionalContentInsets");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->toCpp()) : std::nullopt;
+  }
+  void JHybridAixSpec::setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixAdditionalContentInsetsProp> /* additionalContentInsets */)>("setAdditionalContentInsets");
+    method(_javaPart, additionalContentInsets.has_value() ? JAixAdditionalContentInsetsProp::fromCpp(additionalContentInsets.value()) : nullptr);
   }
 
   // Methods

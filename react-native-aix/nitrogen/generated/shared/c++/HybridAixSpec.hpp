@@ -13,9 +13,11 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
-
+// Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 
 #include <optional>
+#include "AixAdditionalContentInsetsProp.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -50,6 +52,8 @@ namespace margelo::nitro::aix {
       virtual void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) = 0;
       virtual std::optional<double> getScrollEndReachedThreshold() = 0;
       virtual void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) = 0;
+      virtual std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() = 0;
+      virtual void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) = 0;
 
     public:
       // Methods

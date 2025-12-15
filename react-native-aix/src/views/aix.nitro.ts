@@ -4,6 +4,15 @@ import type {
   HybridViewMethods,
 } from 'react-native-nitro-modules'
 
+export interface AixAdditionalContentInsets {
+  whenKeyboardOpen: number
+  whenKeyboardClosed: number
+}
+
+export interface AixAdditionalContentInsetsProp {
+  bottom: AixAdditionalContentInsets
+}
+
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
   scrollOnComposerSizeUpdate: boolean
@@ -31,6 +40,8 @@ export interface AixProps extends HybridViewProps {
    *
    * By default, the content will collapse to the keyboard on opening if the blank size is less than half the size of the scroll view parent, and greater than the keyboard height.
    */
+
+  additionalContentInsets?: AixAdditionalContentInsetsProp
 }
 
 export interface AixMethods extends HybridViewMethods {

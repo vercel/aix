@@ -152,6 +152,23 @@ open class HybridAixSpec_cxx {
       self.__implementation.scrollEndReachedThreshold = newValue.value
     }
   }
+  
+  public final var additionalContentInsets: bridge.std__optional_AixAdditionalContentInsetsProp_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_AixAdditionalContentInsetsProp_ in
+        if let __unwrappedValue = self.__implementation.additionalContentInsets {
+          return bridge.create_std__optional_AixAdditionalContentInsetsProp_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.additionalContentInsets = newValue.value
+    }
+  }
 
   // Methods
   @inline(__always)

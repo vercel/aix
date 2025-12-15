@@ -12,7 +12,7 @@ import { Aix, AixCellView, AixComposer, AixRef } from 'react-native-aix';
 import { callback } from 'react-native-nitro-modules';
 
 const list = Array.from({ length: 10_000 }, (_, index) => ({
-  height: index % 2 === 1 ? 400 * 0.5 : 180 * 2,
+  height: index % 2 === 1 ? 1200 * Math.random() : 800 * Math.random(),
   backgroundColor: index % 2 === 0 ? '#333' : '#222222',
 }));
 
@@ -74,9 +74,9 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={async () => {
-            if (!Keyboard.isVisible()) {
-              return aix.current?.scrollToEnd();
-            }
+            // if (!Keyboard.isVisible()) {
+            //   return aix.current?.scrollToEnd();
+            // }
             shouldScrollToEnd.current = true;
             Keyboard.dismiss();
             const nextNumMessages = numMessages + 2;

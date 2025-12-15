@@ -17,6 +17,7 @@
 #include <react/renderer/components/view/ViewProps.h>
 
 #include <optional>
+#include "AixAdditionalContentInsetsProp.hpp"
 #include <memory>
 #include "HybridAixSpec.hpp"
 #include <functional>
@@ -45,6 +46,7 @@ namespace margelo::nitro::aix::views {
     CachedProp<bool> shouldStartAtEnd;
     CachedProp<bool> scrollOnComposerSizeUpdate;
     CachedProp<std::optional<double>> scrollEndReachedThreshold;
+    CachedProp<std::optional<AixAdditionalContentInsetsProp>> additionalContentInsets;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> hybridRef;
 
   private:

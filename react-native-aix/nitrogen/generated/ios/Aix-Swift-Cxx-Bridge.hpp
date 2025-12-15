@@ -8,6 +8,10 @@
 #pragma once
 
 // Forward declarations of C++ defined types
+// Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
+// Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 // Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
@@ -24,6 +28,8 @@ namespace Aix { class HybridAixComposerSpec_cxx; }
 namespace Aix { class HybridAixSpec_cxx; }
 
 // Include C++ defined types
+#include "AixAdditionalContentInsets.hpp"
+#include "AixAdditionalContentInsetsProp.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
@@ -50,6 +56,21 @@ namespace margelo::nitro::aix::bridge::swift {
     return optional.has_value();
   }
   inline double get_std__optional_double_(const std::optional<double>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<AixAdditionalContentInsetsProp>
+  /**
+   * Specialized version of `std::optional<AixAdditionalContentInsetsProp>`.
+   */
+  using std__optional_AixAdditionalContentInsetsProp_ = std::optional<AixAdditionalContentInsetsProp>;
+  inline std::optional<AixAdditionalContentInsetsProp> create_std__optional_AixAdditionalContentInsetsProp_(const AixAdditionalContentInsetsProp& value) noexcept {
+    return std::optional<AixAdditionalContentInsetsProp>(value);
+  }
+  inline bool has_value_std__optional_AixAdditionalContentInsetsProp_(const std::optional<AixAdditionalContentInsetsProp>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixAdditionalContentInsetsProp get_std__optional_AixAdditionalContentInsetsProp_(const std::optional<AixAdditionalContentInsetsProp>& optional) noexcept {
     return *optional;
   }
   

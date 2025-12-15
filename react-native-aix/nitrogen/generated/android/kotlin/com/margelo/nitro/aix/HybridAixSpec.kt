@@ -59,6 +59,12 @@ abstract class HybridAixSpec: HybridView() {
   @set:DoNotStrip
   @set:Keep
   abstract var scrollEndReachedThreshold: Double?
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var additionalContentInsets: AixAdditionalContentInsetsProp?
 
   // Methods
   @DoNotStrip

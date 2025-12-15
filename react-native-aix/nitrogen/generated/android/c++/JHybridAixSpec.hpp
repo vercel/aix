@@ -56,6 +56,8 @@ namespace margelo::nitro::aix {
     void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) override;
     std::optional<double> getScrollEndReachedThreshold() override;
     void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) override;
+    std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() override;
+    void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) override;
 
   public:
     // Methods

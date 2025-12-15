@@ -7,6 +7,7 @@
     "shouldStartAtEnd": true,
     "scrollOnComposerSizeUpdate": true,
     "scrollEndReachedThreshold": true,
+    "additionalContentInsets": true,
     "hybridRef": true
   }
 }
