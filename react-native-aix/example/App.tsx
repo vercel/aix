@@ -8,8 +8,7 @@ import {
   Button,
   Keyboard,
 } from 'react-native';
-import { Aix, AixCellView, AixComposer, AixRef } from 'react-native-aix';
-import { callback } from 'react-native-nitro-modules';
+import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix';
 
 const list = Array.from({ length: 10_000 }, (_, index) => ({
   height: index % 2 === 1 ? 1200 * Math.random() : 800 * Math.random(),
@@ -17,7 +16,7 @@ const list = Array.from({ length: 10_000 }, (_, index) => ({
 }));
 
 function App(): React.JSX.Element {
-  const aix = useRef<AixRef | null>(null);
+  const aix = useAixRef();
 
   const [numMessages, setNumMessages] = useState(20);
 
@@ -36,9 +35,7 @@ function App(): React.JSX.Element {
       shouldStartAtEnd={true}
       scrollOnComposerSizeUpdate={true}
       style={styles.container}
-      hybridRef={callback(ref => {
-        aix.current = ref;
-      })}
+      ref={aix}
     >
       <ScrollView
         bounces
@@ -49,15 +46,15 @@ function App(): React.JSX.Element {
         {Array.from({ length: numMessages }).map((_, index, arr) => {
           const isLast = index === arr.length - 1;
           return (
-            <AixCellView key={index} index={index} isLast={isLast}>
+            <AixCell key={index} index={index} isLast={isLast}>
               <View style={[styles.view, list[index]]}>
                 <Text style={{ color: '#ffffff' }}>{index}</Text>
               </View>
-            </AixCellView>
+            </AixCell>
           );
         })}
       </ScrollView>
-      <View
+      <AixFooter
         style={{
           position: 'absolute',
           top: 80,
@@ -74,16 +71,13 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={async () => {
-            // if (!Keyboard.isVisible()) {
-            //   return aix.current?.scrollToEnd();
-            // }
             shouldScrollToEnd.current = true;
             Keyboard.dismiss();
             const nextNumMessages = numMessages + 2;
             setNumMessages(nextNumMessages);
           }}
         />
-      </View>
+      </AixFooter>
     </Aix>
   );
 }
