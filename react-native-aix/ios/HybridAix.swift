@@ -81,9 +81,7 @@ class HybridAix: HybridAixSpec, AixContext {
     }
     
     func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
-        print("[Aix][scrollToIndexWhenBlankSizeReady] index=\(index), animated=\(animated ?? true), waitForKeyboardToEnd=\(waitForKeyboardToEnd ?? true)")
-
-        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? true)
+        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
         DispatchQueue.main.async { [weak self] in
             self?.flushQueuedScrollToEnd()
             

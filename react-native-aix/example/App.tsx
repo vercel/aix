@@ -19,16 +19,19 @@ function App(): React.JSX.Element {
   const aix = useAixRef();
 
   const [numMessages, setNumMessages] = useState(20);
+  const messages = Array.from({ length: numMessages }, (_, index) => index);
 
-  const shouldScrollToEnd = useRef(false);
+  const shouldScrollToEnd = useRef<number | null>(null);
+
+  const lastMessageIndex = numMessages - 1;
 
   useEffect(() => {
-    if (!shouldScrollToEnd.current) {
+    if (shouldScrollToEnd.current !== lastMessageIndex) {
       return;
     }
-    shouldScrollToEnd.current = false;
-    aix.current?.scrollToIndexWhenBlankSizeReady(numMessages - 1, true, false);
-  }, [numMessages]);
+    shouldScrollToEnd.current = null;
+    aix.current?.scrollToIndexWhenBlankSizeReady(lastMessageIndex, true, false);
+  }, [lastMessageIndex]);
 
   return (
     <Aix
@@ -43,7 +46,7 @@ function App(): React.JSX.Element {
         keyboardDismissMode="interactive"
         contentContainerStyle={styles.scrollView}
       >
-        {Array.from({ length: numMessages }).map((_, index, arr) => {
+        {messages.map((index, _, arr) => {
           const isLast = index === arr.length - 1;
           return (
             <AixCell key={index} index={index} isLast={isLast}>
@@ -71,9 +74,9 @@ function App(): React.JSX.Element {
         <Button
           title="Scroll to last"
           onPress={async () => {
-            shouldScrollToEnd.current = true;
             Keyboard.dismiss();
             const nextNumMessages = numMessages + 2;
+            shouldScrollToEnd.current = nextNumMessages - 1;
             setNumMessages(nextNumMessages);
           }}
         />
