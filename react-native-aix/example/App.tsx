@@ -76,7 +76,7 @@ function App(): React.JSX.Element {
               backgroundColor: '#111111',
               flexDirection: 'row',
               padding: 16,
-              height: 0,
+              height: 100,
             }}
           >
             <TextInput
@@ -129,7 +129,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 60,
-    backgroundColor: 'pink',
   },
   view: {
     width: 200,
