@@ -10,7 +10,7 @@ import {
   Button,
   Keyboard,
 } from 'react-native';
-import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix'; 
+import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix';
 import { useAppleChat, useMessages } from './src/apple';
 
 const list = Array.from({ length: 10_000 }, (_, index) => ({
@@ -25,6 +25,8 @@ function App(): React.JSX.Element {
   const { send } = useAppleChat({ setMessages, messages });
 
   const scrollToEndForIndex = useRef<number | null>(null);
+  const inputRef = useRef<TextInput>(null);
+  const [inputValue, setInputValue] = useState('');
 
   const lastMessageIndex = messages.length - 1;
 
@@ -40,55 +42,62 @@ function App(): React.JSX.Element {
   }, [lastMessageIndex]);
 
   return (
-      <Aix
-        shouldStartAtEnd={true}
-        scrollOnComposerSizeUpdate={true}
-        style={styles.container}
-        ref={aix}
+    <Aix
+      shouldStartAtEnd={true}
+      scrollOnComposerSizeUpdate={true}
+      style={styles.container}
+      ref={aix}
+    >
+      <ScrollView
+        bounces
+        alwaysBounceVertical
+        keyboardDismissMode="interactive"
+        contentContainerStyle={styles.scrollView}
       >
-        <ScrollView
-          bounces
-          alwaysBounceVertical
-          keyboardDismissMode="interactive"
-          contentContainerStyle={styles.scrollView}
-        >
-          {messages.map((message, index, arr) => {
-            const isLast = index === arr.length - 1;
-            return (
-              <AixCell key={index} index={index} isLast={isLast}>
-                {message.role === 'user' ? (
-                  <UserMessage content={message.content} />
-                ) : (
-                  <AssistantMessage content={message.content} />
-                )}
-              </AixCell>
-            );
-          })}
-        </ScrollView>
-        <AixFooter
-          style={{
-            position: 'absolute',
-            bottom: 400,
-            left: 0,
-            right: 0,
-            paddingHorizontal: 16,
-            height: 100,
-            backgroundColor: '#111111',
-            flexDirection: 'row',
-          }}
-        >
-            <TextInput style={{ flex: 1 }} placeholder="Type something..." />
+        {messages.map((message, index, arr) => {
+          const isLast = index === arr.length - 1;
+          return (
+            <AixCell key={index} index={index} isLast={isLast}>
+              {message.role === 'user' ? (
+                <UserMessage content={message.content} />
+              ) : (
+                <AssistantMessage content={message.content} />
+              )}
+            </AixCell>
+          );
+        })}
+      </ScrollView>
+      <AixFooter
+        style={{
+          position: 'absolute',
+          bottom: 400,
+          left: 0,
+          right: 0,
+          paddingHorizontal: 16,
+          height: 100,
+          backgroundColor: '#111111',
+          flexDirection: 'row',
+        }}
+      >
+        <TextInput
+          onChangeText={setInputValue}
+          style={{ flex: 1, color: 'white' }}
+          placeholderTextColor="#ffffff40"
+          placeholder="Type something..."
+          ref={inputRef}
+        />
 
-            <Button
-              title="Scroll to last"
-              onPress={async () => {
-                Keyboard.dismiss();
-                scrollToEndForIndex.current = messages.length + 1;
-                send('Hi how are you');
-              }}
-            />
-        </AixFooter>
-      </Aix>
+        <Button
+          title="Send"
+          onPress={async () => {
+            Keyboard.dismiss();
+            scrollToEndForIndex.current = messages.length + 1;
+            inputRef.current?.clear();
+            send(inputValue);
+          }}
+        />
+      </AixFooter>
+    </Aix>
   );
 }
 
