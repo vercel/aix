@@ -12,11 +12,10 @@ import {
 } from 'react-native';
 import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix';
 import { useAppleChat, useMessages } from './src/apple';
-
-const list = Array.from({ length: 10_000 }, (_, index) => ({
-  height: index % 2 === 1 ? 1200 * Math.random() : 800 * Math.random(),
-  backgroundColor: index % 2 === 0 ? '#333' : '#222222',
-}));
+import {
+  KeyboardProvider,
+  KeyboardStickyView,
+} from 'react-native-keyboard-controller';
 
 function App(): React.JSX.Element {
   const aix = useAixRef();
@@ -42,62 +41,65 @@ function App(): React.JSX.Element {
   }, [lastMessageIndex]);
 
   return (
-    <Aix
-      shouldStartAtEnd={true}
-      scrollOnComposerSizeUpdate={true}
-      style={styles.container}
-      ref={aix}
-    >
-      <ScrollView
-        bounces
-        alwaysBounceVertical
-        keyboardDismissMode="interactive"
-        contentContainerStyle={styles.scrollView}
+    <KeyboardProvider>
+      <Aix
+        shouldStartAtEnd={true}
+        scrollOnComposerSizeUpdate={true}
+        style={styles.container}
+        ref={aix}
       >
-        {messages.map((message, index, arr) => {
-          const isLast = index === arr.length - 1;
-          return (
-            <AixCell key={index} index={index} isLast={isLast}>
-              {message.role === 'user' ? (
-                <UserMessage content={message.content} />
-              ) : (
-                <AssistantMessage content={message.content} />
-              )}
-            </AixCell>
-          );
-        })}
-      </ScrollView>
-      <AixFooter
-        style={{
-          position: 'absolute',
-          bottom: 400,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 16,
-          height: 100,
-          backgroundColor: '#111111',
-          flexDirection: 'row',
-        }}
-      >
-        <TextInput
-          onChangeText={setInputValue}
-          style={{ flex: 1, color: 'white' }}
-          placeholderTextColor="#ffffff40"
-          placeholder="Type something..."
-          ref={inputRef}
-        />
-
-        <Button
-          title="Send"
-          onPress={async () => {
-            Keyboard.dismiss();
-            scrollToEndForIndex.current = messages.length + 1;
-            inputRef.current?.clear();
-            send(inputValue);
+        <ScrollView keyboardDismissMode="interactive">
+          {messages.map((message, index, arr) => {
+            const isLast = index === arr.length - 1;
+            return (
+              <AixCell key={index} index={index} isLast={isLast}>
+                {message.role === 'user' ? (
+                  <UserMessage content={message.content} />
+                ) : (
+                  <AssistantMessage content={message.content} />
+                )}
+              </AixCell>
+            );
+          })}
+        </ScrollView>
+        <KeyboardStickyView
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
           }}
-        />
-      </AixFooter>
-    </Aix>
+          offset={{ opened: 0, closed: 0 }}
+        >
+          <AixFooter
+            style={{
+              backgroundColor: '#111111',
+              flexDirection: 'row',
+              padding: 16,
+              height: 0,
+            }}
+          >
+            <TextInput
+              onChangeText={setInputValue}
+              style={{ flex: 1, color: 'white' }}
+              placeholderTextColor="#ffffff40"
+              placeholder="Type something..."
+              ref={inputRef}
+            />
+
+            <Button
+              title="Send"
+              onPress={async () => {
+                Keyboard.dismiss();
+                scrollToEndForIndex.current = messages.length + 1;
+                inputRef.current?.clear();
+                send(inputValue);
+              }}
+            />
+          </AixFooter>
+        </KeyboardStickyView>
+      </Aix>
+    </KeyboardProvider>
   );
 }
 
@@ -127,8 +129,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 60,
+    backgroundColor: 'pink',
   },
-  scrollView: {},
   view: {
     width: 200,
     justifyContent: 'center',
