@@ -4,7 +4,6 @@
   "exclude": ["**/node_modules", "**/Pods"],
   "compilerOptions": {
     "strict": true,
-    "baseUrl": ".",
     "paths": {
       "react-native-aix": ["../src"]
     }

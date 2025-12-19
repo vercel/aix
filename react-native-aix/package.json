@@ -1,56 +1,10 @@
 {
   "name": "react-native-aix",
   "version": "0.1.0",
-  "description": "react-native-aix is a react native package built with Nitro",
+  "author": "Fernando Rojo",
+  "repository": "https://github.com/fernandorojo/react-native-aix.git",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
-  "types": "./lib/typescript/src/index.d.ts",
-  "react-native": "src/index",
-  "source": "src/index",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "clean": "git clean -dfX",
-    "release": "semantic-release",
-    "build": "bun run typecheck && bob build",
-    "codegen": "nitrogen --logLevel=\"debug\" && bun run build && node post-script.js"
-  },
-  "keywords": [
-    "react-native",
-    "react-native-aix"
-  ],
-  "files": [
-    "src",
-    "react-native.config.js",
-    "lib",
-    "nitrogen",
-    "cpp",
-    "nitro.json",
-    "android/build.gradle",
-    "android/fix-prefab.gradle",
-    "android/gradle.properties",
-    "android/CMakeLists.txt",
-    "android/src",
-    "ios/**/*.h",
-    "ios/**/*.m",
-    "ios/**/*.mm",
-    "ios/**/*.cpp",
-    "ios/**/*.swift",
-    "app.plugin.js",
-    "*.podspec",
-    "README.md"
-  ],
-  "workspaces": [
-    "example"
-  ],
-  "repository": "https://github.com/fernandorojo/react-native-aix.git",
-  "author": "Fernando Rojo",
-  "license": "MIT",
-  "bugs": "https://github.com/fernandorojo/react-native-aix/issues",
-  "homepage": "https://github.com/fernandorojo/react-native-aix#readme",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "devDependencies": {
     "@jamesacarr/eslint-formatter-github-actions": "^0.2.0",
     "@semantic-release/changelog": "^6.0.3",
@@ -71,6 +25,8 @@
     "react-native": "*",
     "react-native-nitro-modules": "*"
   },
+  "bugs": "https://github.com/fernandorojo/react-native-aix/issues",
+  "description": "react-native-aix is a react native package built with Nitro",
   "eslintConfig": {
     "root": true,
     "extends": [
@@ -97,6 +53,33 @@
     "node_modules/",
     "lib/"
   ],
+  "files": [
+    "src",
+    "react-native.config.js",
+    "lib",
+    "nitrogen",
+    "cpp",
+    "nitro.json",
+    "android/build.gradle",
+    "android/fix-prefab.gradle",
+    "android/gradle.properties",
+    "android/CMakeLists.txt",
+    "android/src",
+    "ios/**/*.h",
+    "ios/**/*.m",
+    "ios/**/*.mm",
+    "ios/**/*.cpp",
+    "ios/**/*.swift",
+    "app.plugin.js",
+    "*.podspec",
+    "README.md"
+  ],
+  "homepage": "https://github.com/fernandorojo/react-native-aix#readme",
+  "keywords": [
+    "react-native",
+    "react-native-aix"
+  ],
+  "license": "MIT",
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,
@@ -105,6 +88,11 @@
     "useTabs": false,
     "semi": false
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "react-native": "src/index",
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
@@ -118,5 +106,14 @@
         }
       ]
     ]
-  }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "git clean -dfX",
+    "release": "semantic-release",
+    "build": "bun run typecheck && bob build",
+    "codegen": "nitrogen --logLevel=\"debug\" && bun run build && node post-script.js"
+  },
+  "source": "src/index",
+  "types": "./lib/typescript/src/index.d.ts"
 }
