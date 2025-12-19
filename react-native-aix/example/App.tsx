@@ -62,40 +62,30 @@ function App(): React.JSX.Element {
             );
           })}
         </ScrollView>
-        <KeyboardStickyView
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-          offset={{ opened: 0, closed: 0 }}
-        >
-          <AixFooter
-            style={{
-              backgroundColor: '#111111',
-              flexDirection: 'row',
-              padding: 16,
-              height: 100,
-            }}
-          >
-            <TextInput
-              onChangeText={setInputValue}
-              style={{ flex: 1, color: 'white' }}
-              placeholderTextColor="#ffffff40"
-              placeholder="Type something..."
-              ref={inputRef}
-            />
+        <KeyboardStickyView offset={{ opened: 0, closed: 0 }}>
+          <AixFooter style={styles.footer}>
+            <View style={styles.footerRow}>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <TextInput
+                  onChangeText={setInputValue}
+                  style={[styles.input]}
+                  placeholderTextColor="#ffffff40"
+                  placeholder="Type something..."
+                  ref={inputRef}
+                  multiline
+                />
+              </View>
 
-            <Button
-              title="Send"
-              onPress={async () => {
-                Keyboard.dismiss();
-                scrollToEndForIndex.current = messages.length + 1;
-                inputRef.current?.clear();
-                send(inputValue);
-              }}
-            />
+              <Button
+                title="Send"
+                onPress={async () => {
+                  Keyboard.dismiss();
+                  scrollToEndForIndex.current = messages.length + 1;
+                  inputRef.current?.clear();
+                  send(inputValue);
+                }}
+              />
+            </View>
           </AixFooter>
         </KeyboardStickyView>
       </Aix>
@@ -105,25 +95,18 @@ function App(): React.JSX.Element {
 
 function UserMessage({ content }: { content: string }) {
   return (
-    <View
-      style={{
-        backgroundColor: '#333333',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 16,
-        marginHorizontal: 16,
-        alignSelf: 'flex-end',
-        maxWidth: '80%',
-      }}
-    >
-      <Text style={{ color: '#ffffff' }}>{content}</Text>
+    <View style={styles.userMessage}>
+      <Text style={[styles.text]}>{content}</Text>
     </View>
   );
 }
 
 function AssistantMessage({ content }: { content: string }) {
-  return <Text style={{ color: '#ffffff', padding: 16 }}>{content}</Text>;
+  return <Text style={[styles.text, { padding: 16 }]}>{content}</Text>;
 }
+
+const fontSize = 17;
+const lineHeight = (fontSize: number) => fontSize * 1.4;
 
 const styles = StyleSheet.create({
   container: {
@@ -135,6 +118,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 200,
+  },
+  text: {
+    fontSize,
+    lineHeight: lineHeight(fontSize),
+    color: '#ffffff',
+  },
+  footerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  input: {
+    fontSize,
+    color: '#ffffff',
+    backgroundColor: '#111111',
+    padding: 12,
+    borderRadius: 20,
+    borderCurve: 'continuous',
+    paddingHorizontal: 16,
+  },
+  userMessage: {
+    backgroundColor: '#333333',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginHorizontal: 16,
+    alignSelf: 'flex-end',
+    maxWidth: '70%',
+    borderCurve: 'continuous',
+  },
+  footer: {
+    paddingHorizontal: 16,
+    height: 60,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
 

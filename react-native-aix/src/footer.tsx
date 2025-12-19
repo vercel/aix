@@ -12,10 +12,17 @@ export function AixFooter(
   props: React.ComponentProps<typeof AixFooterInternal>
 ) {
   if (__DEV__) {
-    const paddingBottom = StyleSheet.flatten(props.style)?.paddingBottom
-    if (paddingBottom) {
+    const flat = StyleSheet.flatten(props.style)
+    const broken = Object.keys({
+      paddingBottom: flat.paddingBottom,
+      padding: flat.padding,
+    }).filter((key) => flat[key as keyof typeof flat] !== undefined)
+
+    if (broken.length) {
       console.error(
-        '<AixFooter /> vertical padding in style is not supported. Please apply it to a child view instead'
+        `<AixFooter /> You used ${broken.join(
+          ', '
+        )} in the style prop. Vertical padding is not supported on AixFooter directly. Please apply it to a child view instead.`
       )
     }
   }
