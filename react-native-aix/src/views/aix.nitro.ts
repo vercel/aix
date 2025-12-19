@@ -42,6 +42,22 @@ export interface AixProps extends HybridViewProps {
    */
 
   additionalContentInsets?: AixAdditionalContentInsetsProp
+
+  /**
+   * Used to index of the second-to-last message.
+   *
+   * For AI chat apps, it should correspond to the index of the last user message.
+   *
+   * By default, it will simply be the seccond-to-last item. Specifically, it will correspond to the Cell index before the <Cell isLast />.
+   *
+   * However, if you use custom message types, you can override it with this prop.
+   *
+   * For example, if you use a "<Timestamp />" row in your LegendList or FlashList implementation, then you can set this value.
+   *
+   * This indicates which message will be scrolled into view.
+   *
+   */
+  penultimateCellIndex?: number
 }
 
 export interface AixMethods extends HybridViewMethods {
