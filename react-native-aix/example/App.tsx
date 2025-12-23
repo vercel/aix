@@ -47,6 +47,14 @@ function App(): React.JSX.Element {
         scrollOnComposerSizeUpdate={true}
         style={styles.container}
         ref={aix}
+        additionalContentInsets={{
+          bottom: {
+            // Safe area under composer when keyboard is closed
+            whenKeyboardClosed: 0,
+            // No safe area needed when keyboard is open (keyboard covers it)
+            whenKeyboardOpen: 0,
+          },
+        }}
       >
         <ScrollView keyboardDismissMode="interactive">
           {messages.map((message, index, arr) => {
@@ -62,7 +70,7 @@ function App(): React.JSX.Element {
             );
           })}
         </ScrollView>
-        <KeyboardStickyView offset={{ opened: 0, closed: 0 }}>
+        <KeyboardStickyView offset={{ opened: 0, closed: -18 }}>
           <AixFooter style={styles.footer}>
             <View style={styles.footerRow}>
               <View style={{ flex: 1, justifyContent: 'center' }}>

@@ -274,9 +274,10 @@ class HybridAix: HybridAixSpec, AixContext {
         let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
         let blankViewHeight = blankView.view.frame.height
         
-        // The inset is: scrollable area height - blank view height - keyboard height
-        // This ensures when scrolled to end, the last message is at the top
-        let inset = scrollView.bounds.height - blankViewHeight - cellBeforeBlankViewHeight - keyboardHeight - composerHeight + additionalContentInsetBottom
+        // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
+        // The blank size fills the remaining space so the last message can scroll to the top
+        let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
+        let inset = visibleAreaHeight - blankViewHeight - cellBeforeBlankViewHeight
         return max(0, inset)
     }
     
@@ -527,9 +528,11 @@ extension HybridAix: KeyboardManagerDelegate {
         return gestureState == .began || gestureState == .changed
     }
 
+    /// Distance from current scroll position to the maximum scroll position (end)
     var distFromEnd: CGFloat {
         guard let scrollView = scrollView else { return 0 }
-        return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y - composerHeight - additionalContentInsetBottom
+        let maxScrollY = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
+        return maxScrollY - scrollView.contentOffset.y
     }
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
@@ -540,9 +543,13 @@ extension HybridAix: KeyboardManagerDelegate {
         let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
-        let additionalContentInsetBottom = CGFloat(self.additionalContentInsets?.bottom.whenKeyboardOpen ?? 0)
-
-        let shiftContentUpToY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight - additionalContentInsetBottom
+        // Use the target additionalContentInsetBottom when keyboard is fully open
+        let targetAdditionalInset = CGFloat(self.additionalContentInsets?.bottom.whenKeyboardOpen ?? 0)
+        
+        // Calculate the max scroll position when keyboard is open
+        // This is where we want to scroll to: contentSize - bounds + contentInset
+        // When blankSize is 0: contentInset = keyboard + composer + additionalInset
+        let shiftContentUpToY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight + targetAdditionalInset
         
         if shouldShiftContentUp {
             return (scrollY, shiftContentUpToY)    
