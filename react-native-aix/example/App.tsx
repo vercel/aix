@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
   footerRow: {
     alignItems: 'center',
     flexDirection: 'row',
+    paddingVertical: 8,
   },
   input: {
     fontSize,
@@ -157,7 +158,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 16,
-    height: 60,
     position: 'absolute',
     left: 0,
     right: 0,
