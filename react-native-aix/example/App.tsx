@@ -30,6 +30,9 @@ function App(): React.JSX.Element {
   const lastMessageIndex = messages.length - 1;
 
   useEffect(() => {
+    if (lastMessageIndex < 2) {
+      return;
+    }
     if (scrollToEndForIndex.current === lastMessageIndex) {
       scrollToEndForIndex.current = null;
       aix.current?.scrollToIndexWhenBlankSizeReady(

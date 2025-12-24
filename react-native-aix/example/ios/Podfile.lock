@@ -19,6 +19,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
+    - react-native-keyboard-controller
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2988,7 +2989,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Aix: ed16396f1a19e7b60a9e4f00fa189d89598cf046
+  Aix: 09e641d55ac829ef61e98e8dda874a2dd0bd3f29
   AppleLLM: 5eef16469f548b46362e09eebb9d08fabbefba8f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb

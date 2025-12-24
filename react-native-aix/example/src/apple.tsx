@@ -1,7 +1,7 @@
-import { apple,  } from '@react-native-ai/apple';
+import { apple } from '@react-native-ai/apple';
 import { streamText } from 'ai';
 import { useState } from 'react';
-import '@azure/core-asynciterator-polyfill'
+import '@azure/core-asynciterator-polyfill';
 
 type UIMessage = {
   role: 'user' | 'assistant';
@@ -17,6 +17,16 @@ export function useAppleChat({
 }) {
   return {
     send: async function (message: string) {
+      if (!apple.isAvailable()) {
+        return setMessages(messages => [
+          ...messages,
+          { role: 'user', content: message },
+          {
+            role: 'assistant',
+            content: 'Thinking...\n'.repeat(20),
+          },
+        ]);
+      }
       const assistantMessageIndex = messages.length + 1;
       setMessages(messages => [
         ...messages,
@@ -24,7 +34,7 @@ export function useAppleChat({
         {
           role: 'assistant',
           content: 'Thinking...',
-        }
+        },
       ]);
 
       const stream = streamText({
