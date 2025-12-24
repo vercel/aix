@@ -78,9 +78,12 @@ function App(): React.JSX.Element {
                     true,
                     false,
                   );
-                  Keyboard.dismiss();
+
                   inputRef.current?.clear();
                   send(inputValue);
+                  requestAnimationFrame(() => {
+                    Keyboard.dismiss();
+                  });
                 }}
               />
             </View>
