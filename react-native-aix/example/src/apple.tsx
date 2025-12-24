@@ -23,7 +23,7 @@ export function useAppleChat({
           { role: 'user', content: message },
           {
             role: 'assistant',
-            content: 'Thinking...\n'.repeat(20),
+            content: 'Thinking...',
           },
         ]);
       }
