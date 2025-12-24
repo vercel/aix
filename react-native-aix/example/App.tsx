@@ -35,9 +35,7 @@ function App(): React.JSX.Element {
         ref={aix}
         additionalContentInsets={{
           bottom: {
-            // Safe area under composer when keyboard is closed
             whenKeyboardClosed: 0,
-            // No safe area needed when keyboard is open (keyboard covers it)
             whenKeyboardOpen: 0,
           },
         }}
