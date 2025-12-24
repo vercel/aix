@@ -23,25 +23,8 @@ function App(): React.JSX.Element {
   const { messages, setMessages } = useMessages();
   const { send } = useAppleChat({ setMessages, messages });
 
-  const scrollToEndForIndex = useRef<number | null>(null);
   const inputRef = useRef<TextInput>(null);
   const [inputValue, setInputValue] = useState('');
-
-  const lastMessageIndex = messages.length - 1;
-
-  useEffect(() => {
-    if (lastMessageIndex < 2) {
-      return;
-    }
-    if (scrollToEndForIndex.current === lastMessageIndex) {
-      scrollToEndForIndex.current = null;
-      aix.current?.scrollToIndexWhenBlankSizeReady(
-        lastMessageIndex,
-        true,
-        false,
-      );
-    }
-  }, [lastMessageIndex]);
 
   return (
     <KeyboardProvider>
@@ -90,8 +73,14 @@ function App(): React.JSX.Element {
               <Button
                 title="Send"
                 onPress={async () => {
+                  // if (messages.length > 0) {
+                  aix.current?.scrollToIndexWhenBlankSizeReady(
+                    messages.length + 1,
+                    true,
+                    false,
+                  );
+                  // }
                   Keyboard.dismiss();
-                  scrollToEndForIndex.current = messages.length + 1;
                   inputRef.current?.clear();
                   send(inputValue);
                 }}
