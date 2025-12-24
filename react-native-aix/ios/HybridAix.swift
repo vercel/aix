@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import ObjectiveC.runtime
+import react_native_keyboard_controller
 
 private var aixContextKey: UInt8 = 0
 
@@ -82,11 +83,22 @@ class HybridAix: HybridAixSpec, AixContext {
     
     func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
         queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
-        DispatchQueue.main.async { [weak self] in
-            self?.flushQueuedScrollToEnd()
-            
-        }
         
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Clear any in-progress keyboard scroll interpolation since we're taking over scrolling
+            if let event = self.startEvent {
+                self.startEvent = KeyboardStartEvent(
+                    scrollY: event.scrollY,
+                    isOpening: event.isOpening,
+                    isInteractive: event.isInteractive,
+                    interpolateContentOffsetY: nil
+                )
+            }
+            
+            self.flushQueuedScrollToEnd()
+        }
     }
 
     private var didScrollToEndInitially = false
@@ -197,10 +209,6 @@ class HybridAix: HybridAixSpec, AixContext {
         guard didSetupPanGestureObserver, let scrollView = cachedScrollView else { return }
         scrollView.panGestureRecognizer.removeTarget(self, action: #selector(handlePanGesture(_:)))
         didSetupPanGestureObserver = false
-    }
-    
-    deinit {
-        removePanGestureObserver()
     }
     
     /// Handle pan gesture state changes to detect interactive keyboard dismiss
@@ -317,13 +325,9 @@ class HybridAix: HybridAixSpec, AixContext {
     }
 
     
-    // MARK: - Keyboard Manager
+    // MARK: - Keyboard Observer (from react-native-keyboard-controller)
     
-    private lazy var keyboardManager: KeyboardManager = {
-        let manager = KeyboardManager()
-        manager.delegate = self
-        return manager
-    }()
+    private var keyboardObserver: KeyboardMovementObserver?
     
     /// Event captured at the start of a keyboard transition
     private struct KeyboardStartEvent {
@@ -336,6 +340,140 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Current keyboard start event (nil when no keyboard transition is active)
     private var startEvent: KeyboardStartEvent? = nil
     
+    /// Setup the keyboard observer using react-native-keyboard-controller
+    private func setupKeyboardObserver() {
+        keyboardObserver = KeyboardMovementObserver(
+            handler: { [weak self] eventName, height, progress, duration, tag in
+                guard let self = self else { return }
+                
+                let eventString = eventName as String
+                let heightValue = CGFloat(truncating: height)
+                let progressValue = CGFloat(truncating: progress)
+                
+                switch eventString {
+                case "onKeyboardMoveStart":
+                    // progress == 1 means opening, progress == 0 means closing
+                    let isOpening = progressValue == 1
+                    self.handleKeyboardWillMove(targetHeight: heightValue, isOpening: isOpening)
+                    
+                case "onKeyboardMove":
+                    self.handleKeyboardMove(height: heightValue, progress: progressValue)
+                    
+                case "onKeyboardMoveEnd":
+                    self.handleKeyboardDidMove(height: heightValue, progress: progressValue)
+                    
+                case "onKeyboardMoveInteractive":
+                    self.handleKeyboardMoveInteractive(height: heightValue, progress: progressValue)
+                    
+                default:
+                    break
+                }
+            },
+            onNotify: { event, data in
+                // Could handle additional notifications here if needed
+                print("[Aix] Keyboard notification: \(event)")
+            },
+            onRequestAnimation: {
+                // Animation requested - no-op for now
+            },
+            onCancelAnimation: {
+                // Animation cancelled - no-op for now
+            }
+        )
+        keyboardObserver?.mount()
+    }
+    
+    /// Handle keyboard will move (start of animation)
+    private func handleKeyboardWillMove(targetHeight: CGFloat, isOpening: Bool) {
+        // Capture the target height when keyboard is opening
+        if isOpening && targetHeight > keyboardHeightWhenOpen {
+            keyboardHeightWhenOpen = targetHeight
+        }
+        
+        // If we're already in an interactive dismiss, don't overwrite
+        if isInInteractiveDismiss {
+            return
+        }
+        
+        let scrollY = scrollView?.contentOffset.y ?? 0
+        
+        var interpolateContentOffsetY: (CGFloat, CGFloat)? = {
+            if isOpening {
+                return self.getContentOffsetYWhenOpening(scrollY: scrollY)
+            } else {
+                return self.getContentOffsetYWhenClosing(scrollY: scrollY)
+            }
+        }()
+        
+        if queuedScrollToEnd != nil {
+            // don't interpolate the keyboard if we're planning to scroll to end
+            interpolateContentOffsetY = nil
+        }
+        
+        print("[Aix] handleKeyboardWillMove: isOpening=\(isOpening), interpolate=\(String(describing: interpolateContentOffsetY))")
+        
+        startEvent = KeyboardStartEvent(
+            scrollY: scrollY,
+            isOpening: isOpening,
+            isInteractive: false,
+            interpolateContentOffsetY: interpolateContentOffsetY
+        )
+    }
+    
+    /// Handle keyboard frame updates during animation
+    private func handleKeyboardMove(height: CGFloat, progress: CGFloat) {
+        if keyboardHeightWhenOpen > 0 {
+            keyboardProgress = height / keyboardHeightWhenOpen
+        }
+        keyboardHeight = height
+        
+        guard let startEvent else { return }
+        
+        applyContentInset()
+        
+        if let (startY, endY) = startEvent.interpolateContentOffsetY {
+            // Normalize progress to always go from 0 to 1 (start to end)
+            // For opening: progress goes 0→1, so use as-is
+            // For closing: progress goes 1→0, so invert it
+            let normalizedProgress = startEvent.isOpening ? progress : (1 - progress)
+            let newScrollY = startY + (endY - startY) * normalizedProgress
+            scrollView?.setContentOffset(CGPoint(x: 0, y: newScrollY), animated: false)
+        }
+    }
+    
+    /// Handle keyboard animation end
+    private func handleKeyboardDidMove(height: CGFloat, progress: CGFloat) {
+        // Ensure final height is applied
+        keyboardHeight = height
+        if keyboardHeightWhenOpen > 0 {
+            keyboardProgress = height / keyboardHeightWhenOpen
+        }
+        
+        applyContentInset()
+        
+        startEvent = nil
+        isInInteractiveDismiss = false
+        
+        if queuedScrollToEnd?.waitForKeyboardToEnd == true {
+            flushQueuedScrollToEnd(force: true)
+        }
+    }
+    
+    /// Handle interactive keyboard dismissal
+    private func handleKeyboardMoveInteractive(height: CGFloat, progress: CGFloat) {
+        // Mark that we're in an interactive dismiss if not already
+        if !isInInteractiveDismiss && startEvent != nil {
+            isInInteractiveDismiss = true
+            if var event = startEvent {
+                event.isInteractive = true
+                startEvent = event
+            }
+        }
+        
+        // Update keyboard state
+        handleKeyboardMove(height: height, progress: progress)
+    }
+    
     // MARK: - Initialization
     
     override init() {
@@ -347,8 +485,13 @@ class HybridAix: HybridAixSpec, AixContext {
         // Attach this context to our inner view
         view.aixContext = self
         
-        // Initialize keyboard manager (lazy, will start observing)
-        _ = keyboardManager
+        // Initialize keyboard observer from react-native-keyboard-controller
+        setupKeyboardObserver()
+    }
+    
+    deinit {
+        removePanGestureObserver()
+        keyboardObserver?.unmount()
     }
     
     // MARK: - Lifecycle
@@ -359,6 +502,21 @@ class HybridAix: HybridAixSpec, AixContext {
         print("[Aix] View added to superview: \(type(of: superview)), attaching context")
         // Attach context to the superview (HybridAixComponent) so children can find it
         superview.aixContext = self
+        
+        // Attach the keyboard tracking view to enable frame-by-frame keyboard tracking
+        attachKeyboardTrackingView()
+    }
+    
+    /// Attach the keyboard tracking view to the view hierarchy
+    private func attachKeyboardTrackingView() {
+        // Wait for next run loop to ensure view hierarchy is set up
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let window = self.view.window {
+                self.keyboardObserver?.keyboardTrackingView.attachToTopmostView(toWindow: window)
+                print("[Aix] Keyboard tracking view attached to window")
+            }
+        }
     }
     
     // MARK: - AixContext Protocol
@@ -440,78 +598,9 @@ class HybridAix: HybridAixSpec, AixContext {
     }
 }
 
-// MARK: - KeyboardManagerDelegate
+// MARK: - Scroll Position Helpers
 
-extension HybridAix: KeyboardManagerDelegate {
-    func keyboardManager(_ manager: KeyboardManager, didUpdateHeight height: CGFloat, progress: CGFloat) {
-        if keyboardHeightWhenOpen > 0 {
-           keyboardProgress = height / keyboardHeightWhenOpen
-        }
-        print("keyboard progress: \(keyboardProgress), \(height) \(keyboardHeightWhenOpen)")
-        keyboardHeight = height
-        guard let startEvent else { return }
-
-        applyContentInset()
-
-        if let (startY, endY) = startEvent.interpolateContentOffsetY {
-            let newScrollY = startY + (endY - startY) * progress
-            scrollView?.setContentOffset(CGPoint(x: 0, y: newScrollY), animated: false)
-        }
-    }
-    
-    func keyboardManagerDidStartAnimation(_ manager: KeyboardManager, event: KeyboardManager.KeyboardEvent) {
-
-        let isOpening = event.isOpening
-
-        // Capture the target height when keyboard is opening - this is a snapshot, not reactive to each frame
-        if isOpening, event.targetHeight > keyboardHeightWhenOpen {
-            keyboardHeightWhenOpen = event.targetHeight
-        }
-
-        // If we're already in an interactive dismiss (detected via pan gesture),
-        // don't overwrite the event
-        if isInInteractiveDismiss {
-            return
-        }
-        
-        // Detect interactive dismissal by checking if:
-        // 1. Keyboard is closing (not opening)
-        // 2. Scroll view has interactive keyboard dismiss mode
-        // 3. User is actively scrolling (pan gesture is in progress)
-        var isInteractive = event.isInteractive || isInInteractiveDismiss
-        
-        if !isOpening && !isInteractive {
-            isInteractive = isInteractiveDismissInProgress()
-        }
-        
-
-        let scrollY = scrollView?.contentOffset.y ?? 0
-
-        var interpolateContentOffsetY = {
-            if event.isOpening {
-                return self.getContentOffsetYWhenOpening(scrollY: scrollY)
-            } else {
-                return self.getContentOffsetYWhenClosing(scrollY: scrollY)
-            }
-        }()
-        
-        if queuedScrollToEnd != nil {
-            // don't interpolate the keyboard if we're planning to scroll to end
-            interpolateContentOffsetY = nil
-        }
-
-        print("[Aix] keyboardManagerDidStartAnimation: interpolateContentOffsetY=\(String(describing: interpolateContentOffsetY))")
-        print("[Aix] keyboardManagerDidStartAnimation: queuedScrollToEnd=\(queuedScrollToEnd != nil)")
-
-        startEvent = KeyboardStartEvent(
-            scrollY: scrollY,
-            isOpening: event.isOpening,
-            isInteractive: isInteractive,
-            interpolateContentOffsetY: interpolateContentOffsetY,
-        )
-
-    }
-    
+extension HybridAix {
     /// Check if an interactive keyboard dismiss is in progress by examining scroll view state
     private func isInteractiveDismissInProgress() -> Bool {
         guard let scrollView = scrollView else { return false }
@@ -523,7 +612,6 @@ extension HybridAix: KeyboardManagerDelegate {
         let panGesture = scrollView.panGestureRecognizer
         let gestureState = panGesture.state
         
-        
         // Pan gesture states: .began = 1, .changed = 2
         return gestureState == .began || gestureState == .changed
     }
@@ -534,6 +622,7 @@ extension HybridAix: KeyboardManagerDelegate {
         let maxScrollY = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
         return maxScrollY - scrollView.contentOffset.y
     }
+    
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
     }
@@ -561,9 +650,9 @@ extension HybridAix: KeyboardManagerDelegate {
             return (scrollY, shiftContentUpToY)    
         }
 
-
         return nil
     }
+    
     func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard keyboardHeightWhenOpen > 0 else { return nil }
         let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
@@ -590,30 +679,9 @@ extension HybridAix: KeyboardManagerDelegate {
         // by the same amount the inset decreases
         let targetScrollY = max(0, scrollY - insetDecrease)
         
-        
         // Only interpolate if there's actually movement needed
         guard abs(scrollY - targetScrollY) > 1 else { return nil }
         
         return (scrollY, targetScrollY)
-    }
-    
-    func keyboardManagerDidBecomeInteractive(_ manager: KeyboardManager) {
-        
-        // Update the existing startEvent to mark it as interactive
-        if var event = startEvent {
-            event.isInteractive = true
-            startEvent = event
-        }
-    }
-    
-    func keyboardManagerDidEndAnimation(_ manager: KeyboardManager) {
-
-        startEvent = nil
-        isInInteractiveDismiss = false
-
-        if queuedScrollToEnd?.waitForKeyboardToEnd == true {
-            flushQueuedScrollToEnd(force: true)
-        }
-        
     }
 }
