@@ -73,13 +73,11 @@ function App(): React.JSX.Element {
               <Button
                 title="Send"
                 onPress={async () => {
-                  // if (messages.length > 0) {
                   aix.current?.scrollToIndexWhenBlankSizeReady(
                     messages.length + 1,
                     true,
                     false,
                   );
-                  // }
                   Keyboard.dismiss();
                   inputRef.current?.clear();
                   send(inputValue);
