@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 import ObjectiveC.runtime
-import react_native_keyboard_controller
 
 private var aixContextKey: UInt8 = 0
 
@@ -16,6 +15,7 @@ private var aixContextKey: UInt8 = 0
 protocol AixContext: AnyObject {
     /// The blank view (last cell) - used for calculating blank size
     var blankView: HybridAixCellView? { get set }
+    
     /// The composer view
     var composerView: HybridAixComposer? { get set }
     
@@ -55,7 +55,20 @@ extension UIView {
         return nil
     }
 
-    /// Recursively search subviews to find a UIScrollView
+    /// Recursively search subviews to find a UIScrollView by accessibilityIdentifier (nativeID)
+    func findScrollView(withIdentifier identifier: String) -> UIScrollView? {
+        if let scrollView = self as? UIScrollView, scrollView.accessibilityIdentifier == identifier {
+            return scrollView
+        }
+        for subview in subviews {
+            if let scrollView = subview.findScrollView(withIdentifier: identifier) {
+                return scrollView
+            }
+        }
+        return nil
+    }
+
+    /// Recursively search subviews to find the first UIScrollView
     func findScrollView() -> UIScrollView? {
         if let scrollView = self as? UIScrollView {
             return scrollView
@@ -71,8 +84,13 @@ extension UIView {
 
 // MARK: - HybridAix (Root Context)
 
-class HybridAix: HybridAixSpec, AixContext {
+class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
+
+    var penultimateCellIndex: Double?
+
     var additionalContentInsets: AixAdditionalContentInsetsProp?
+
+    var mainScrollViewID: String?
     
     func scrollToEnd(animated: Bool?) {
         // Dispatch to main thread since this may be called from RN background thread
@@ -81,11 +99,11 @@ class HybridAix: HybridAixSpec, AixContext {
         }
     }
     
-    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
-        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
+    func scrollToIndexWhenBlankSizeReady(index: Int, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
+        queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
         
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             
             // Clear any in-progress keyboard scroll interpolation since we're taking over scrolling
             if let event = self.startEvent {
@@ -178,20 +196,35 @@ class HybridAix: HybridAixSpec, AixContext {
     /// Find the scroll view within our view hierarchy
     /// We search from the superview (HybridAixComponent) since the scroll view
     /// is a sibling of our inner view, not a child
+    /// If mainScrollViewID is provided, searches by accessibilityIdentifier first
     var scrollView: UIScrollView? {
         if let cached = cachedScrollView {
             return cached
         }
         let searchRoot = view.superview ?? view
-        let sv = searchRoot.findScrollView()
+
+        // If mainScrollViewID is provided, try to find by accessibilityIdentifier first
+        var sv: UIScrollView? = nil
+        if let scrollViewID = mainScrollViewID, !scrollViewID.isEmpty {
+            sv = searchRoot.findScrollView(withIdentifier: scrollViewID)
+            if sv != nil {
+                print("[Aix] scrollView found by ID '\(scrollViewID)': \(String(describing: sv))")
+            }
+        }
+
+        // Fallback to default subview iteration if not found by ID
+        if sv == nil {
+            sv = searchRoot.findScrollView()
+            print("[Aix] scrollView found by iteration: \(String(describing: sv))")
+        }
+
         cachedScrollView = sv
-        print("[Aix] scrollView found: \(String(describing: sv))")
-        
+
         // Set up pan gesture observer when we find the scroll view
         if sv != nil && !didSetupPanGestureObserver {
             setupPanGestureObserver()
         }
-        
+
         return sv
     }
     
@@ -216,24 +249,45 @@ class HybridAix: HybridAixSpec, AixContext {
         guard let scrollView = cachedScrollView,
               scrollView.keyboardDismissMode == .interactive,
               keyboardHeight > 0 else { return }
-        
+
         switch gesture.state {
         case .began, .changed:
-            let velocity = gesture.velocity(in: scrollView)
-            
-            // User is scrolling down (positive velocity.y) while keyboard is visible
-            if velocity.y > 0 && !isInInteractiveDismiss {
+            // Check if finger has reached the top of composer (or keyboard if no composer)
+            if !isInInteractiveDismiss && isFingerAtComposerTop(gesture: gesture) {
                 startInteractiveKeyboardDismiss()
             }
-            
+
         case .ended, .cancelled, .failed:
             if isInInteractiveDismiss {
                 // The keyboard manager will handle the end via notifications
             }
-            
+
         default:
             break
         }
+    }
+
+    /// Check if the finger position has reached the top of the composer view
+    private func isFingerAtComposerTop(gesture: UIPanGestureRecognizer) -> Bool {
+        guard let window = view.window else { return false }
+
+        // Get finger location in window coordinates
+        let fingerLocationInWindow = gesture.location(in: window)
+
+        // Get the threshold Y position (top of composer, or top of keyboard if no composer)
+        let thresholdY: CGFloat
+        if let composerView = composerView?.view, let composerWindow = composerView.window {
+            // Convert composer's frame to window coordinates
+            let composerFrameInWindow = composerView.convert(composerView.bounds, to: composerWindow)
+            thresholdY = composerFrameInWindow.minY
+        } else {
+            // Fallback: use keyboard top position
+            let screenHeight = UIScreen.main.bounds.height
+            thresholdY = screenHeight - keyboardHeight
+        }
+
+        // Finger has reached the composer top when its Y >= threshold
+        return fingerLocationInWindow.y >= thresholdY
     }
     
     /// Start tracking an interactive keyboard dismiss
@@ -306,7 +360,7 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Apply the current content inset to the scroll view
     func applyContentInset(contentInsetBottom overrideContentInsetBottom: CGFloat? = nil) {
-        guard let scrollView = scrollView else { return }
+        guard let scrollView else { return }
         if scrollView.contentInset.bottom != contentInsetBottom {
             scrollView.contentInset.bottom = overrideContentInsetBottom ?? self.contentInsetBottom
         }
@@ -314,7 +368,7 @@ class HybridAix: HybridAixSpec, AixContext {
     
     
     private func scrollToEndInternal(animated: Bool?) {
-        guard let scrollView = self.scrollView else { return }
+        guard let scrollView else { return }
         
         // Calculate the offset to show the bottom of content
         let bottomOffset = CGPoint(
@@ -325,9 +379,11 @@ class HybridAix: HybridAixSpec, AixContext {
     }
 
     
-    // MARK: - Keyboard Observer (from react-native-keyboard-controller)
-    
-    private var keyboardObserver: KeyboardMovementObserver?
+    // MARK: - Keyboard Observer (notification-based)
+
+    private lazy var keyboardNotifications: KeyboardNotifications = {
+        return KeyboardNotifications(notifications: [.willShow, .willHide, .didShow, .didHide, .willChangeFrame], delegate: self)
+    }()
     
     /// Event captured at the start of a keyboard transition
     private struct KeyboardStartEvent {
@@ -339,49 +395,6 @@ class HybridAix: HybridAixSpec, AixContext {
     
     /// Current keyboard start event (nil when no keyboard transition is active)
     private var startEvent: KeyboardStartEvent? = nil
-    
-    /// Setup the keyboard observer using react-native-keyboard-controller
-    private func setupKeyboardObserver() {
-        keyboardObserver = KeyboardMovementObserver(
-            handler: { [weak self] eventName, height, progress, duration, tag in
-                guard let self = self else { return }
-                
-                let eventString = eventName as String
-                let heightValue = CGFloat(truncating: height)
-                let progressValue = CGFloat(truncating: progress)
-                
-                switch eventString {
-                case "onKeyboardMoveStart":
-                    // progress == 1 means opening, progress == 0 means closing
-                    let isOpening = progressValue == 1
-                    self.handleKeyboardWillMove(targetHeight: heightValue, isOpening: isOpening)
-                    
-                case "onKeyboardMove":
-                    self.handleKeyboardMove(height: heightValue, progress: progressValue)
-                    
-                case "onKeyboardMoveEnd":
-                    self.handleKeyboardDidMove(height: heightValue, progress: progressValue)
-                    
-                case "onKeyboardMoveInteractive":
-                    self.handleKeyboardMoveInteractive(height: heightValue, progress: progressValue)
-                    
-                default:
-                    break
-                }
-            },
-            onNotify: { event, data in
-                // Could handle additional notifications here if needed
-                print("[Aix] Keyboard notification: \(event)")
-            },
-            onRequestAnimation: {
-                // Animation requested - no-op for now
-            },
-            onCancelAnimation: {
-                // Animation cancelled - no-op for now
-            }
-        )
-        keyboardObserver?.mount()
-    }
     
     /// Handle keyboard will move (start of animation)
     private func handleKeyboardWillMove(targetHeight: CGFloat, isOpening: Bool) {
@@ -484,41 +497,29 @@ class HybridAix: HybridAixSpec, AixContext {
         print("[Aix] HybridAix initialized, attaching context to view")
         // Attach this context to our inner view
         view.aixContext = self
-        
-        // Initialize keyboard observer from react-native-keyboard-controller
-        setupKeyboardObserver()
     }
     
     deinit {
         removePanGestureObserver()
-        keyboardObserver?.unmount()
     }
     
     // MARK: - Lifecycle
-    
-    /// Called when our view is added to the HybridAixComponent
+
+    /// Called when our view is added to or removed from the HybridAixComponent
     private func handleDidMoveToSuperview() {
-        guard let superview = view.superview else { return }
-        print("[Aix] View added to superview: \(type(of: superview)), attaching context")
-        // Attach context to the superview (HybridAixComponent) so children can find it
-        superview.aixContext = self
-        
-        // Attach the keyboard tracking view to enable frame-by-frame keyboard tracking
-        attachKeyboardTrackingView()
-    }
-    
-    /// Attach the keyboard tracking view to the view hierarchy
-    private func attachKeyboardTrackingView() {
-        // Wait for next run loop to ensure view hierarchy is set up
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if let window = self.view.window {
-                self.keyboardObserver?.keyboardTrackingView.attachToTopmostView(toWindow: window)
-                print("[Aix] Keyboard tracking view attached to window")
-            }
+        if let superview = view.superview {
+            print("[Aix] View added to superview: \(type(of: superview)), attaching context")
+            // Attach context to the superview (HybridAixComponent) so children can find it
+            superview.aixContext = self
+
+            // Enable keyboard notifications
+            keyboardNotifications.isEnabled = true
+        } else {
+            // View removed from superview - disable keyboard notifications
+            keyboardNotifications.isEnabled = false
         }
     }
-    
+
     // MARK: - AixContext Protocol
 
     private var lastReportedBlankViewSize = (size: CGSize.zero, index: 0)
@@ -594,6 +595,89 @@ class HybridAix: HybridAixSpec, AixContext {
         if let queuedScrollToEnd, (force || getIsQueuedScrollToEndReady(queuedScrollToEnd: queuedScrollToEnd)) {
             scrollToEndInternal(animated: queuedScrollToEnd.animated)
             self.queuedScrollToEnd = nil
+        }
+    }
+    
+    // MARK: - Keyboard Notification Handlers
+
+    func keyboardWillShow(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+              let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
+
+        let targetHeight = keyboardFrame.height
+        print("[Aix] keyboardWillShow: targetHeight=\(targetHeight), duration=\(duration)")
+
+        if targetHeight > keyboardHeightWhenOpen {
+            keyboardHeightWhenOpen = targetHeight
+        }
+
+        handleKeyboardWillMove(targetHeight: targetHeight, isOpening: true)
+
+        let options = UIView.AnimationOptions(rawValue: curveValue << 16)
+        UIView.animate(withDuration: duration, delay: 0, options: options, animations: { [weak self] in
+            guard let self = self else { return }
+            self.keyboardHeight = targetHeight
+            if self.keyboardHeightWhenOpen > 0 {
+                self.keyboardProgress = targetHeight / self.keyboardHeightWhenOpen
+            }
+            self.applyContentInset()
+
+            if let (startY, endY) = self.startEvent?.interpolateContentOffsetY {
+                self.scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
+            }
+        }, completion: { [weak self] _ in
+            self?.handleKeyboardDidMove(height: targetHeight, progress: 1.0)
+        })
+    }
+
+    func keyboardWillHide(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+              let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
+
+        print("[Aix] keyboardWillHide: duration=\(duration)")
+
+        // Don't interpolate scroll position when closing, the inset change will handle the visual transition
+        startEvent = nil
+
+        let options = UIView.AnimationOptions(rawValue: curveValue << 16)
+        UIView.animate(withDuration: duration, delay: 0, options: options, animations: { [weak self] in
+            guard let self = self else { return }
+
+            self.keyboardHeight = 0
+            self.keyboardProgress = 0
+            self.applyContentInset()
+        }, completion: { [weak self] _ in
+            self?.handleKeyboardDidMove(height: 0, progress: 0)
+        })
+    }
+
+    func keyboardDidShow(notification: NSNotification) {
+        print("[Aix] keyboardDidShow")
+    }
+
+    func keyboardDidHide(notification: NSNotification) {
+        print("[Aix] keyboardDidHide")
+        keyboardHeightWhenOpen = 0
+    }
+
+    func keyboardWillChangeFrame(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrameEnd = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+
+        let screenHeight = UIScreen.main.bounds.height
+        let keyboardTop = keyboardFrameEnd.origin.y
+        let newHeight = max(0, screenHeight - keyboardTop)
+
+        if startEvent != nil && !isInInteractiveDismiss {
+            return
+        }
+
+        if isInInteractiveDismiss && newHeight != keyboardHeight {
+            let progress = keyboardHeightWhenOpen > 0 ? newHeight / keyboardHeightWhenOpen : 0
+            handleKeyboardMoveInteractive(height: newHeight, progress: progress)
         }
     }
 }
@@ -683,5 +767,116 @@ extension HybridAix {
         guard abs(scrollY - targetScrollY) > 1 else { return nil }
         
         return (scrollY, targetScrollY)
+    }
+}
+
+// Source - https://stackoverflow.com/a
+// Posted by Vasily  Bodnarchuk, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-01-07, License - CC BY-SA 4.0
+
+protocol KeyboardNotificationsDelegate: AnyObject {
+    func keyboardWillShow(notification: NSNotification)
+    func keyboardWillHide(notification: NSNotification)
+    func keyboardDidShow(notification: NSNotification)
+    func keyboardDidHide(notification: NSNotification)
+    func keyboardWillChangeFrame(notification: NSNotification)
+}
+
+extension KeyboardNotificationsDelegate {
+    func keyboardWillShow(notification: NSNotification) {}
+    func keyboardWillHide(notification: NSNotification) {}
+    func keyboardDidShow(notification: NSNotification) {}
+    func keyboardDidHide(notification: NSNotification) {}
+    func keyboardWillChangeFrame(notification: NSNotification) {}
+}
+
+class KeyboardNotifications {
+    fileprivate var _isEnabled: Bool
+    fileprivate var notifications: [KeyboardNotificationsType]
+    fileprivate weak var delegate: KeyboardNotificationsDelegate?
+
+    init(notifications: [KeyboardNotificationsType], delegate: KeyboardNotificationsDelegate) {
+        _isEnabled = false
+        self.notifications = notifications
+        self.delegate = delegate
+    }
+
+    deinit { if isEnabled { isEnabled = false } }
+}
+
+// MARK: - enums
+
+extension KeyboardNotifications {
+
+    enum KeyboardNotificationsType {
+        case willShow, willHide, didShow, didHide, willChangeFrame
+
+        var selector: Selector {
+            switch self {
+                case .willShow: return #selector(keyboardWillShow(notification:))
+                case .willHide: return #selector(keyboardWillHide(notification:))
+                case .didShow: return #selector(keyboardDidShow(notification:))
+                case .didHide: return #selector(keyboardDidHide(notification:))
+                case .willChangeFrame: return #selector(keyboardWillChangeFrame(notification:))
+            }
+        }
+
+        var notificationName: NSNotification.Name {
+            switch self {
+                case .willShow: return UIResponder.keyboardWillShowNotification
+                case .willHide: return UIResponder.keyboardWillHideNotification
+                case .didShow: return UIResponder.keyboardDidShowNotification
+                case .didHide: return UIResponder.keyboardDidHideNotification
+                case .willChangeFrame: return UIResponder.keyboardWillChangeFrameNotification
+            }
+        }
+    }
+}
+
+// MARK: - isEnabled
+
+extension KeyboardNotifications {
+
+    private func addObserver(type: KeyboardNotificationsType) {
+        NotificationCenter.default.addObserver(self, selector: type.selector, name: type.notificationName, object: nil)
+    }
+
+    var isEnabled: Bool {
+        set {
+            if newValue {
+                for notificaton in notifications { addObserver(type: notificaton) }
+            } else {
+                NotificationCenter.default.removeObserver(self)
+            }
+            _isEnabled = newValue
+        }
+
+        get { return _isEnabled }
+    }
+
+}
+
+// MARK: - Notification functions
+
+extension KeyboardNotifications {
+
+    @objc func keyboardWillShow(notification: NSNotification) {
+        delegate?.keyboardWillShow(notification: notification)
+    }
+
+    @objc func keyboardWillHide(notification: NSNotification) {
+        delegate?.keyboardWillHide(notification: notification)
+    }
+
+    @objc func keyboardDidShow(notification: NSNotification) {
+        delegate?.keyboardDidShow(notification: notification)
+    }
+
+    @objc func keyboardDidHide(notification: NSNotification) {
+        delegate?.keyboardDidHide(notification: notification)
+    }
+
+    @objc func keyboardWillChangeFrame(notification: NSNotification) {
+        delegate?.keyboardWillChangeFrame(notification: notification)
     }
 }

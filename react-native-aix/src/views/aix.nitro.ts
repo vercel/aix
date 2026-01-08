@@ -44,6 +44,14 @@ export interface AixProps extends HybridViewProps {
   additionalContentInsets?: AixAdditionalContentInsetsProp
 
   /**
+   * The nativeID of the scroll view to use.
+   *
+   * If provided, will search for a scroll view with this accessibilityIdentifier.
+   * If not provided or not found, falls back to the default subview iteration logic.
+   */
+  mainScrollViewID?: string
+
+  /**
    * Used to index of the second-to-last message.
    *
    * For AI chat apps, it should correspond to the index of the last user message.

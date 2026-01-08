@@ -8,6 +8,8 @@
     "scrollOnComposerSizeUpdate": true,
     "scrollEndReachedThreshold": true,
     "additionalContentInsets": true,
+    "mainScrollViewID": true,
+    "penultimateCellIndex": true,
     "hybridRef": true
   }
 }

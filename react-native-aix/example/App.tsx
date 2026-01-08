@@ -26,6 +26,8 @@ function App(): React.JSX.Element {
   const inputRef = useRef<TextInput>(null);
   const [inputValue, setInputValue] = useState('');
 
+  const mainScrollViewID = 'chat-list-scroll-view';
+
   return (
     <KeyboardProvider>
       <Aix
@@ -39,8 +41,12 @@ function App(): React.JSX.Element {
             whenKeyboardOpen: 0,
           },
         }}
+        mainScrollViewID={mainScrollViewID}
       >
-        <ScrollView keyboardDismissMode="interactive">
+        <ScrollView
+          keyboardDismissMode="interactive"
+          nativeID={mainScrollViewID}
+        >
           {messages.map((message, index, arr) => {
             const isLast = index === arr.length - 1;
             return (
@@ -48,7 +54,7 @@ function App(): React.JSX.Element {
                 {message.role === 'user' ? (
                   <UserMessage content={message.content} />
                 ) : (
-                  <AssistantMessage content={message.content} />
+                  <AssistantMessage content="kljdkljdbkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgerkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriukljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibbiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibiubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueib" />
                 )}
               </AixCell>
             );
@@ -153,6 +159,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: '#0000ff30',
   },
 });
 

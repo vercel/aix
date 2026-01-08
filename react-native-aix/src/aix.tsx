@@ -5,7 +5,7 @@ import {
 } from 'react-native-nitro-modules'
 import AixConfig from '../nitrogen/generated/shared/json/AixConfig.json'
 import type { AixProps, AixMethods } from './views/aix.nitro'
-import { forwardRef, useRef } from 'react'
+import { forwardRef } from 'react'
 
 export type AixRef = HybridRef<AixProps, AixMethods>
 
