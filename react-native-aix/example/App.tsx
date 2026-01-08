@@ -54,7 +54,7 @@ function App(): React.JSX.Element {
                 {message.role === 'user' ? (
                   <UserMessage content={message.content} />
                 ) : (
-                  <AssistantMessage content="kljdkljdbkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgerkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriukljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibbiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibgeriubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibiubiuergbrubrueibkljdbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueibbgfiudsbguigbiughergieguierbiruebgeriubiuergbrubrueib" />
+                  <AssistantMessage content={message.content} />
                 )}
               </AixCell>
             );
