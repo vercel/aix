@@ -81,6 +81,7 @@ function App(): React.JSX.Element {
                   placeholder="Type something..."
                   ref={inputRef}
                   multiline
+                  autoFocus
                 />
               </View>
 
