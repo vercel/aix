@@ -15,26 +15,35 @@ class HybridAixCellView: HybridAixCellViewSpec {
     
     
     // MARK: - Inner View
-    
+
     /// Custom UIView that notifies owner when layout changes
     private final class InnerView: UIView {
         weak var owner: HybridAixCellView?
-        
+
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            autoresizingMask = [.flexibleWidth]
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
         override func layoutSubviews() {
             super.layoutSubviews()
             owner?.handleLayoutChange()
         }
-        
+
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
             owner?.handleDidMoveToSuperview()
         }
-        
+
         override func didMoveToWindow() {
             super.didMoveToWindow()
             owner?.handleDidMoveToWindow()
         }
-        
+
         override func willMove(toSuperview newSuperview: UIView?) {
             super.willMove(toSuperview: newSuperview)
             if newSuperview == nil {
