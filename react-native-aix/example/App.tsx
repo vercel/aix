@@ -16,6 +16,7 @@ import {
   KeyboardProvider,
   KeyboardStickyView,
 } from 'react-native-keyboard-controller';
+import { LegendList } from '@legendapp/list';
 
 function App(): React.JSX.Element {
   const aix = useAixRef();
@@ -29,6 +30,49 @@ function App(): React.JSX.Element {
   const mainScrollViewID = 'chat-list-scroll-view';
 
   const safeAreaInsetsBottom = 18;
+
+  const renderItem = (
+    message: (typeof messages)[number],
+    index: number,
+    arr: readonly (typeof messages)[number][],
+  ) => {
+    const isLast = index === arr.length - 1;
+    return (
+      <AixCell key={index} index={index} isLast={isLast}>
+        {message.role === 'user' ? (
+          <UserMessage content={message.content} />
+        ) : (
+          <AssistantMessage content={message.content} />
+        )}
+      </AixCell>
+    );
+  };
+
+  const examples = {
+    scrollview: () => {
+      return (
+        <ScrollView
+          keyboardDismissMode="interactive"
+          nativeID={mainScrollViewID}
+        >
+          {messages.map(renderItem)}
+        </ScrollView>
+      );
+    },
+    legendlist: () => {
+      return (
+        <LegendList
+          data={messages}
+          renderItem={({ item, index, data }) => renderItem(item, index, data)}
+          keyExtractor={(item, index) => `${item.role}-${index}`}
+          nativeID={mainScrollViewID}
+          keyboardDismissMode="interactive"
+          maintainVisibleContentPosition
+          getItemType={item => item.role}
+        />
+      );
+    },
+  };
 
   return (
     <KeyboardProvider>
@@ -51,23 +95,7 @@ function App(): React.JSX.Element {
         }}
         mainScrollViewID={mainScrollViewID}
       >
-        <ScrollView
-          keyboardDismissMode="interactive"
-          nativeID={mainScrollViewID}
-        >
-          {messages.map((message, index, arr) => {
-            const isLast = index === arr.length - 1;
-            return (
-              <AixCell key={index} index={index} isLast={isLast}>
-                {message.role === 'user' ? (
-                  <UserMessage content={message.content} />
-                ) : (
-                  <AssistantMessage content={message.content} />
-                )}
-              </AixCell>
-            );
-          })}
-        </ScrollView>
+        {examples.legendlist()}
         <KeyboardStickyView
           offset={{ opened: 0, closed: -safeAreaInsetsBottom }}
         >
