@@ -92,6 +92,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var scrollIndicatorInsets: AixScrollIndicatorInsets? {
         didSet {
+            guard cachedScrollView != nil else { return }
             applyScrollIndicatorInsets()
         }
     }
