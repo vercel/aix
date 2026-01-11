@@ -1,0 +1,26 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": ["aix"],
+  "ios": {
+    "iosModuleName": "Aix"
+  },
+  "android": {
+    "androidNamespace": ["aix"],
+    "androidCxxLibName": "Aix"
+  },
+  "autolinking": {
+    "Aix": {
+      "swift": "HybridAix",
+      "kotlin": "HybridAix"
+    },
+    "AixCellView": {
+      "swift": "HybridAixCellView",
+      "kotlin": "HybridAixCellView"
+    },
+    "AixComposer": {
+      "swift": "HybridAixComposer",
+      "kotlin": "HybridAixComposer"
+    }
+  },
+  "ignorePaths": ["**/node_modules"]
+}

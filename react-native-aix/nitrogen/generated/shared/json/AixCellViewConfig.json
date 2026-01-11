@@ -1,0 +1,11 @@
+{
+  "uiViewClassName": "AixCellView",
+  "supportsRawText": false,
+  "bubblingEventTypes": {},
+  "directEventTypes": {},
+  "validAttributes": {
+    "isLast": true,
+    "index": true,
+    "hybridRef": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "uiViewClassName": "AixComposer",
+  "supportsRawText": false,
+  "bubblingEventTypes": {},
+  "directEventTypes": {},
+  "validAttributes": {
+    "hybridRef": true
+  }
+}
