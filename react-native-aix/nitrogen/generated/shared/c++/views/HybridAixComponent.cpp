@@ -65,6 +65,16 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.additionalContentInsets: ") + exc.what());
       }
     }()),
+    scrollIndicatorInsets([&]() -> CachedProp<std::optional<AixScrollIndicatorInsets>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("scrollIndicatorInsets", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.scrollIndicatorInsets;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<AixScrollIndicatorInsets>>::fromRawValue(*runtime, value, sourceProps.scrollIndicatorInsets);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.scrollIndicatorInsets: ") + exc.what());
+      }
+    }()),
     mainScrollViewID([&]() -> CachedProp<std::optional<std::string>> {
       try {
         const react::RawValue* rawValue = rawProps.at("mainScrollViewID", nullptr, nullptr);
@@ -102,6 +112,7 @@ namespace margelo::nitro::aix::views {
     scrollOnComposerSizeUpdate(other.scrollOnComposerSizeUpdate),
     scrollEndReachedThreshold(other.scrollEndReachedThreshold),
     additionalContentInsets(other.additionalContentInsets),
+    scrollIndicatorInsets(other.scrollIndicatorInsets),
     mainScrollViewID(other.mainScrollViewID),
     penultimateCellIndex(other.penultimateCellIndex),
     hybridRef(other.hybridRef) { }
@@ -112,6 +123,7 @@ namespace margelo::nitro::aix::views {
       case hashString("scrollOnComposerSizeUpdate"): return true;
       case hashString("scrollEndReachedThreshold"): return true;
       case hashString("additionalContentInsets"): return true;
+      case hashString("scrollIndicatorInsets"): return true;
       case hashString("mainScrollViewID"): return true;
       case hashString("penultimateCellIndex"): return true;
       case hashString("hybridRef"): return true;

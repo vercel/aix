@@ -8,6 +8,7 @@
     "scrollOnComposerSizeUpdate": true,
     "scrollEndReachedThreshold": true,
     "additionalContentInsets": true,
+    "scrollIndicatorInsets": true,
     "mainScrollViewID": true,
     "penultimateCellIndex": true,
     "hybridRef": true

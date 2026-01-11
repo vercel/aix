@@ -11,12 +11,20 @@
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
+// Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
+// Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "JAixAdditionalContentInsetsProp.hpp"
 #include "AixAdditionalContentInsets.hpp"
 #include "JAixAdditionalContentInsets.hpp"
+#include "AixScrollIndicatorInsets.hpp"
+#include "JAixScrollIndicatorInsets.hpp"
+#include "AixScrollIndicatorInsetValue.hpp"
+#include "JAixScrollIndicatorInsetValue.hpp"
 #include <string>
 
 namespace margelo::nitro::aix {
@@ -83,6 +91,15 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixAdditionalContentInsetsProp> /* additionalContentInsets */)>("setAdditionalContentInsets");
     method(_javaPart, additionalContentInsets.has_value() ? JAixAdditionalContentInsetsProp::fromCpp(additionalContentInsets.value()) : nullptr);
+  }
+  std::optional<AixScrollIndicatorInsets> JHybridAixSpec::getScrollIndicatorInsets() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixScrollIndicatorInsets>()>("getScrollIndicatorInsets");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->toCpp()) : std::nullopt;
+  }
+  void JHybridAixSpec::setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixScrollIndicatorInsets> /* scrollIndicatorInsets */)>("setScrollIndicatorInsets");
+    method(_javaPart, scrollIndicatorInsets.has_value() ? JAixScrollIndicatorInsets::fromCpp(scrollIndicatorInsets.value()) : nullptr);
   }
   std::optional<std::string> JHybridAixSpec::getMainScrollViewID() {
     static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("getMainScrollViewID");

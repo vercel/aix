@@ -91,6 +91,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setAdditionalContentInsets(newViewProps.additionalContentInsets.value);
     newViewProps.additionalContentInsets.isDirty = false;
   }
+  // scrollIndicatorInsets: optional
+  if (newViewProps.scrollIndicatorInsets.isDirty) {
+    swiftPart.setScrollIndicatorInsets(newViewProps.scrollIndicatorInsets.value);
+    newViewProps.scrollIndicatorInsets.isDirty = false;
+  }
   // mainScrollViewID: optional
   if (newViewProps.mainScrollViewID.isDirty) {
     swiftPart.setMainScrollViewID(newViewProps.mainScrollViewID.value);

@@ -16,10 +16,16 @@ namespace Aix { class HybridAixSpec_cxx; }
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
+// Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
+// Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixAdditionalContentInsets.hpp"
+#include "AixScrollIndicatorInsets.hpp"
+#include "AixScrollIndicatorInsetValue.hpp"
 #include <string>
 
 #include "Aix-Swift-Cxx-Umbrella.hpp"
@@ -87,6 +93,13 @@ namespace margelo::nitro::aix {
     }
     inline void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) noexcept override {
       _swiftPart.setAdditionalContentInsets(additionalContentInsets);
+    }
+    inline std::optional<AixScrollIndicatorInsets> getScrollIndicatorInsets() noexcept override {
+      auto __result = _swiftPart.getScrollIndicatorInsets();
+      return __result;
+    }
+    inline void setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) noexcept override {
+      _swiftPart.setScrollIndicatorInsets(scrollIndicatorInsets);
     }
     inline std::optional<std::string> getMainScrollViewID() noexcept override {
       auto __result = _swiftPart.getMainScrollViewID();

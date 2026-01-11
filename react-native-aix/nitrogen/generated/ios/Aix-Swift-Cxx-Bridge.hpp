@@ -12,6 +12,10 @@
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
+// Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
+// Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
@@ -30,6 +34,8 @@ namespace Aix { class HybridAixSpec_cxx; }
 // Include C++ defined types
 #include "AixAdditionalContentInsets.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
+#include "AixScrollIndicatorInsetValue.hpp"
+#include "AixScrollIndicatorInsets.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
@@ -72,6 +78,36 @@ namespace margelo::nitro::aix::bridge::swift {
     return optional.has_value();
   }
   inline AixAdditionalContentInsetsProp get_std__optional_AixAdditionalContentInsetsProp_(const std::optional<AixAdditionalContentInsetsProp>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<AixScrollIndicatorInsetValue>
+  /**
+   * Specialized version of `std::optional<AixScrollIndicatorInsetValue>`.
+   */
+  using std__optional_AixScrollIndicatorInsetValue_ = std::optional<AixScrollIndicatorInsetValue>;
+  inline std::optional<AixScrollIndicatorInsetValue> create_std__optional_AixScrollIndicatorInsetValue_(const AixScrollIndicatorInsetValue& value) noexcept {
+    return std::optional<AixScrollIndicatorInsetValue>(value);
+  }
+  inline bool has_value_std__optional_AixScrollIndicatorInsetValue_(const std::optional<AixScrollIndicatorInsetValue>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixScrollIndicatorInsetValue get_std__optional_AixScrollIndicatorInsetValue_(const std::optional<AixScrollIndicatorInsetValue>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<AixScrollIndicatorInsets>
+  /**
+   * Specialized version of `std::optional<AixScrollIndicatorInsets>`.
+   */
+  using std__optional_AixScrollIndicatorInsets_ = std::optional<AixScrollIndicatorInsets>;
+  inline std::optional<AixScrollIndicatorInsets> create_std__optional_AixScrollIndicatorInsets_(const AixScrollIndicatorInsets& value) noexcept {
+    return std::optional<AixScrollIndicatorInsets>(value);
+  }
+  inline bool has_value_std__optional_AixScrollIndicatorInsets_(const std::optional<AixScrollIndicatorInsets>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixScrollIndicatorInsets get_std__optional_AixScrollIndicatorInsets_(const std::optional<AixScrollIndicatorInsets>& optional) noexcept {
     return *optional;
   }
   

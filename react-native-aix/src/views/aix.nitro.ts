@@ -13,6 +13,16 @@ export interface AixAdditionalContentInsetsProp {
   bottom: AixAdditionalContentInsets
 }
 
+export interface AixScrollIndicatorInsetValue {
+  whenKeyboardOpen: number
+  whenKeyboardClosed: number
+}
+
+export interface AixScrollIndicatorInsets {
+  top?: AixScrollIndicatorInsetValue
+  bottom?: AixScrollIndicatorInsetValue
+}
+
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
   scrollOnComposerSizeUpdate: boolean
@@ -42,6 +52,12 @@ export interface AixProps extends HybridViewProps {
    */
 
   additionalContentInsets?: AixAdditionalContentInsetsProp
+
+  /**
+   * Insets for the scroll indicator.
+   * Applied to verticalScrollIndicatorInsets on iOS.
+   */
+  scrollIndicatorInsets?: AixScrollIndicatorInsets
 
   /**
    * The nativeID of the scroll view to use.

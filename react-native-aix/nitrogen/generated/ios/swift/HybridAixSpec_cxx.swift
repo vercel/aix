@@ -170,6 +170,23 @@ open class HybridAixSpec_cxx {
     }
   }
   
+  public final var scrollIndicatorInsets: bridge.std__optional_AixScrollIndicatorInsets_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_AixScrollIndicatorInsets_ in
+        if let __unwrappedValue = self.__implementation.scrollIndicatorInsets {
+          return bridge.create_std__optional_AixScrollIndicatorInsets_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.scrollIndicatorInsets = newValue.value
+    }
+  }
+  
   public final var mainScrollViewID: bridge.std__optional_std__string_ {
     @inline(__always)
     get {
@@ -231,7 +248,7 @@ open class HybridAixSpec_cxx {
   }
   
   @inline(__always)
-  public final func scrollToIndexWhenBlankSizeReady(index: Int, animated: bridge.std__optional_bool_, waitForKeyboardToEnd: bridge.std__optional_bool_) -> bridge.Result_void_ {
+  public final func scrollToIndexWhenBlankSizeReady(index: Double, animated: bridge.std__optional_bool_, waitForKeyboardToEnd: bridge.std__optional_bool_) -> bridge.Result_void_ {
     do {
       try self.__implementation.scrollToIndexWhenBlankSizeReady(index: index, animated: { () -> Bool? in
         if bridge.has_value_std__optional_bool_(animated) {

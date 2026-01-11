@@ -52,6 +52,10 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setAdditionalContentInsets(props.additionalContentInsets.value);
     // TODO: Set isDirty = false
   }
+  if (props.scrollIndicatorInsets.isDirty) {
+    view->setScrollIndicatorInsets(props.scrollIndicatorInsets.value);
+    // TODO: Set isDirty = false
+  }
   if (props.mainScrollViewID.isDirty) {
     view->setMainScrollViewID(props.mainScrollViewID.value);
     // TODO: Set isDirty = false

@@ -12,6 +12,10 @@
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
+// Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
+// Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
@@ -22,6 +26,8 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 // Include C++ defined types
 #include "AixAdditionalContentInsets.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
+#include "AixScrollIndicatorInsetValue.hpp"
+#include "AixScrollIndicatorInsets.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"

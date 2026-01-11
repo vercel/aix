@@ -90,6 +90,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var additionalContentInsets: AixAdditionalContentInsetsProp?
 
+    var scrollIndicatorInsets: AixScrollIndicatorInsets? {
+        didSet {
+            applyScrollIndicatorInsets()
+        }
+    }
+
     var mainScrollViewID: String?
     
     func scrollToEnd(animated: Bool?) {
@@ -99,8 +105,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
     
-    func scrollToIndexWhenBlankSizeReady(index: Int, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
-        queuedScrollToEnd = QueuedScrollToEnd(index: index, animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
+    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
+        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -223,6 +229,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         // Set up pan gesture observer when we find the scroll view
         if sv != nil && !didSetupPanGestureObserver {
             setupPanGestureObserver()
+            applyScrollIndicatorInsets()
         }
 
         return sv
@@ -365,8 +372,41 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             scrollView.contentInset.bottom = overrideContentInsetBottom ?? self.contentInsetBottom
         }
     }
-    
-    
+
+    /// Apply scroll indicator insets to the scroll view, interpolated based on keyboard progress
+    func applyScrollIndicatorInsets() {
+        guard let scrollView else { return }
+        guard let insets = scrollIndicatorInsets else { return }
+
+        // Interpolate top inset based on keyboard progress
+        let topInset: CGFloat
+        if let
+            top = insets.top {
+            topInset = CGFloat(top.whenKeyboardClosed + (top.whenKeyboardOpen - top.whenKeyboardClosed) * keyboardProgress)
+        } else {
+            topInset = 0
+        }
+
+        // Interpolate bottom inset based on keyboard progress
+        let bottomInset: CGFloat
+        if let bottom = insets.bottom {
+            bottomInset = CGFloat(bottom.whenKeyboardClosed + (bottom.whenKeyboardOpen - bottom.whenKeyboardClosed) * keyboardProgress)
+        } else {
+            bottomInset = 0
+        }
+
+        let newInsets = UIEdgeInsets(
+            top: topInset,
+            left: 0,
+            bottom: bottomInset,
+            right: 0
+        )
+
+        if scrollView.verticalScrollIndicatorInsets != newInsets {
+            scrollView.verticalScrollIndicatorInsets = newInsets
+        }
+    }
+
     private func scrollToEndInternal(animated: Bool?) {
         guard let scrollView else { return }
         
@@ -441,9 +481,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         keyboardHeight = height
         
         guard let startEvent else { return }
-        
+
         applyContentInset()
-        
+        applyScrollIndicatorInsets()
+
         if let (startY, endY) = startEvent.interpolateContentOffsetY {
             // Normalize progress to always go from 0 to 1 (start to end)
             // For opening: progress goes 0→1, so use as-is
@@ -461,9 +502,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         if keyboardHeightWhenOpen > 0 {
             keyboardProgress = height / keyboardHeightWhenOpen
         }
-        
+
         applyContentInset()
-        
+        applyScrollIndicatorInsets()
+
         startEvent = nil
         isInInteractiveDismiss = false
         
@@ -531,10 +573,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
 
         lastReportedBlankViewSize = (size: size, index: index)
-        
+
         // Update scroll view insets
         applyContentInset()
-        
+        applyScrollIndicatorInsets()
+
         // Check if we have a queued scroll waiting for this index
         if !didScrollToEndInitially {
             scrollToEndInternal(animated: false)
@@ -623,6 +666,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 self.keyboardProgress = targetHeight / self.keyboardHeightWhenOpen
             }
             self.applyContentInset()
+            self.applyScrollIndicatorInsets()
 
             if let (startY, endY) = self.startEvent?.interpolateContentOffsetY {
                 self.scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
@@ -649,6 +693,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             self.keyboardHeight = 0
             self.keyboardProgress = 0
             self.applyContentInset()
+            self.applyScrollIndicatorInsets()
         }, completion: { [weak self] _ in
             self?.handleKeyboardDidMove(height: 0, progress: 0)
         })

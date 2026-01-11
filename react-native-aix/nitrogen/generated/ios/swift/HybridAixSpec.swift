@@ -15,12 +15,13 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var scrollOnComposerSizeUpdate: Bool { get set }
   var scrollEndReachedThreshold: Double? { get set }
   var additionalContentInsets: AixAdditionalContentInsetsProp? { get set }
+  var scrollIndicatorInsets: AixScrollIndicatorInsets? { get set }
   var mainScrollViewID: String? { get set }
   var penultimateCellIndex: Double? { get set }
 
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void
-  func scrollToIndexWhenBlankSizeReady(index: Int, animated: Bool?, waitForKeyboardToEnd: Bool?) throws -> Void
+  func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws -> Void
 }
 
 public extension HybridAixSpec_protocol {

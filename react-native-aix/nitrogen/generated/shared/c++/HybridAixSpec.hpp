@@ -15,9 +15,12 @@
 
 // Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
+// Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
+#include "AixScrollIndicatorInsets.hpp"
 #include <string>
 
 namespace margelo::nitro::aix {
@@ -55,6 +58,8 @@ namespace margelo::nitro::aix {
       virtual void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) = 0;
       virtual std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() = 0;
       virtual void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) = 0;
+      virtual std::optional<AixScrollIndicatorInsets> getScrollIndicatorInsets() = 0;
+      virtual void setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) = 0;
       virtual std::optional<std::string> getMainScrollViewID() = 0;
       virtual void setMainScrollViewID(const std::optional<std::string>& mainScrollViewID) = 0;
       virtual std::optional<double> getPenultimateCellIndex() = 0;

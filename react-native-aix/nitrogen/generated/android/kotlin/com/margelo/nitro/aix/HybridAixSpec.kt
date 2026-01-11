@@ -70,6 +70,12 @@ abstract class HybridAixSpec: HybridView() {
   @get:Keep
   @set:DoNotStrip
   @set:Keep
+  abstract var scrollIndicatorInsets: AixScrollIndicatorInsets?
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
   abstract var mainScrollViewID: String?
   
   @get:DoNotStrip

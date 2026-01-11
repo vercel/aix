@@ -58,6 +58,8 @@ namespace margelo::nitro::aix {
     void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) override;
     std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() override;
     void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) override;
+    std::optional<AixScrollIndicatorInsets> getScrollIndicatorInsets() override;
+    void setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) override;
     std::optional<std::string> getMainScrollViewID() override;
     void setMainScrollViewID(const std::optional<std::string>& mainScrollViewID) override;
     std::optional<double> getPenultimateCellIndex() override;

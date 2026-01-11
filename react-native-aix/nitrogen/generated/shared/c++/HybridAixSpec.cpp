@@ -22,6 +22,8 @@ namespace margelo::nitro::aix {
       prototype.registerHybridSetter("scrollEndReachedThreshold", &HybridAixSpec::setScrollEndReachedThreshold);
       prototype.registerHybridGetter("additionalContentInsets", &HybridAixSpec::getAdditionalContentInsets);
       prototype.registerHybridSetter("additionalContentInsets", &HybridAixSpec::setAdditionalContentInsets);
+      prototype.registerHybridGetter("scrollIndicatorInsets", &HybridAixSpec::getScrollIndicatorInsets);
+      prototype.registerHybridSetter("scrollIndicatorInsets", &HybridAixSpec::setScrollIndicatorInsets);
       prototype.registerHybridGetter("mainScrollViewID", &HybridAixSpec::getMainScrollViewID);
       prototype.registerHybridSetter("mainScrollViewID", &HybridAixSpec::setMainScrollViewID);
       prototype.registerHybridGetter("penultimateCellIndex", &HybridAixSpec::getPenultimateCellIndex);

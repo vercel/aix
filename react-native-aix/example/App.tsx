@@ -1,6 +1,6 @@
 import './src/polyfill';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -28,6 +28,8 @@ function App(): React.JSX.Element {
 
   const mainScrollViewID = 'chat-list-scroll-view';
 
+  const safeAreaInsetsBottom = 18;
+
   return (
     <KeyboardProvider>
       <Aix
@@ -37,7 +39,13 @@ function App(): React.JSX.Element {
         ref={aix}
         additionalContentInsets={{
           bottom: {
-            whenKeyboardClosed: 0,
+            whenKeyboardClosed: safeAreaInsetsBottom,
+            whenKeyboardOpen: 0,
+          },
+        }}
+        scrollIndicatorInsets={{
+          bottom: {
+            whenKeyboardClosed: safeAreaInsetsBottom,
             whenKeyboardOpen: 0,
           },
         }}
@@ -60,7 +68,9 @@ function App(): React.JSX.Element {
             );
           })}
         </ScrollView>
-        <KeyboardStickyView offset={{ opened: 0, closed: -18 }}>
+        <KeyboardStickyView
+          offset={{ opened: 0, closed: -safeAreaInsetsBottom }}
+        >
           <AixFooter style={styles.footer}>
             <View style={styles.footerRow}>
               <View style={{ flex: 1, justifyContent: 'center' }}>
