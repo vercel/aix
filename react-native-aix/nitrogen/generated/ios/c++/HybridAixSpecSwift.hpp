@@ -68,6 +68,13 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
+    inline std::optional<bool> get_shouldSubtractHeightOfPenultimateCellFromBlankSize() noexcept override {
+      auto __result = _swiftPart.get_shouldSubtractHeightOfPenultimateCellFromBlankSize();
+      return __result;
+    }
+    inline void set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) noexcept override {
+      _swiftPart.set_shouldSubtractHeightOfPenultimateCellFromBlankSize(_shouldSubtractHeightOfPenultimateCellFromBlankSize);
+    }
     inline bool getShouldStartAtEnd() noexcept override {
       return _swiftPart.getShouldStartAtEnd();
     }

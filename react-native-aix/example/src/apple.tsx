@@ -126,7 +126,7 @@ export function useMessages() {
 
   if (messages.at(-1)?.role === 'user') {
     // optimistic system message
-    messages = [...messages, { role: 'assistant', content: 'Thinking...' }];
+    // messages = [...messages, { role: 'assistant', content: 'Thinking...' }];
   }
 
   return {

@@ -46,6 +46,12 @@ abstract class HybridAixSpec: HybridView() {
   @get:Keep
   @set:DoNotStrip
   @set:Keep
+  abstract var _shouldSubtractHeightOfPenultimateCellFromBlankSize: Boolean?
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
   abstract var shouldStartAtEnd: Boolean
   
   @get:DoNotStrip

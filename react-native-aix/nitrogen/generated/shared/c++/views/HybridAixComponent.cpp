@@ -25,6 +25,16 @@ namespace margelo::nitro::aix::views {
                                  const HybridAixProps& sourceProps,
                                  const react::RawProps& rawProps):
     react::ViewProps(context, sourceProps, rawProps, filterObjectKeys),
+    _shouldSubtractHeightOfPenultimateCellFromBlankSize([&]() -> CachedProp<std::optional<bool>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("_shouldSubtractHeightOfPenultimateCellFromBlankSize", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps._shouldSubtractHeightOfPenultimateCellFromBlankSize;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<bool>>::fromRawValue(*runtime, value, sourceProps._shouldSubtractHeightOfPenultimateCellFromBlankSize);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix._shouldSubtractHeightOfPenultimateCellFromBlankSize: ") + exc.what());
+      }
+    }()),
     shouldStartAtEnd([&]() -> CachedProp<bool> {
       try {
         const react::RawValue* rawValue = rawProps.at("shouldStartAtEnd", nullptr, nullptr);
@@ -108,6 +118,7 @@ namespace margelo::nitro::aix::views {
 
   HybridAixProps::HybridAixProps(const HybridAixProps& other):
     react::ViewProps(),
+    _shouldSubtractHeightOfPenultimateCellFromBlankSize(other._shouldSubtractHeightOfPenultimateCellFromBlankSize),
     shouldStartAtEnd(other.shouldStartAtEnd),
     scrollOnComposerSizeUpdate(other.scrollOnComposerSizeUpdate),
     scrollEndReachedThreshold(other.scrollEndReachedThreshold),
@@ -119,6 +130,7 @@ namespace margelo::nitro::aix::views {
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
+      case hashString("_shouldSubtractHeightOfPenultimateCellFromBlankSize"): return true;
       case hashString("shouldStartAtEnd"): return true;
       case hashString("scrollOnComposerSizeUpdate"): return true;
       case hashString("scrollEndReachedThreshold"): return true;

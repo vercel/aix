@@ -91,14 +91,11 @@ function App(): React.JSX.Element {
                   aix.current?.scrollToIndexWhenBlankSizeReady(
                     messages.length + 1,
                     true,
-                    false,
                   );
 
-                  inputRef.current?.clear();
                   send(inputValue);
-                  requestAnimationFrame(() => {
-                    Keyboard.dismiss();
-                  });
+                  inputRef.current?.clear();
+                  requestAnimationFrame(Keyboard.dismiss);
                 }}
               />
             </View>

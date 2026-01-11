@@ -50,6 +50,8 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
+    std::optional<bool> get_shouldSubtractHeightOfPenultimateCellFromBlankSize() override;
+    void set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) override;
     bool getShouldStartAtEnd() override;
     void setShouldStartAtEnd(bool shouldStartAtEnd) override;
     bool getScrollOnComposerSizeUpdate() override;
