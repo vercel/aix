@@ -71,6 +71,11 @@ using namespace margelo::nitro::aix::views;
   // 2. Update each prop individually
   swiftPart.beforeUpdate();
 
+  // _shouldSubtractHeightOfPenultimateCellFromBlankSize: optional
+  if (newViewProps._shouldSubtractHeightOfPenultimateCellFromBlankSize.isDirty) {
+    swiftPart.set_shouldSubtractHeightOfPenultimateCellFromBlankSize(newViewProps._shouldSubtractHeightOfPenultimateCellFromBlankSize.value);
+    newViewProps._shouldSubtractHeightOfPenultimateCellFromBlankSize.isDirty = false;
+  }
   // shouldStartAtEnd: boolean
   if (newViewProps.shouldStartAtEnd.isDirty) {
     swiftPart.setShouldStartAtEnd(newViewProps.shouldStartAtEnd.value);

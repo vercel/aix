@@ -56,6 +56,15 @@ namespace margelo::nitro::aix {
   }
 
   // Properties
+  std::optional<bool> JHybridAixSpec::get_shouldSubtractHeightOfPenultimateCellFromBlankSize() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JBoolean>()>("get_shouldSubtractHeightOfPenultimateCellFromBlankSize");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(static_cast<bool>(__result->value())) : std::nullopt;
+  }
+  void JHybridAixSpec::set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* _shouldSubtractHeightOfPenultimateCellFromBlankSize */)>("set_shouldSubtractHeightOfPenultimateCellFromBlankSize");
+    method(_javaPart, _shouldSubtractHeightOfPenultimateCellFromBlankSize.has_value() ? jni::JBoolean::valueOf(_shouldSubtractHeightOfPenultimateCellFromBlankSize.value()) : nullptr);
+  }
   bool JHybridAixSpec::getShouldStartAtEnd() {
     static const auto method = javaClassStatic()->getMethod<jboolean()>("getShouldStartAtEnd");
     auto __result = method(_javaPart);

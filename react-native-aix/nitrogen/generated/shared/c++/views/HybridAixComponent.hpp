@@ -45,6 +45,7 @@ namespace margelo::nitro::aix::views {
                    const react::RawProps& rawProps);
 
   public:
+    CachedProp<std::optional<bool>> _shouldSubtractHeightOfPenultimateCellFromBlankSize;
     CachedProp<bool> shouldStartAtEnd;
     CachedProp<bool> scrollOnComposerSizeUpdate;
     CachedProp<std::optional<double>> scrollEndReachedThreshold;

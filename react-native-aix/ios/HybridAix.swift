@@ -96,6 +96,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             applyScrollIndicatorInsets()
         }
     }
+    
+    var _shouldSubtractHeightOfPenultimateCellFromBlankSize: Bool?
 
     var mainScrollViewID: String?
     
@@ -124,6 +126,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             
             self.flushQueuedScrollToEnd()
         }
+    }
+
+    var shouldSubtractHeightOfPenultimateCellFromBlankSize: Bool {
+        return _shouldSubtractHeightOfPenultimateCellFromBlankSize ?? true
     }
 
     private var didScrollToEndInitially = false
@@ -337,17 +343,30 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return 0
     }
 
+    private var penultimateCell: HybridAixCellView? {
+        var index: Int?
+        if let penultimateCellIndex {
+            index = Int(penultimateCellIndex)
+        } else if let blankView {
+            index = Int(blankView.index) - 1
+        }
+        guard let index else { return nil }
+        return getCell(index: index)
+    }
+
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
         
-        let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
-        let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
+        let penultimateCellHeight = penultimateCell?.view.frame.height ?? 0
         let blankViewHeight = blankView.view.frame.height
         
         // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
         // The blank size fills the remaining space so the last message can scroll to the top
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - cellBeforeBlankViewHeight
+        var inset = visibleAreaHeight - blankViewHeight
+        if shouldSubtractHeightOfPenultimateCellFromBlankSize {
+            inset -= penultimateCellHeight
+        }
         return max(0, inset)
     }
     

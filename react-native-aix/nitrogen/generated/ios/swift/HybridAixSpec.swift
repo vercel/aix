@@ -11,6 +11,7 @@ import NitroModules
 /// See ``HybridAixSpec``
 public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Properties
+  var _shouldSubtractHeightOfPenultimateCellFromBlankSize: Bool? { get set }
   var shouldStartAtEnd: Bool { get set }
   var scrollOnComposerSizeUpdate: Bool { get set }
   var scrollEndReachedThreshold: Double? { get set }

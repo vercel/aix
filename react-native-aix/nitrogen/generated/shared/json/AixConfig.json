@@ -4,6 +4,7 @@
   "bubblingEventTypes": {},
   "directEventTypes": {},
   "validAttributes": {
+    "_shouldSubtractHeightOfPenultimateCellFromBlankSize": true,
     "shouldStartAtEnd": true,
     "scrollOnComposerSizeUpdate": true,
     "scrollEndReachedThreshold": true,

@@ -14,6 +14,8 @@ namespace margelo::nitro::aix {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
+      prototype.registerHybridGetter("_shouldSubtractHeightOfPenultimateCellFromBlankSize", &HybridAixSpec::get_shouldSubtractHeightOfPenultimateCellFromBlankSize);
+      prototype.registerHybridSetter("_shouldSubtractHeightOfPenultimateCellFromBlankSize", &HybridAixSpec::set_shouldSubtractHeightOfPenultimateCellFromBlankSize);
       prototype.registerHybridGetter("shouldStartAtEnd", &HybridAixSpec::getShouldStartAtEnd);
       prototype.registerHybridSetter("shouldStartAtEnd", &HybridAixSpec::setShouldStartAtEnd);
       prototype.registerHybridGetter("scrollOnComposerSizeUpdate", &HybridAixSpec::getScrollOnComposerSizeUpdate);
