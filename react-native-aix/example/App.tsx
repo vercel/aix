@@ -10,7 +10,7 @@ import {
   Button,
   Keyboard,
 } from 'react-native';
-import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix';
+import { Aix, AixCell, AixFooter, useAixRef } from 'aix';
 import { useAppleChat, useMessages } from './src/apple';
 import {
   KeyboardProvider,
