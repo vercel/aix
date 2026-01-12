@@ -1,8 +1,8 @@
 {
-  "name": "react-native-aix",
+  "name": "aix",
   "version": "0.1.0",
   "author": "Fernando Rojo",
-  "repository": "https://github.com/fernandorojo/react-native-aix.git",
+  "repository": "https://github.com/vercel/aix.git",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "devDependencies": {
@@ -25,8 +25,8 @@
     "react-native": "*",
     "react-native-nitro-modules": "*"
   },
-  "bugs": "https://github.com/fernandorojo/react-native-aix/issues",
-  "description": "react-native-aix is a react native package built with Nitro",
+  "bugs": "https://github.com/vercel/aix/issues",
+  "description": "aix is a react native package built with Nitro",
   "eslintConfig": {
     "root": true,
     "extends": [
@@ -74,10 +74,10 @@
     "*.podspec",
     "README.md"
   ],
-  "homepage": "https://github.com/fernandorojo/react-native-aix#readme",
+  "homepage": "https://github.com/vercel/aix#readme",
   "keywords": [
     "react-native",
-    "react-native-aix"
+    "aix"
   ],
   "license": "MIT",
   "prettier": {

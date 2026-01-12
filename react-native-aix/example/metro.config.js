@@ -19,7 +19,7 @@ config.resolver.nodeModulesPaths = [
 ];
 
 config.resolver.extraNodeModules = {
-  'react-native-aix': '..',
+  aix: '..',
 };
 
 config.watchFolders = [root];
