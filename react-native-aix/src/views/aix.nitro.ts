@@ -10,7 +10,8 @@ export interface AixAdditionalContentInsets {
 }
 
 export interface AixAdditionalContentInsetsProp {
-  bottom: AixAdditionalContentInsets
+  top?: AixAdditionalContentInsets
+  bottom?: AixAdditionalContentInsets
 }
 
 export interface AixScrollIndicatorInsetValue {
@@ -23,9 +24,15 @@ export interface AixScrollIndicatorInsets {
   bottom?: AixScrollIndicatorInsetValue
 }
 
+export interface AixScrollOnFooterSizeUpdate {
+  enabled: boolean
+  scrolledToEndThreshold?: number
+  animated?: boolean
+}
+
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
-  scrollOnComposerSizeUpdate: boolean
+  scrollOnFooterSizeUpdate?: AixScrollOnFooterSizeUpdate
   /**
    * The number of pixels from the bottom of the scroll view to the end of the content that is considered "near the end".
    *
@@ -54,10 +61,10 @@ export interface AixProps extends HybridViewProps {
   additionalContentInsets?: AixAdditionalContentInsetsProp
 
   /**
-   * Insets for the scroll indicator.
+   * Additional insets for the scroll indicator, added to existing safe area insets.
    * Applied to verticalScrollIndicatorInsets on iOS.
    */
-  scrollIndicatorInsets?: AixScrollIndicatorInsets
+  additionalScrollIndicatorInsets?: AixScrollIndicatorInsets
 
   /**
    * The nativeID of the scroll view to use.

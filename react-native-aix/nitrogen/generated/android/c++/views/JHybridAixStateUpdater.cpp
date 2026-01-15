@@ -40,8 +40,8 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setShouldStartAtEnd(props.shouldStartAtEnd.value);
     // TODO: Set isDirty = false
   }
-  if (props.scrollOnComposerSizeUpdate.isDirty) {
-    view->setScrollOnComposerSizeUpdate(props.scrollOnComposerSizeUpdate.value);
+  if (props.scrollOnFooterSizeUpdate.isDirty) {
+    view->setScrollOnFooterSizeUpdate(props.scrollOnFooterSizeUpdate.value);
     // TODO: Set isDirty = false
   }
   if (props.scrollEndReachedThreshold.isDirty) {
@@ -52,8 +52,8 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setAdditionalContentInsets(props.additionalContentInsets.value);
     // TODO: Set isDirty = false
   }
-  if (props.scrollIndicatorInsets.isDirty) {
-    view->setScrollIndicatorInsets(props.scrollIndicatorInsets.value);
+  if (props.additionalScrollIndicatorInsets.isDirty) {
+    view->setAdditionalScrollIndicatorInsets(props.additionalScrollIndicatorInsets.value);
     // TODO: Set isDirty = false
   }
   if (props.mainScrollViewID.isDirty) {

@@ -1,6 +1,6 @@
 import './src/polyfill';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -25,6 +25,7 @@ function App(): React.JSX.Element {
 
   const inputRef = useRef<TextInput>(null);
   const [inputValue, setInputValue] = useState('');
+  const [inputHeight, setInputHeight] = useState(44);
 
   const mainScrollViewID = 'chat-list-scroll-view';
 
@@ -34,7 +35,11 @@ function App(): React.JSX.Element {
     <KeyboardProvider>
       <Aix
         shouldStartAtEnd={true}
-        scrollOnComposerSizeUpdate={true}
+        scrollOnFooterSizeUpdate={{
+          enabled: true,
+          scrolledToEndThreshold: 200,
+          animated: true,
+        }}
         style={styles.container}
         ref={aix}
         additionalContentInsets={{
@@ -43,7 +48,7 @@ function App(): React.JSX.Element {
             whenKeyboardOpen: 0,
           },
         }}
-        scrollIndicatorInsets={{
+        additionalScrollIndicatorInsets={{
           bottom: {
             whenKeyboardClosed: safeAreaInsetsBottom,
             whenKeyboardOpen: 0,
@@ -76,14 +81,22 @@ function App(): React.JSX.Element {
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <TextInput
                   onChangeText={setInputValue}
-                  style={[styles.input]}
+                  style={[styles.input, { height: inputHeight }]}
                   placeholderTextColor="#ffffff40"
                   placeholder="Type something..."
                   ref={inputRef}
                   multiline
-                  autoFocus
                 />
               </View>
+
+              <Button
+                title="Test"
+                onPress={() =>
+                  inputHeight === 44
+                    ? setInputHeight(inputHeight + 30)
+                    : setInputHeight(44)
+                }
+              />
 
               <Button
                 title="Send"
@@ -170,7 +183,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#0000ff30',
+    backgroundColor: '#ff000060',
   },
 });
 

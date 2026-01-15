@@ -76,10 +76,10 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setShouldStartAtEnd(newViewProps.shouldStartAtEnd.value);
     newViewProps.shouldStartAtEnd.isDirty = false;
   }
-  // scrollOnComposerSizeUpdate: boolean
-  if (newViewProps.scrollOnComposerSizeUpdate.isDirty) {
-    swiftPart.setScrollOnComposerSizeUpdate(newViewProps.scrollOnComposerSizeUpdate.value);
-    newViewProps.scrollOnComposerSizeUpdate.isDirty = false;
+  // scrollOnFooterSizeUpdate: optional
+  if (newViewProps.scrollOnFooterSizeUpdate.isDirty) {
+    swiftPart.setScrollOnFooterSizeUpdate(newViewProps.scrollOnFooterSizeUpdate.value);
+    newViewProps.scrollOnFooterSizeUpdate.isDirty = false;
   }
   // scrollEndReachedThreshold: optional
   if (newViewProps.scrollEndReachedThreshold.isDirty) {
@@ -91,10 +91,10 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setAdditionalContentInsets(newViewProps.additionalContentInsets.value);
     newViewProps.additionalContentInsets.isDirty = false;
   }
-  // scrollIndicatorInsets: optional
-  if (newViewProps.scrollIndicatorInsets.isDirty) {
-    swiftPart.setScrollIndicatorInsets(newViewProps.scrollIndicatorInsets.value);
-    newViewProps.scrollIndicatorInsets.isDirty = false;
+  // additionalScrollIndicatorInsets: optional
+  if (newViewProps.additionalScrollIndicatorInsets.isDirty) {
+    swiftPart.setAdditionalScrollIndicatorInsets(newViewProps.additionalScrollIndicatorInsets.value);
+    newViewProps.additionalScrollIndicatorInsets.isDirty = false;
   }
   // mainScrollViewID: optional
   if (newViewProps.mainScrollViewID.isDirty) {

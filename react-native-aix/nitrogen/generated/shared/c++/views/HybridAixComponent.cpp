@@ -35,14 +35,14 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.shouldStartAtEnd: ") + exc.what());
       }
     }()),
-    scrollOnComposerSizeUpdate([&]() -> CachedProp<bool> {
+    scrollOnFooterSizeUpdate([&]() -> CachedProp<std::optional<AixScrollOnFooterSizeUpdate>> {
       try {
-        const react::RawValue* rawValue = rawProps.at("scrollOnComposerSizeUpdate", nullptr, nullptr);
-        if (rawValue == nullptr) return sourceProps.scrollOnComposerSizeUpdate;
+        const react::RawValue* rawValue = rawProps.at("scrollOnFooterSizeUpdate", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.scrollOnFooterSizeUpdate;
         const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
-        return CachedProp<bool>::fromRawValue(*runtime, value, sourceProps.scrollOnComposerSizeUpdate);
+        return CachedProp<std::optional<AixScrollOnFooterSizeUpdate>>::fromRawValue(*runtime, value, sourceProps.scrollOnFooterSizeUpdate);
       } catch (const std::exception& exc) {
-        throw std::runtime_error(std::string("Aix.scrollOnComposerSizeUpdate: ") + exc.what());
+        throw std::runtime_error(std::string("Aix.scrollOnFooterSizeUpdate: ") + exc.what());
       }
     }()),
     scrollEndReachedThreshold([&]() -> CachedProp<std::optional<double>> {
@@ -65,14 +65,14 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.additionalContentInsets: ") + exc.what());
       }
     }()),
-    scrollIndicatorInsets([&]() -> CachedProp<std::optional<AixScrollIndicatorInsets>> {
+    additionalScrollIndicatorInsets([&]() -> CachedProp<std::optional<AixScrollIndicatorInsets>> {
       try {
-        const react::RawValue* rawValue = rawProps.at("scrollIndicatorInsets", nullptr, nullptr);
-        if (rawValue == nullptr) return sourceProps.scrollIndicatorInsets;
+        const react::RawValue* rawValue = rawProps.at("additionalScrollIndicatorInsets", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.additionalScrollIndicatorInsets;
         const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
-        return CachedProp<std::optional<AixScrollIndicatorInsets>>::fromRawValue(*runtime, value, sourceProps.scrollIndicatorInsets);
+        return CachedProp<std::optional<AixScrollIndicatorInsets>>::fromRawValue(*runtime, value, sourceProps.additionalScrollIndicatorInsets);
       } catch (const std::exception& exc) {
-        throw std::runtime_error(std::string("Aix.scrollIndicatorInsets: ") + exc.what());
+        throw std::runtime_error(std::string("Aix.additionalScrollIndicatorInsets: ") + exc.what());
       }
     }()),
     mainScrollViewID([&]() -> CachedProp<std::optional<std::string>> {
@@ -109,10 +109,10 @@ namespace margelo::nitro::aix::views {
   HybridAixProps::HybridAixProps(const HybridAixProps& other):
     react::ViewProps(),
     shouldStartAtEnd(other.shouldStartAtEnd),
-    scrollOnComposerSizeUpdate(other.scrollOnComposerSizeUpdate),
+    scrollOnFooterSizeUpdate(other.scrollOnFooterSizeUpdate),
     scrollEndReachedThreshold(other.scrollEndReachedThreshold),
     additionalContentInsets(other.additionalContentInsets),
-    scrollIndicatorInsets(other.scrollIndicatorInsets),
+    additionalScrollIndicatorInsets(other.additionalScrollIndicatorInsets),
     mainScrollViewID(other.mainScrollViewID),
     penultimateCellIndex(other.penultimateCellIndex),
     hybridRef(other.hybridRef) { }
@@ -120,10 +120,10 @@ namespace margelo::nitro::aix::views {
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
       case hashString("shouldStartAtEnd"): return true;
-      case hashString("scrollOnComposerSizeUpdate"): return true;
+      case hashString("scrollOnFooterSizeUpdate"): return true;
       case hashString("scrollEndReachedThreshold"): return true;
       case hashString("additionalContentInsets"): return true;
-      case hashString("scrollIndicatorInsets"): return true;
+      case hashString("additionalScrollIndicatorInsets"): return true;
       case hashString("mainScrollViewID"): return true;
       case hashString("penultimateCellIndex"): return true;
       case hashString("hybridRef"): return true;

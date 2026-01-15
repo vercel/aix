@@ -16,6 +16,8 @@ namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
+// Forward declaration of `AixScrollOnFooterSizeUpdate` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
 // Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
@@ -36,6 +38,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsetValue.hpp"
 #include "AixScrollIndicatorInsets.hpp"
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
@@ -63,6 +66,51 @@ namespace margelo::nitro::aix::bridge::swift {
     return optional.has_value();
   }
   inline double get_std__optional_double_(const std::optional<double>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<bool>
+  /**
+   * Specialized version of `std::optional<bool>`.
+   */
+  using std__optional_bool_ = std::optional<bool>;
+  inline std::optional<bool> create_std__optional_bool_(const bool& value) noexcept {
+    return std::optional<bool>(value);
+  }
+  inline bool has_value_std__optional_bool_(const std::optional<bool>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline bool get_std__optional_bool_(const std::optional<bool>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<AixScrollOnFooterSizeUpdate>
+  /**
+   * Specialized version of `std::optional<AixScrollOnFooterSizeUpdate>`.
+   */
+  using std__optional_AixScrollOnFooterSizeUpdate_ = std::optional<AixScrollOnFooterSizeUpdate>;
+  inline std::optional<AixScrollOnFooterSizeUpdate> create_std__optional_AixScrollOnFooterSizeUpdate_(const AixScrollOnFooterSizeUpdate& value) noexcept {
+    return std::optional<AixScrollOnFooterSizeUpdate>(value);
+  }
+  inline bool has_value_std__optional_AixScrollOnFooterSizeUpdate_(const std::optional<AixScrollOnFooterSizeUpdate>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixScrollOnFooterSizeUpdate get_std__optional_AixScrollOnFooterSizeUpdate_(const std::optional<AixScrollOnFooterSizeUpdate>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<AixAdditionalContentInsets>
+  /**
+   * Specialized version of `std::optional<AixAdditionalContentInsets>`.
+   */
+  using std__optional_AixAdditionalContentInsets_ = std::optional<AixAdditionalContentInsets>;
+  inline std::optional<AixAdditionalContentInsets> create_std__optional_AixAdditionalContentInsets_(const AixAdditionalContentInsets& value) noexcept {
+    return std::optional<AixAdditionalContentInsets>(value);
+  }
+  inline bool has_value_std__optional_AixAdditionalContentInsets_(const std::optional<AixAdditionalContentInsets>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixAdditionalContentInsets get_std__optional_AixAdditionalContentInsets_(const std::optional<AixAdditionalContentInsets>& optional) noexcept {
     return *optional;
   }
   
@@ -123,21 +171,6 @@ namespace margelo::nitro::aix::bridge::swift {
     return optional.has_value();
   }
   inline std::string get_std__optional_std__string_(const std::optional<std::string>& optional) noexcept {
-    return *optional;
-  }
-  
-  // pragma MARK: std::optional<bool>
-  /**
-   * Specialized version of `std::optional<bool>`.
-   */
-  using std__optional_bool_ = std::optional<bool>;
-  inline std::optional<bool> create_std__optional_bool_(const bool& value) noexcept {
-    return std::optional<bool>(value);
-  }
-  inline bool has_value_std__optional_bool_(const std::optional<bool>& optional) noexcept {
-    return optional.has_value();
-  }
-  inline bool get_std__optional_bool_(const std::optional<bool>& optional) noexcept {
     return *optional;
   }
   
