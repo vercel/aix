@@ -631,17 +631,22 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
         lastReportedBlankViewSize = (size: size, index: index)
 
-        // Update scroll view insets
-        applyContentInset()
-        applyScrollIndicatorInsets()
-
         // Check if we have a queued scroll waiting for this index
         if !didScrollToEndInitially {
-            scrollToEndInternal(animated: false)
+            UIView.performWithoutAnimation {
+                applyContentInset()
+                applyScrollIndicatorInsets()
+                scrollToEndInternal(animated: false)
+            }
             didScrollToEndInitially = true
-        } else if let queued = queuedScrollToEnd, index == queued.index {
-            flushQueuedScrollToEnd()
-        } 
+        } else {
+            applyContentInset()
+            applyScrollIndicatorInsets()
+
+            if let queued = queuedScrollToEnd, index == queued.index {
+                flushQueuedScrollToEnd()
+            }
+        }
     }
     
     func registerCell(_ cell: HybridAixCellView) {
@@ -682,10 +687,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         let previousHeight = lastReportedComposerHeight
         let isShrinking = height < previousHeight
 
+        lastReportedComposerHeight = height
+
+        if !didScrollToEndInitially {
+            return
+        }
+
         let shouldScroll = shouldScrollOnFooterSizeUpdate()
         let animated = scrollOnFooterSizeUpdate?.animated ?? false
-
-        lastReportedComposerHeight = height
 
         if shouldScroll && animated && isShrinking {
             guard let scrollView else {
@@ -776,6 +785,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
         if targetHeight > keyboardHeightWhenOpen {
             keyboardHeightWhenOpen = targetHeight
+        }
+
+        if !didScrollToEndInitially {
+            keyboardHeight = targetHeight
+            keyboardProgress = 1.0
+            applyContentInset()
+            applyScrollIndicatorInsets()
+            return
         }
 
         handleKeyboardWillMove(targetHeight: targetHeight, isOpening: true)
