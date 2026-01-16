@@ -12,7 +12,13 @@ import {
   PlatformColor,
   useColorScheme,
 } from 'react-native';
-import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix';
+import {
+  Aix,
+  AixCell,
+  AixFooter,
+  useAixRef,
+  TextFadeInStaggeredIfStreaming,
+} from 'react-native-aix';
 import { useAppleChat, useMessages } from './src/apple';
 import {
   KeyboardProvider,
@@ -21,14 +27,12 @@ import {
 
 function App(): React.JSX.Element {
   const aix = useAixRef();
-  const colorScheme = useColorScheme();
 
   const { messages, setMessages } = useMessages();
   const { send } = useAppleChat({ setMessages, messages });
-
-  const inputRef = useRef<TextInput>(null);
-  const [inputValue, setInputValue] = useState('');
-  const [inputHeight, setInputHeight] = useState(44);
+  const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
+    null,
+  );
 
   const mainScrollViewID = 'chat-list-scroll-view';
 
@@ -73,7 +77,10 @@ function App(): React.JSX.Element {
                 {message.role === 'user' ? (
                   <UserMessage content={message.content} />
                 ) : (
-                  <AssistantMessage content={message.content} />
+                  <AssistantMessage
+                    content={message.content}
+                    shouldAnimate={animateMessageIndex === index}
+                  />
                 )}
               </AixCell>
             );
@@ -86,69 +93,81 @@ function App(): React.JSX.Element {
           }}
         >
           <AixFooter style={styles.footer}>
-            <View
-              style={[
-                styles.footerBackground,
-                {
-                  experimental_backgroundImage:
-                    colorScheme === 'dark'
-                      ? `linear-gradient(to bottom, #00000000, #000000)`
-                      : `linear-gradient(to bottom, #ffffff00, #ffffff)`,
-                },
-              ]}
+            <Composer
+              onSubmit={message => {
+                const nextAssistantMessageIndex = messages.length + 1;
+                aix.current?.scrollToIndexWhenBlankSizeReady(
+                  nextAssistantMessageIndex,
+                  true,
+                  false,
+                );
+                setAnimateMessageIndex(nextAssistantMessageIndex);
+                send(message);
+              }}
             />
-            <View style={styles.footerRow}>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <TextInput
-                  onChangeText={setInputValue}
-                  style={[styles.input, { height: inputHeight }]}
-                  placeholderTextColor={PlatformColor('placeholderText')}
-                  placeholder="Type something..."
-                  ref={inputRef}
-                  multiline
-                  autoFocus
-                />
-              </View>
-
-              <Pressable
-                onLongPress={() => {
-                  inputHeight > 120
-                    ? setInputHeight(44)
-                    : setInputHeight(inputHeight + 30);
-                }}
-                style={[
-                  styles.button,
-                  inputValue.length === 0
-                    ? {
-                        backgroundColor: PlatformColor('systemGray6'),
-                        borderColor: PlatformColor('systemGray5'),
-                      }
-                    : {
-                        backgroundColor: PlatformColor('systemGray3'),
-                        borderColor: PlatformColor('separator'),
-                      },
-                ]}
-                onPress={async () => {
-                  aix.current?.scrollToIndexWhenBlankSizeReady(
-                    messages.length + 1,
-                    true,
-                    false,
-                  );
-
-                  inputRef.current?.clear();
-                  send(inputValue);
-                  requestAnimationFrame(() => {
-                    Keyboard.dismiss();
-                  });
-                }}
-              >
-                <Text style={styles.buttonText}>↑</Text>
-              </Pressable>
-            </View>
           </AixFooter>
         </KeyboardStickyView>
       </Aix>
     </KeyboardProvider>
+  );
+}
+
+function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
+  const colorScheme = useColorScheme();
+  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<TextInput>(null);
+  return (
+    <>
+      <View
+        style={[
+          styles.footerBackground,
+          {
+            experimental_backgroundImage:
+              colorScheme === 'dark'
+                ? `linear-gradient(to bottom, #00000000, #000000)`
+                : `linear-gradient(to bottom, #ffffff00, #ffffff)`,
+          },
+        ]}
+      />
+      <View style={styles.footerRow}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <TextInput
+            onChangeText={setInputValue}
+            style={[styles.input]}
+            placeholderTextColor={PlatformColor('placeholderText')}
+            placeholder="Type something..."
+            ref={inputRef}
+            multiline
+            value={inputValue}
+            autoFocus
+          />
+        </View>
+
+        <Pressable
+          style={[
+            styles.button,
+            inputValue.length === 0
+              ? {
+                  backgroundColor: PlatformColor('systemGray6'),
+                  borderColor: PlatformColor('systemGray5'),
+                }
+              : {
+                  backgroundColor: PlatformColor('systemGray3'),
+                  borderColor: PlatformColor('separator'),
+                },
+          ]}
+          onPress={async () => {
+            setInputValue('');
+            onSubmit(inputValue);
+            requestAnimationFrame(() => {
+              Keyboard.dismiss();
+            });
+          }}
+        >
+          <Text style={styles.buttonText}>↑</Text>
+        </Pressable>
+      </View>
+    </>
   );
 }
 
@@ -160,16 +179,26 @@ function UserMessage({ content }: { content: string }) {
   );
 }
 
-function AssistantMessage({ content }: { content: string }) {
+function AssistantMessage({
+  content,
+  shouldAnimate,
+}: {
+  content: string;
+  shouldAnimate: boolean;
+}) {
   return (
-    <Text
-      style={[
-        styles.text,
-        { paddingHorizontal: gap(4), paddingVertical: gap(2) },
-      ]}
-    >
-      {content}
-    </Text>
+    <View>
+      <Text
+        style={[
+          styles.text,
+          { paddingHorizontal: gap(4), paddingVertical: gap(2) },
+        ]}
+      >
+        <TextFadeInStaggeredIfStreaming disabled={!shouldAnimate}>
+          {content}
+        </TextFadeInStaggeredIfStreaming>
+      </Text>
+    </View>
   );
 }
 
@@ -256,7 +285,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: gap(4),
-    height: 40,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: PlatformColor('systemBackground'),

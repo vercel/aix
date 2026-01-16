@@ -3,6 +3,7 @@ import AixCellViewConfig from '../nitrogen/generated/shared/json/AixCellViewConf
 import type { AixCellViewProps } from './views/aix.nitro'
 import { useRef } from 'react'
 import type { AixRef } from './aix'
+export * from './fade-in'
 
 export { Aix, type AixRef } from './aix'
 export { AixFooter } from './footer'
