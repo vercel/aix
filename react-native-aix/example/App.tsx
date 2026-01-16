@@ -25,7 +25,7 @@ import {
   KeyboardStickyView,
 } from 'react-native-keyboard-controller';
 
-function App(): React.JSX.Element {
+function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
 
   const { messages, setMessages } = useMessages();
@@ -34,80 +34,89 @@ function App(): React.JSX.Element {
     null,
   );
 
-  const mainScrollViewID = 'chat-list-scroll-view';
+  return (
+    <Aix
+      shouldStartAtEnd={true}
+      scrollOnFooterSizeUpdate={{
+        enabled: true,
+        scrolledToEndThreshold: 200,
+        animated: false,
+      }}
+      style={styles.container}
+      ref={aix}
+      additionalContentInsets={{
+        bottom: {
+          whenKeyboardClosed: safeAreaInsetsBottom,
+          whenKeyboardOpen: 0,
+        },
+      }}
+      additionalScrollIndicatorInsets={{
+        bottom: {
+          whenKeyboardClosed: safeAreaInsetsBottom,
+          whenKeyboardOpen: 0,
+        },
+      }}
+      mainScrollViewID={mainScrollViewID}
+    >
+      {children}
+      <ScrollView keyboardDismissMode="interactive" nativeID={mainScrollViewID}>
+        {messages.map((message, index, arr) => {
+          const isLast = index === arr.length - 1;
+          return (
+            <AixCell key={index} index={index} isLast={isLast}>
+              {message.role === 'user' ? (
+                <UserMessage content={message.content} />
+              ) : (
+                <AssistantMessage
+                  content={message.content}
+                  shouldAnimate={animateMessageIndex === index}
+                />
+              )}
+            </AixCell>
+          );
+        })}
+      </ScrollView>
+      <FloatingFooter>
+        <AixFooter style={styles.footer}>
+          <Composer
+            onSubmit={message => {
+              const nextAssistantMessageIndex = messages.length + 1;
+              aix.current?.scrollToIndexWhenBlankSizeReady(
+                nextAssistantMessageIndex,
+                true,
+                false,
+              );
+              setAnimateMessageIndex(nextAssistantMessageIndex);
+              send(message);
+            }}
+          />
+        </AixFooter>
+      </FloatingFooter>
+    </Aix>
+  );
+}
 
-  const safeAreaInsetsBottom = 18;
+function FloatingFooter({ children }: { children: React.ReactNode }) {
+  return (
+    <KeyboardStickyView
+      offset={{
+        opened: -paddingVertical / 2,
+        closed: -safeAreaInsetsBottom - paddingVertical / 2,
+      }}
+    >
+      {children}
+    </KeyboardStickyView>
+  );
+}
 
+function App() {
   return (
     <KeyboardProvider>
-      <Aix
-        shouldStartAtEnd={true}
-        scrollOnFooterSizeUpdate={{
-          enabled: true,
-          scrolledToEndThreshold: 200,
-          animated: false,
-        }}
-        style={styles.container}
-        ref={aix}
-        additionalContentInsets={{
-          bottom: {
-            whenKeyboardClosed: safeAreaInsetsBottom,
-            whenKeyboardOpen: 0,
-          },
-        }}
-        additionalScrollIndicatorInsets={{
-          bottom: {
-            whenKeyboardClosed: safeAreaInsetsBottom,
-            whenKeyboardOpen: 0,
-          },
-        }}
-        mainScrollViewID={mainScrollViewID}
-      >
+      <Chat>
         <View style={styles.header}>
           <Text style={styles.headerText}>Chat</Text>
         </View>
-        <ScrollView
-          keyboardDismissMode="interactive"
-          nativeID={mainScrollViewID}
-        >
-          {messages.map((message, index, arr) => {
-            const isLast = index === arr.length - 1;
-            return (
-              <AixCell key={index} index={index} isLast={isLast}>
-                {message.role === 'user' ? (
-                  <UserMessage content={message.content} />
-                ) : (
-                  <AssistantMessage
-                    content={message.content}
-                    shouldAnimate={animateMessageIndex === index}
-                  />
-                )}
-              </AixCell>
-            );
-          })}
-        </ScrollView>
-        <KeyboardStickyView
-          offset={{
-            opened: -paddingVertical / 2,
-            closed: -safeAreaInsetsBottom - paddingVertical / 2,
-          }}
-        >
-          <AixFooter style={styles.footer}>
-            <Composer
-              onSubmit={message => {
-                const nextAssistantMessageIndex = messages.length + 1;
-                aix.current?.scrollToIndexWhenBlankSizeReady(
-                  nextAssistantMessageIndex,
-                  true,
-                  false,
-                );
-                setAnimateMessageIndex(nextAssistantMessageIndex);
-                send(message);
-              }}
-            />
-          </AixFooter>
-        </KeyboardStickyView>
-      </Aix>
+      </Chat>
     </KeyboardProvider>
   );
 }
@@ -300,3 +309,7 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+const mainScrollViewID = 'chat-list-scroll-view';
+
+const safeAreaInsetsBottom = 18;

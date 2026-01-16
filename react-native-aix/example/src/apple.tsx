@@ -64,34 +64,34 @@ export function useAppleChat({
 }
 
 const defaultMessages: UIMessage[] = [
-  {
-    role: 'user',
-    content: 'Hey! Can you explain how React Native works under the hood?',
-  },
-  {
-    role: 'assistant',
-    content:
-      'React Native works by using a JavaScript thread that communicates with native platform threads through a bridge (or the new JSI architecture). When you write React components, they get translated into native views - so a <View> becomes a UIView on iOS and an android.view.View on Android. The JavaScript bundle runs in a JavaScript engine (like Hermes or JavaScriptCore), and updates to the UI are batched and sent to the native side for rendering. This is why React Native apps can achieve near-native performance while still allowing you to write code in JavaScript or TypeScript.',
-  },
-  {
-    role: 'user',
-    content:
-      'That makes sense! What about the new architecture with Fabric and TurboModules?',
-  },
-  {
-    role: 'assistant',
-    content:
-      "Great question! The new architecture introduces several key improvements:\n\n1. **Fabric** is the new rendering system that enables synchronous communication between JavaScript and native code. This means smoother animations and gestures because the UI thread can directly access JavaScript values without going through the async bridge.\n\n2. **TurboModules** replace the old Native Modules system. They're lazily loaded (only initialized when first used) and use JSI for direct communication, which is much faster than the old JSON serialization approach.\n\n3. **JSI (JavaScript Interface)** is the foundation that makes this possible - it's a lightweight C++ layer that lets JavaScript directly hold references to native objects and call methods on them synchronously.\n\nThe result is significantly better performance, especially for complex interactions and animations!",
-  },
-  {
-    role: 'user',
-    content: 'How do I handle keyboard avoiding in chat apps?',
-  },
-  {
-    role: 'assistant',
-    content:
-      "Handling keyboard avoiding in chat apps can be tricky! Here are the main approaches:\n\n**On iOS:**\n- Use `KeyboardAvoidingView` with `behavior='padding'` and measure the keyboard height\n- For better results, use libraries like `react-native-keyboard-controller` which provides native-driven animations\n- Make sure your FlatList/ScrollView has `keyboardDismissMode` and `keyboardShouldPersistTaps` configured\n\n**On Android:**\n- Set `android:windowSoftInputMode='adjustResize'` in your AndroidManifest.xml\n- The keyboard avoiding is handled more automatically, but you may need to adjust for different behaviors\n\n**Pro tips:**\n- Animate your input container to move with the keyboard for a polished feel\n- Consider using `useAnimatedKeyboard` from Reanimated for smooth, interruptible animations\n- Don't forget to handle the safe area at the bottom of the screen!",
-  },
+  // {
+  //   role: 'user',
+  //   content: 'Hey! Can you explain how React Native works under the hood?',
+  // },
+  // {
+  //   role: 'assistant',
+  //   content:
+  //     'React Native works by using a JavaScript thread that communicates with native platform threads through a bridge (or the new JSI architecture). When you write React components, they get translated into native views - so a <View> becomes a UIView on iOS and an android.view.View on Android. The JavaScript bundle runs in a JavaScript engine (like Hermes or JavaScriptCore), and updates to the UI are batched and sent to the native side for rendering. This is why React Native apps can achieve near-native performance while still allowing you to write code in JavaScript or TypeScript.',
+  // },
+  // {
+  //   role: 'user',
+  //   content:
+  //     'That makes sense! What about the new architecture with Fabric and TurboModules?',
+  // },
+  // {
+  //   role: 'assistant',
+  //   content:
+  //     "Great question! The new architecture introduces several key improvements:\n\n1. **Fabric** is the new rendering system that enables synchronous communication between JavaScript and native code. This means smoother animations and gestures because the UI thread can directly access JavaScript values without going through the async bridge.\n\n2. **TurboModules** replace the old Native Modules system. They're lazily loaded (only initialized when first used) and use JSI for direct communication, which is much faster than the old JSON serialization approach.\n\n3. **JSI (JavaScript Interface)** is the foundation that makes this possible - it's a lightweight C++ layer that lets JavaScript directly hold references to native objects and call methods on them synchronously.\n\nThe result is significantly better performance, especially for complex interactions and animations!",
+  // },
+  // {
+  //   role: 'user',
+  //   content: 'How do I handle keyboard avoiding in chat apps?',
+  // },
+  // {
+  //   role: 'assistant',
+  //   content:
+  //     "Handling keyboard avoiding in chat apps can be tricky! Here are the main approaches:\n\n**On iOS:**\n- Use `KeyboardAvoidingView` with `behavior='padding'` and measure the keyboard height\n- For better results, use libraries like `react-native-keyboard-controller` which provides native-driven animations\n- Make sure your FlatList/ScrollView has `keyboardDismissMode` and `keyboardShouldPersistTaps` configured\n\n**On Android:**\n- Set `android:windowSoftInputMode='adjustResize'` in your AndroidManifest.xml\n- The keyboard avoiding is handled more automatically, but you may need to adjust for different behaviors\n\n**Pro tips:**\n- Animate your input container to move with the keyboard for a polished feel\n- Consider using `useAnimatedKeyboard` from Reanimated for smooth, interruptible animations\n- Don't forget to handle the safe area at the bottom of the screen!",
+  // },
   {
     role: 'user',
     content: 'Can you show me a simple animation example?',
@@ -113,7 +113,7 @@ const defaultMessages: UIMessage[] = [
   },
   {
     role: 'user',
-    content: 'How can I use the new TurboModules in React Native?',
+    content: 'How can I use Turbopack in React Native?',
   },
   {
     role: 'assistant',
