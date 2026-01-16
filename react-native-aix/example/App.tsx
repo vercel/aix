@@ -22,8 +22,12 @@ import {
 import { useAppleChat, useMessages } from './src/apple';
 import {
   KeyboardProvider,
-  KeyboardStickyView,
+  useReanimatedKeyboardAnimation,
 } from 'react-native-keyboard-controller';
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 
 function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
@@ -98,14 +102,14 @@ function Chat({ children }: { children: React.ReactNode }) {
 
 function FloatingFooter({ children }: { children: React.ReactNode }) {
   return (
-    <KeyboardStickyView
+    <StickyView
       offset={{
         opened: -paddingVertical / 2,
         closed: -safeAreaInsetsBottom - paddingVertical / 2,
       }}
     >
       {children}
-    </KeyboardStickyView>
+    </StickyView>
   );
 }
 
@@ -313,3 +317,30 @@ export default App;
 const mainScrollViewID = 'chat-list-scroll-view';
 
 const safeAreaInsetsBottom = 18;
+
+function StickyView(
+  props: React.ComponentProps<typeof Animated.View> & {
+    offset?: { opened?: number; closed?: number };
+  },
+) {
+  const { height, progress } = useReanimatedKeyboardAnimation();
+
+  const style = useAnimatedStyle(() => {
+    const y =
+      height.get() +
+      interpolate(
+        progress.get(),
+        [0, 1],
+        [props.offset?.closed ?? 0, props.offset?.opened ?? 0],
+      );
+    return {
+      transform: [
+        {
+          translateY: y,
+        },
+      ],
+    };
+  });
+
+  return <Animated.View {...props} style={[style, props.style]} />;
+}
