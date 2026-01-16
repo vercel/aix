@@ -1,14 +1,16 @@
 import './src/polyfill';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   TextInput,
   Text,
-  Button,
   Keyboard,
+  Pressable,
+  PlatformColor,
+  useColorScheme,
 } from 'react-native';
 import { Aix, AixCell, AixFooter, useAixRef } from 'react-native-aix';
 import { useAppleChat, useMessages } from './src/apple';
@@ -19,6 +21,7 @@ import {
 
 function App(): React.JSX.Element {
   const aix = useAixRef();
+  const colorScheme = useColorScheme();
 
   const { messages, setMessages } = useMessages();
   const { send } = useAppleChat({ setMessages, messages });
@@ -38,7 +41,7 @@ function App(): React.JSX.Element {
         scrollOnFooterSizeUpdate={{
           enabled: true,
           scrolledToEndThreshold: 200,
-          animated: true,
+          animated: false,
         }}
         style={styles.container}
         ref={aix}
@@ -56,6 +59,9 @@ function App(): React.JSX.Element {
         }}
         mainScrollViewID={mainScrollViewID}
       >
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Chat</Text>
+        </View>
         <ScrollView
           keyboardDismissMode="interactive"
           nativeID={mainScrollViewID}
@@ -74,32 +80,54 @@ function App(): React.JSX.Element {
           })}
         </ScrollView>
         <KeyboardStickyView
-          offset={{ opened: 0, closed: -safeAreaInsetsBottom }}
+          offset={{
+            opened: -paddingVertical / 2,
+            closed: -safeAreaInsetsBottom - paddingVertical / 2,
+          }}
         >
           <AixFooter style={styles.footer}>
+            <View
+              style={[
+                styles.footerBackground,
+                {
+                  experimental_backgroundImage:
+                    colorScheme === 'dark'
+                      ? `linear-gradient(to bottom, #00000000, #000000)`
+                      : `linear-gradient(to bottom, #ffffff00, #ffffff)`,
+                },
+              ]}
+            />
             <View style={styles.footerRow}>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <TextInput
                   onChangeText={setInputValue}
                   style={[styles.input, { height: inputHeight }]}
-                  placeholderTextColor="#ffffff40"
+                  placeholderTextColor={PlatformColor('placeholderText')}
                   placeholder="Type something..."
                   ref={inputRef}
                   multiline
+                  autoFocus
                 />
               </View>
 
-              <Button
-                title="Test"
-                onPress={() =>
-                  inputHeight === 44
-                    ? setInputHeight(inputHeight + 30)
-                    : setInputHeight(44)
-                }
-              />
-
-              <Button
-                title="Send"
+              <Pressable
+                onLongPress={() => {
+                  inputHeight > 120
+                    ? setInputHeight(44)
+                    : setInputHeight(inputHeight + 30);
+                }}
+                style={[
+                  styles.button,
+                  inputValue.length === 0
+                    ? {
+                        backgroundColor: PlatformColor('systemGray6'),
+                        borderColor: PlatformColor('systemGray5'),
+                      }
+                    : {
+                        backgroundColor: PlatformColor('systemGray3'),
+                        borderColor: PlatformColor('separator'),
+                      },
+                ]}
                 onPress={async () => {
                   aix.current?.scrollToIndexWhenBlankSizeReady(
                     messages.length + 1,
@@ -113,7 +141,9 @@ function App(): React.JSX.Element {
                     Keyboard.dismiss();
                   });
                 }}
-              />
+              >
+                <Text style={styles.buttonText}>↑</Text>
+              </Pressable>
             </View>
           </AixFooter>
         </KeyboardStickyView>
@@ -131,11 +161,25 @@ function UserMessage({ content }: { content: string }) {
 }
 
 function AssistantMessage({ content }: { content: string }) {
-  return <Text style={[styles.text, { padding: 16 }]}>{content}</Text>;
+  return (
+    <Text
+      style={[
+        styles.text,
+        { paddingHorizontal: gap(4), paddingVertical: gap(2) },
+      ]}
+    >
+      {content}
+    </Text>
+  );
+}
+
+function gap(size: number) {
+  return size * 4;
 }
 
 const fontSize = 17;
 const lineHeight = (fontSize: number) => fontSize * 1.4;
+const paddingVertical = 8;
 
 const styles = StyleSheet.create({
   container: {
@@ -151,39 +195,78 @@ const styles = StyleSheet.create({
   text: {
     fontSize,
     lineHeight: lineHeight(fontSize),
-    color: '#ffffff',
+    color: PlatformColor('label'),
   },
   footerRow: {
-    alignItems: 'center',
+    alignItems: 'flex-end',
     flexDirection: 'row',
-    paddingVertical: 8,
+    paddingVertical,
+    gap: gap(3),
   },
   input: {
     fontSize,
-    color: '#ffffff',
-    backgroundColor: '#111111',
-    padding: 12,
-    borderRadius: 20,
+    color: PlatformColor('label'),
+    backgroundColor: PlatformColor('systemBackground'),
+    borderWidth: 1,
+    borderColor: PlatformColor('separator'),
+    paddingVertical: (44 - lineHeight(fontSize)) / 2,
+    borderRadius: 24,
     borderCurve: 'continuous',
-    paddingHorizontal: 16,
+    paddingHorizontal: gap(4),
   },
   userMessage: {
-    backgroundColor: '#333333',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: PlatformColor('secondarySystemBackground'),
+    paddingHorizontal: gap(4),
+    paddingVertical: gap(2),
     borderRadius: 20,
-    marginHorizontal: 16,
+    marginHorizontal: gap(4),
     alignSelf: 'flex-end',
     maxWidth: '70%',
     borderCurve: 'continuous',
+    marginVertical: gap(3),
   },
   footer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: gap(4),
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#ff000060',
+  },
+  button: {
+    height: 44,
+    width: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 24,
+    backgroundColor: PlatformColor('systemGray8'),
+    borderWidth: 1,
+    borderColor: PlatformColor('separator'),
+  },
+  buttonText: {
+    color: PlatformColor('label'),
+    fontSize: 20,
+    fontWeight: '500',
+  },
+  footerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: -18 - 6,
+  },
+  header: {
+    paddingHorizontal: gap(4),
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: PlatformColor('systemBackground'),
+    borderBottomWidth: 1,
+    borderBottomColor: PlatformColor('separator'),
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: PlatformColor('label'),
   },
 });
 
