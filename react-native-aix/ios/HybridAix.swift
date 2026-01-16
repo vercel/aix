@@ -772,6 +772,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         let targetHeight = keyboardFrame.height
         print("[Aix] keyboardWillShow: targetHeight=\(targetHeight), duration=\(duration)")
 
+        guard duration > 0 else { return }
+
         if targetHeight > keyboardHeightWhenOpen {
             keyboardHeightWhenOpen = targetHeight
         }
