@@ -25,13 +25,35 @@ export interface AixScrollIndicatorInsets {
 }
 
 export interface AixScrollOnFooterSizeUpdate {
+  /**
+   * Whether to scroll on footer size update.
+   *
+   * Default: true
+   */
   enabled: boolean
+  /**
+   * The number of pixels from the bottom of the scroll view to the end of the content that is considered "scrolled near the end".
+   *
+   * Default: 100
+   */
   scrolledToEndThreshold?: number
+  /**
+   * Whether to animate the scroll.
+   *
+   * Default: false
+   */
   animated?: boolean
 }
 
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
+  /**
+   * Control the behavior of scrolling the content when footer size changes.
+   *
+   * By default, changing the height of the footer will shift content up in the scroll view.
+   *
+   * Default: { enabled: true, scrolledToEndThreshold: 100, animated: false }
+   */
   scrollOnFooterSizeUpdate?: AixScrollOnFooterSizeUpdate
   /**
    * The number of pixels from the bottom of the scroll view to the end of the content that is considered "near the end".
