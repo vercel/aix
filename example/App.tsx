@@ -22,7 +22,7 @@ import {
 import { useFirstMessageEntrance } from 'ai-chat/chat/message-list/item/use-first-message-entrance'
 import { Button, Keyboard, Text, TextInput, View } from 'react-native'
 import { ChatProvider } from './ListProvider'
-import { createContext, use, useState } from 'react'
+import { useState } from 'react'
 import {
   useReanimatedKeyboardAnimation,
   KeyboardProvider,
