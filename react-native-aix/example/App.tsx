@@ -28,6 +28,25 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
 } from 'react-native-reanimated';
+import { LegendList } from '@legendapp/list';
+import { FlashList } from '@shopify/flash-list';
+
+function CellRenderer({
+  children,
+  index,
+  isLast,
+  ...props
+}: {
+  children: React.ReactNode;
+  index: number;
+  isLast: boolean;
+}) {
+  return (
+    <AixCell key={index} index={index} isLast={isLast} {...props}>
+      {children}
+    </AixCell>
+  );
+}
 
 function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
@@ -37,6 +56,60 @@ function Chat({ children }: { children: React.ReactNode }) {
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
   );
+
+  const renderItem = (message: (typeof messages)[number], index: number) =>
+    message.role === 'user' ? (
+      <UserMessage content={message.content} />
+    ) : (
+      <AssistantMessage
+        content={message.content}
+        shouldAnimate={animateMessageIndex === index}
+      />
+    );
+
+  const examples = {
+    scrollProps: {
+      keyboardDismissMode: 'interactive',
+      nativeID: mainScrollViewID,
+    } satisfies Partial<React.ComponentProps<typeof ScrollView>>,
+    
+    legendList: () => (
+      <LegendList
+        {...examples.scrollProps}
+        estimatedItemSize={100}
+        data={messages}
+        getItemType={item => item.role}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <CellRenderer index={index} isLast={index === messages.length - 1}>
+            {renderItem(item, index)}
+          </CellRenderer>
+        )}
+      />
+    ),
+    scrollview: () => (
+      <ScrollView {...examples.scrollProps}>
+        {messages.map(message => (
+          <CellRenderer
+            index={messages.indexOf(message)}
+            isLast={messages.indexOf(message) === messages.length - 1}
+          >
+            {renderItem(message, messages.indexOf(message))}
+          </CellRenderer>
+        ))}
+      </ScrollView>
+    ),
+    flashList: () => (
+      <FlashList
+        {...examples.scrollProps}
+        data={messages}
+        getItemType={item => item.role}
+        keyExtractor={(_, index) => index.toString()}
+        CellRendererComponent={(props) => <CellRenderer isLast={props.index === messages.length - 1} {...props} />}
+        renderItem={({ item, index }) => renderItem(item, index)}
+      />
+    ),
+  };
 
   return (
     <Aix
@@ -63,23 +136,7 @@ function Chat({ children }: { children: React.ReactNode }) {
       mainScrollViewID={mainScrollViewID}
     >
       {children}
-      <ScrollView keyboardDismissMode="interactive" nativeID={mainScrollViewID}>
-        {messages.map((message, index, arr) => {
-          const isLast = index === arr.length - 1;
-          return (
-            <AixCell key={index} index={index} isLast={isLast}>
-              {message.role === 'user' ? (
-                <UserMessage content={message.content} />
-              ) : (
-                <AssistantMessage
-                  content={message.content}
-                  shouldAnimate={animateMessageIndex === index}
-                />
-              )}
-            </AixCell>
-          );
-        })}
-      </ScrollView>
+      {examples.scrollview()}
       <FloatingFooter>
         <AixFooter style={styles.footer}>
           <Composer

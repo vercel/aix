@@ -19,6 +19,13 @@ export const Aix = forwardRef<AixRef, React.ComponentProps<typeof AixInternal>>(
     return (
       <AixInternal
         {...props}
+        scrollOnFooterSizeUpdate={
+          props.scrollOnFooterSizeUpdate ?? {
+            enabled: true,
+            scrolledToEndThreshold: 100,
+            animated: false,
+          }
+        }
         hybridRef={
           ref
             ? callback((r) => {
