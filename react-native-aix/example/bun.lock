@@ -5,6 +5,7 @@
       "name": "aix-example",
       "dependencies": {
         "@azure/core-asynciterator-polyfill": "^1.0.2",
+        "@babel/plugin-transform-export-namespace-from": "^7.27.1",
         "@legendapp/list": "^2.0.19",
         "@react-native-ai/apple": "^0.11.0",
         "@react-native/new-app-screen": "0.82.1",
