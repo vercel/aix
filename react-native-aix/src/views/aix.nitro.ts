@@ -10,7 +10,8 @@ export interface AixAdditionalContentInsets {
 }
 
 export interface AixAdditionalContentInsetsProp {
-  bottom: AixAdditionalContentInsets
+  top?: AixAdditionalContentInsets
+  bottom?: AixAdditionalContentInsets
 }
 
 export interface AixScrollIndicatorInsetValue {
@@ -23,25 +24,15 @@ export interface AixScrollIndicatorInsets {
   bottom?: AixScrollIndicatorInsetValue
 }
 
+export interface AixScrollOnFooterSizeUpdate {
+  enabled: boolean
+  scrolledToEndThreshold?: number
+  animated?: boolean
+}
+
 export interface AixProps extends HybridViewProps {
-  /**
-   * @default true
-   *
-   * Editing this prop is advanced and rare. In almost every case, instead of doing this, you should render an optimistic system message under the last user message.
-   *
-   * Even if you don't want to show optimistic UI for an assistant message, you can at least render an empty view for it.
-   *
-   * When `true`, the height of the penultimate cell will be subtracted from the blank size.
-   *
-   * It is intended to be true if you are always rendering an assistant message as your last message (including optimistically).
-   *
-   * By leaving it as `true`, you can also account for the user message above the last assistant message.
-   *
-   * Set it to `false` if you are rendering a user message as your last message at times, before the assistant message.
-   */
-  _shouldSubtractHeightOfPenultimateCellFromBlankSize?: boolean
   shouldStartAtEnd: boolean
-  scrollOnComposerSizeUpdate: boolean
+  scrollOnFooterSizeUpdate?: AixScrollOnFooterSizeUpdate
   /**
    * The number of pixels from the bottom of the scroll view to the end of the content that is considered "near the end".
    *
@@ -70,10 +61,10 @@ export interface AixProps extends HybridViewProps {
   additionalContentInsets?: AixAdditionalContentInsetsProp
 
   /**
-   * Insets for the scroll indicator.
+   * Additional insets for the scroll indicator, added to existing safe area insets.
    * Applied to verticalScrollIndicatorInsets on iOS.
    */
-  scrollIndicatorInsets?: AixScrollIndicatorInsets
+  additionalScrollIndicatorInsets?: AixScrollIndicatorInsets
 
   /**
    * The nativeID of the scroll view to use.

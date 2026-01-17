@@ -14,18 +14,16 @@ namespace margelo::nitro::aix {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
-      prototype.registerHybridGetter("_shouldSubtractHeightOfPenultimateCellFromBlankSize", &HybridAixSpec::get_shouldSubtractHeightOfPenultimateCellFromBlankSize);
-      prototype.registerHybridSetter("_shouldSubtractHeightOfPenultimateCellFromBlankSize", &HybridAixSpec::set_shouldSubtractHeightOfPenultimateCellFromBlankSize);
       prototype.registerHybridGetter("shouldStartAtEnd", &HybridAixSpec::getShouldStartAtEnd);
       prototype.registerHybridSetter("shouldStartAtEnd", &HybridAixSpec::setShouldStartAtEnd);
-      prototype.registerHybridGetter("scrollOnComposerSizeUpdate", &HybridAixSpec::getScrollOnComposerSizeUpdate);
-      prototype.registerHybridSetter("scrollOnComposerSizeUpdate", &HybridAixSpec::setScrollOnComposerSizeUpdate);
+      prototype.registerHybridGetter("scrollOnFooterSizeUpdate", &HybridAixSpec::getScrollOnFooterSizeUpdate);
+      prototype.registerHybridSetter("scrollOnFooterSizeUpdate", &HybridAixSpec::setScrollOnFooterSizeUpdate);
       prototype.registerHybridGetter("scrollEndReachedThreshold", &HybridAixSpec::getScrollEndReachedThreshold);
       prototype.registerHybridSetter("scrollEndReachedThreshold", &HybridAixSpec::setScrollEndReachedThreshold);
       prototype.registerHybridGetter("additionalContentInsets", &HybridAixSpec::getAdditionalContentInsets);
       prototype.registerHybridSetter("additionalContentInsets", &HybridAixSpec::setAdditionalContentInsets);
-      prototype.registerHybridGetter("scrollIndicatorInsets", &HybridAixSpec::getScrollIndicatorInsets);
-      prototype.registerHybridSetter("scrollIndicatorInsets", &HybridAixSpec::setScrollIndicatorInsets);
+      prototype.registerHybridGetter("additionalScrollIndicatorInsets", &HybridAixSpec::getAdditionalScrollIndicatorInsets);
+      prototype.registerHybridSetter("additionalScrollIndicatorInsets", &HybridAixSpec::setAdditionalScrollIndicatorInsets);
       prototype.registerHybridGetter("mainScrollViewID", &HybridAixSpec::getMainScrollViewID);
       prototype.registerHybridSetter("mainScrollViewID", &HybridAixSpec::setMainScrollViewID);
       prototype.registerHybridGetter("penultimateCellIndex", &HybridAixSpec::getPenultimateCellIndex);

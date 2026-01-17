@@ -52,6 +52,9 @@ class HybridAixComposer: HybridAixComposerSpec {
     
     /// Cached reference to the AixContext (found on first access)
     private weak var cachedAixContext: AixContext?
+
+    /// Last reported height (to avoid reporting unchanged heights)
+    private var lastReportedHeight: CGFloat = 0
     
     // MARK: - Initialization
     
@@ -100,9 +103,11 @@ class HybridAixComposer: HybridAixComposerSpec {
     
     /// Called when layoutSubviews fires (size may have changed)
     private func handleLayoutChange() {
-        // The context reads composerHeight from our view.bounds
-        // so it will automatically get the updated size
-        // We could add a callback here if needed for scroll updates
+        let currentHeight = view.bounds.height
+        if currentHeight != lastReportedHeight {
+            lastReportedHeight = currentHeight
+            getAixContext()?.reportComposerHeightChange(height: currentHeight)
+        }
     }
     
     // MARK: - Deinitialization

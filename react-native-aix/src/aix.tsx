@@ -14,33 +14,23 @@ const AixInternal = getHostComponent<AixProps, AixMethods>(
   () => AixConfig
 )
 
-type Without<T, K extends keyof T> = Omit<T, K>
-
-type Props = Without<
-  React.ComponentProps<typeof AixInternal>,
-  '_shouldSubtractHeightOfPenultimateCellFromBlankSize'
-> & {
-  shouldSubtractHeightOfPenultimateCellFromBlankSize?: boolean
-}
-
-export const Aix = forwardRef<AixRef, Props>(function Aix(props, ref) {
-  return (
-    <AixInternal
-      {...props}
-      _shouldSubtractHeightOfPenultimateCellFromBlankSize={
-        props.shouldSubtractHeightOfPenultimateCellFromBlankSize
-      }
-      hybridRef={
-        ref
-          ? callback((r) => {
-              if (typeof ref === 'function') {
-                ref(r)
-              } else {
-                ref.current = r
-              }
-            })
-          : undefined
-      }
-    />
-  )
-})
+export const Aix = forwardRef<AixRef, React.ComponentProps<typeof AixInternal>>(
+  function Aix(props, ref) {
+    return (
+      <AixInternal
+        {...props}
+        hybridRef={
+          ref
+            ? callback((r) => {
+                if (typeof ref === 'function') {
+                  ref(r)
+                } else {
+                  ref.current = r
+                }
+              })
+            : undefined
+        }
+      />
+    )
+  }
+)

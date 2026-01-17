@@ -16,6 +16,7 @@
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
 
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsets.hpp"
@@ -45,12 +46,11 @@ namespace margelo::nitro::aix::views {
                    const react::RawProps& rawProps);
 
   public:
-    CachedProp<std::optional<bool>> _shouldSubtractHeightOfPenultimateCellFromBlankSize;
     CachedProp<bool> shouldStartAtEnd;
-    CachedProp<bool> scrollOnComposerSizeUpdate;
+    CachedProp<std::optional<AixScrollOnFooterSizeUpdate>> scrollOnFooterSizeUpdate;
     CachedProp<std::optional<double>> scrollEndReachedThreshold;
     CachedProp<std::optional<AixAdditionalContentInsetsProp>> additionalContentInsets;
-    CachedProp<std::optional<AixScrollIndicatorInsets>> scrollIndicatorInsets;
+    CachedProp<std::optional<AixScrollIndicatorInsets>> additionalScrollIndicatorInsets;
     CachedProp<std::optional<std::string>> mainScrollViewID;
     CachedProp<std::optional<double>> penultimateCellIndex;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> hybridRef;

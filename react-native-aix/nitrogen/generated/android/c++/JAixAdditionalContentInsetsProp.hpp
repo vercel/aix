@@ -12,6 +12,7 @@
 
 #include "AixAdditionalContentInsets.hpp"
 #include "JAixAdditionalContentInsets.hpp"
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -32,10 +33,13 @@ namespace margelo::nitro::aix {
     [[nodiscard]]
     AixAdditionalContentInsetsProp toCpp() const {
       static const auto clazz = javaClassStatic();
+      static const auto fieldTop = clazz->getField<JAixAdditionalContentInsets>("top");
+      jni::local_ref<JAixAdditionalContentInsets> top = this->getFieldValue(fieldTop);
       static const auto fieldBottom = clazz->getField<JAixAdditionalContentInsets>("bottom");
       jni::local_ref<JAixAdditionalContentInsets> bottom = this->getFieldValue(fieldBottom);
       return AixAdditionalContentInsetsProp(
-        bottom->toCpp()
+        top != nullptr ? std::make_optional(top->toCpp()) : std::nullopt,
+        bottom != nullptr ? std::make_optional(bottom->toCpp()) : std::nullopt
       );
     }
 
@@ -45,12 +49,13 @@ namespace margelo::nitro::aix {
      */
     [[maybe_unused]]
     static jni::local_ref<JAixAdditionalContentInsetsProp::javaobject> fromCpp(const AixAdditionalContentInsetsProp& value) {
-      using JSignature = JAixAdditionalContentInsetsProp(jni::alias_ref<JAixAdditionalContentInsets>);
+      using JSignature = JAixAdditionalContentInsetsProp(jni::alias_ref<JAixAdditionalContentInsets>, jni::alias_ref<JAixAdditionalContentInsets>);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
         clazz,
-        JAixAdditionalContentInsets::fromCpp(value.bottom)
+        value.top.has_value() ? JAixAdditionalContentInsets::fromCpp(value.top.value()) : nullptr,
+        value.bottom.has_value() ? JAixAdditionalContentInsets::fromCpp(value.bottom.value()) : nullptr
       );
     }
   };

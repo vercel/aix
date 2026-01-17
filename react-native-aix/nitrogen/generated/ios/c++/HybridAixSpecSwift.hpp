@@ -12,6 +12,8 @@
 // Forward declaration of `HybridAixSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixSpec_cxx; }
 
+// Forward declaration of `AixScrollOnFooterSizeUpdate` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
 // Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
@@ -21,6 +23,7 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixAdditionalContentInsets.hpp"
@@ -68,24 +71,18 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    inline std::optional<bool> get_shouldSubtractHeightOfPenultimateCellFromBlankSize() noexcept override {
-      auto __result = _swiftPart.get_shouldSubtractHeightOfPenultimateCellFromBlankSize();
-      return __result;
-    }
-    inline void set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) noexcept override {
-      _swiftPart.set_shouldSubtractHeightOfPenultimateCellFromBlankSize(_shouldSubtractHeightOfPenultimateCellFromBlankSize);
-    }
     inline bool getShouldStartAtEnd() noexcept override {
       return _swiftPart.getShouldStartAtEnd();
     }
     inline void setShouldStartAtEnd(bool shouldStartAtEnd) noexcept override {
       _swiftPart.setShouldStartAtEnd(std::forward<decltype(shouldStartAtEnd)>(shouldStartAtEnd));
     }
-    inline bool getScrollOnComposerSizeUpdate() noexcept override {
-      return _swiftPart.getScrollOnComposerSizeUpdate();
+    inline std::optional<AixScrollOnFooterSizeUpdate> getScrollOnFooterSizeUpdate() noexcept override {
+      auto __result = _swiftPart.getScrollOnFooterSizeUpdate();
+      return __result;
     }
-    inline void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) noexcept override {
-      _swiftPart.setScrollOnComposerSizeUpdate(std::forward<decltype(scrollOnComposerSizeUpdate)>(scrollOnComposerSizeUpdate));
+    inline void setScrollOnFooterSizeUpdate(const std::optional<AixScrollOnFooterSizeUpdate>& scrollOnFooterSizeUpdate) noexcept override {
+      _swiftPart.setScrollOnFooterSizeUpdate(scrollOnFooterSizeUpdate);
     }
     inline std::optional<double> getScrollEndReachedThreshold() noexcept override {
       auto __result = _swiftPart.getScrollEndReachedThreshold();
@@ -101,12 +98,12 @@ namespace margelo::nitro::aix {
     inline void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) noexcept override {
       _swiftPart.setAdditionalContentInsets(additionalContentInsets);
     }
-    inline std::optional<AixScrollIndicatorInsets> getScrollIndicatorInsets() noexcept override {
-      auto __result = _swiftPart.getScrollIndicatorInsets();
+    inline std::optional<AixScrollIndicatorInsets> getAdditionalScrollIndicatorInsets() noexcept override {
+      auto __result = _swiftPart.getAdditionalScrollIndicatorInsets();
       return __result;
     }
-    inline void setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) noexcept override {
-      _swiftPart.setScrollIndicatorInsets(scrollIndicatorInsets);
+    inline void setAdditionalScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& additionalScrollIndicatorInsets) noexcept override {
+      _swiftPart.setAdditionalScrollIndicatorInsets(additionalScrollIndicatorInsets);
     }
     inline std::optional<std::string> getMainScrollViewID() noexcept override {
       auto __result = _swiftPart.getMainScrollViewID();

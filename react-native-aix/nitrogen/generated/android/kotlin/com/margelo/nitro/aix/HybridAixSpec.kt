@@ -46,19 +46,13 @@ abstract class HybridAixSpec: HybridView() {
   @get:Keep
   @set:DoNotStrip
   @set:Keep
-  abstract var _shouldSubtractHeightOfPenultimateCellFromBlankSize: Boolean?
-  
-  @get:DoNotStrip
-  @get:Keep
-  @set:DoNotStrip
-  @set:Keep
   abstract var shouldStartAtEnd: Boolean
   
   @get:DoNotStrip
   @get:Keep
   @set:DoNotStrip
   @set:Keep
-  abstract var scrollOnComposerSizeUpdate: Boolean
+  abstract var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate?
   
   @get:DoNotStrip
   @get:Keep
@@ -76,7 +70,7 @@ abstract class HybridAixSpec: HybridView() {
   @get:Keep
   @set:DoNotStrip
   @set:Keep
-  abstract var scrollIndicatorInsets: AixScrollIndicatorInsets?
+  abstract var additionalScrollIndicatorInsets: AixScrollIndicatorInsets?
   
   @get:DoNotStrip
   @get:Keep

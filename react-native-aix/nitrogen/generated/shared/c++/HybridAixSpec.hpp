@@ -13,11 +13,14 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `AixScrollOnFooterSizeUpdate` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
 // Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsets.hpp"
@@ -50,18 +53,16 @@ namespace margelo::nitro::aix {
 
     public:
       // Properties
-      virtual std::optional<bool> get_shouldSubtractHeightOfPenultimateCellFromBlankSize() = 0;
-      virtual void set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) = 0;
       virtual bool getShouldStartAtEnd() = 0;
       virtual void setShouldStartAtEnd(bool shouldStartAtEnd) = 0;
-      virtual bool getScrollOnComposerSizeUpdate() = 0;
-      virtual void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) = 0;
+      virtual std::optional<AixScrollOnFooterSizeUpdate> getScrollOnFooterSizeUpdate() = 0;
+      virtual void setScrollOnFooterSizeUpdate(const std::optional<AixScrollOnFooterSizeUpdate>& scrollOnFooterSizeUpdate) = 0;
       virtual std::optional<double> getScrollEndReachedThreshold() = 0;
       virtual void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) = 0;
       virtual std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() = 0;
       virtual void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) = 0;
-      virtual std::optional<AixScrollIndicatorInsets> getScrollIndicatorInsets() = 0;
-      virtual void setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) = 0;
+      virtual std::optional<AixScrollIndicatorInsets> getAdditionalScrollIndicatorInsets() = 0;
+      virtual void setAdditionalScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& additionalScrollIndicatorInsets) = 0;
       virtual std::optional<std::string> getMainScrollViewID() = 0;
       virtual void setMainScrollViewID(const std::optional<std::string>& mainScrollViewID) = 0;
       virtual std::optional<double> getPenultimateCellIndex() = 0;

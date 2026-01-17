@@ -11,12 +11,11 @@ import NitroModules
 /// See ``HybridAixSpec``
 public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Properties
-  var _shouldSubtractHeightOfPenultimateCellFromBlankSize: Bool? { get set }
   var shouldStartAtEnd: Bool { get set }
-  var scrollOnComposerSizeUpdate: Bool { get set }
+  var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate? { get set }
   var scrollEndReachedThreshold: Double? { get set }
   var additionalContentInsets: AixAdditionalContentInsetsProp? { get set }
-  var scrollIndicatorInsets: AixScrollIndicatorInsets? { get set }
+  var additionalScrollIndicatorInsets: AixScrollIndicatorInsets? { get set }
   var mainScrollViewID: String? { get set }
   var penultimateCellIndex: Double? { get set }
 

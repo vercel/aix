@@ -7,6 +7,8 @@
 
 #include "JHybridAixSpec.hpp"
 
+// Forward declaration of `AixScrollOnFooterSizeUpdate` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
 // Forward declaration of `AixAdditionalContentInsetsProp` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
@@ -16,7 +18,9 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
+#include "JAixScrollOnFooterSizeUpdate.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "JAixAdditionalContentInsetsProp.hpp"
 #include "AixAdditionalContentInsets.hpp"
@@ -56,15 +60,6 @@ namespace margelo::nitro::aix {
   }
 
   // Properties
-  std::optional<bool> JHybridAixSpec::get_shouldSubtractHeightOfPenultimateCellFromBlankSize() {
-    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JBoolean>()>("get_shouldSubtractHeightOfPenultimateCellFromBlankSize");
-    auto __result = method(_javaPart);
-    return __result != nullptr ? std::make_optional(static_cast<bool>(__result->value())) : std::nullopt;
-  }
-  void JHybridAixSpec::set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) {
-    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* _shouldSubtractHeightOfPenultimateCellFromBlankSize */)>("set_shouldSubtractHeightOfPenultimateCellFromBlankSize");
-    method(_javaPart, _shouldSubtractHeightOfPenultimateCellFromBlankSize.has_value() ? jni::JBoolean::valueOf(_shouldSubtractHeightOfPenultimateCellFromBlankSize.value()) : nullptr);
-  }
   bool JHybridAixSpec::getShouldStartAtEnd() {
     static const auto method = javaClassStatic()->getMethod<jboolean()>("getShouldStartAtEnd");
     auto __result = method(_javaPart);
@@ -74,14 +69,14 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jboolean /* shouldStartAtEnd */)>("setShouldStartAtEnd");
     method(_javaPart, shouldStartAtEnd);
   }
-  bool JHybridAixSpec::getScrollOnComposerSizeUpdate() {
-    static const auto method = javaClassStatic()->getMethod<jboolean()>("getScrollOnComposerSizeUpdate");
+  std::optional<AixScrollOnFooterSizeUpdate> JHybridAixSpec::getScrollOnFooterSizeUpdate() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixScrollOnFooterSizeUpdate>()>("getScrollOnFooterSizeUpdate");
     auto __result = method(_javaPart);
-    return static_cast<bool>(__result);
+    return __result != nullptr ? std::make_optional(__result->toCpp()) : std::nullopt;
   }
-  void JHybridAixSpec::setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) {
-    static const auto method = javaClassStatic()->getMethod<void(jboolean /* scrollOnComposerSizeUpdate */)>("setScrollOnComposerSizeUpdate");
-    method(_javaPart, scrollOnComposerSizeUpdate);
+  void JHybridAixSpec::setScrollOnFooterSizeUpdate(const std::optional<AixScrollOnFooterSizeUpdate>& scrollOnFooterSizeUpdate) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixScrollOnFooterSizeUpdate> /* scrollOnFooterSizeUpdate */)>("setScrollOnFooterSizeUpdate");
+    method(_javaPart, scrollOnFooterSizeUpdate.has_value() ? JAixScrollOnFooterSizeUpdate::fromCpp(scrollOnFooterSizeUpdate.value()) : nullptr);
   }
   std::optional<double> JHybridAixSpec::getScrollEndReachedThreshold() {
     static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JDouble>()>("getScrollEndReachedThreshold");
@@ -101,14 +96,14 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixAdditionalContentInsetsProp> /* additionalContentInsets */)>("setAdditionalContentInsets");
     method(_javaPart, additionalContentInsets.has_value() ? JAixAdditionalContentInsetsProp::fromCpp(additionalContentInsets.value()) : nullptr);
   }
-  std::optional<AixScrollIndicatorInsets> JHybridAixSpec::getScrollIndicatorInsets() {
-    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixScrollIndicatorInsets>()>("getScrollIndicatorInsets");
+  std::optional<AixScrollIndicatorInsets> JHybridAixSpec::getAdditionalScrollIndicatorInsets() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixScrollIndicatorInsets>()>("getAdditionalScrollIndicatorInsets");
     auto __result = method(_javaPart);
     return __result != nullptr ? std::make_optional(__result->toCpp()) : std::nullopt;
   }
-  void JHybridAixSpec::setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) {
-    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixScrollIndicatorInsets> /* scrollIndicatorInsets */)>("setScrollIndicatorInsets");
-    method(_javaPart, scrollIndicatorInsets.has_value() ? JAixScrollIndicatorInsets::fromCpp(scrollIndicatorInsets.value()) : nullptr);
+  void JHybridAixSpec::setAdditionalScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& additionalScrollIndicatorInsets) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixScrollIndicatorInsets> /* additionalScrollIndicatorInsets */)>("setAdditionalScrollIndicatorInsets");
+    method(_javaPart, additionalScrollIndicatorInsets.has_value() ? JAixScrollIndicatorInsets::fromCpp(additionalScrollIndicatorInsets.value()) : nullptr);
   }
   std::optional<std::string> JHybridAixSpec::getMainScrollViewID() {
     static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("getMainScrollViewID");

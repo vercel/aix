@@ -50,18 +50,16 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    std::optional<bool> get_shouldSubtractHeightOfPenultimateCellFromBlankSize() override;
-    void set_shouldSubtractHeightOfPenultimateCellFromBlankSize(std::optional<bool> _shouldSubtractHeightOfPenultimateCellFromBlankSize) override;
     bool getShouldStartAtEnd() override;
     void setShouldStartAtEnd(bool shouldStartAtEnd) override;
-    bool getScrollOnComposerSizeUpdate() override;
-    void setScrollOnComposerSizeUpdate(bool scrollOnComposerSizeUpdate) override;
+    std::optional<AixScrollOnFooterSizeUpdate> getScrollOnFooterSizeUpdate() override;
+    void setScrollOnFooterSizeUpdate(const std::optional<AixScrollOnFooterSizeUpdate>& scrollOnFooterSizeUpdate) override;
     std::optional<double> getScrollEndReachedThreshold() override;
     void setScrollEndReachedThreshold(std::optional<double> scrollEndReachedThreshold) override;
     std::optional<AixAdditionalContentInsetsProp> getAdditionalContentInsets() override;
     void setAdditionalContentInsets(const std::optional<AixAdditionalContentInsetsProp>& additionalContentInsets) override;
-    std::optional<AixScrollIndicatorInsets> getScrollIndicatorInsets() override;
-    void setScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& scrollIndicatorInsets) override;
+    std::optional<AixScrollIndicatorInsets> getAdditionalScrollIndicatorInsets() override;
+    void setAdditionalScrollIndicatorInsets(const std::optional<AixScrollIndicatorInsets>& additionalScrollIndicatorInsets) override;
     std::optional<std::string> getMainScrollViewID() override;
     void setMainScrollViewID(const std::optional<std::string>& mainScrollViewID) override;
     std::optional<double> getPenultimateCellIndex() override;

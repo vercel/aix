@@ -4,12 +4,11 @@
   "bubblingEventTypes": {},
   "directEventTypes": {},
   "validAttributes": {
-    "_shouldSubtractHeightOfPenultimateCellFromBlankSize": true,
     "shouldStartAtEnd": true,
-    "scrollOnComposerSizeUpdate": true,
+    "scrollOnFooterSizeUpdate": true,
     "scrollEndReachedThreshold": true,
     "additionalContentInsets": true,
-    "scrollIndicatorInsets": true,
+    "additionalScrollIndicatorInsets": true,
     "mainScrollViewID": true,
     "penultimateCellIndex": true,
     "hybridRef": true

@@ -114,30 +114,6 @@ open class HybridAixSpec_cxx {
   }
 
   // Properties
-  public final var _shouldSubtractHeightOfPenultimateCellFromBlankSize: bridge.std__optional_bool_ {
-    @inline(__always)
-    get {
-      return { () -> bridge.std__optional_bool_ in
-        if let __unwrappedValue = self.__implementation._shouldSubtractHeightOfPenultimateCellFromBlankSize {
-          return bridge.create_std__optional_bool_(__unwrappedValue)
-        } else {
-          return .init()
-        }
-      }()
-    }
-    @inline(__always)
-    set {
-      self.__implementation._shouldSubtractHeightOfPenultimateCellFromBlankSize = { () -> Bool? in
-        if bridge.has_value_std__optional_bool_(newValue) {
-          let __unwrapped = bridge.get_std__optional_bool_(newValue)
-          return __unwrapped
-        } else {
-          return nil
-        }
-      }()
-    }
-  }
-  
   public final var shouldStartAtEnd: Bool {
     @inline(__always)
     get {
@@ -149,14 +125,20 @@ open class HybridAixSpec_cxx {
     }
   }
   
-  public final var scrollOnComposerSizeUpdate: Bool {
+  public final var scrollOnFooterSizeUpdate: bridge.std__optional_AixScrollOnFooterSizeUpdate_ {
     @inline(__always)
     get {
-      return self.__implementation.scrollOnComposerSizeUpdate
+      return { () -> bridge.std__optional_AixScrollOnFooterSizeUpdate_ in
+        if let __unwrappedValue = self.__implementation.scrollOnFooterSizeUpdate {
+          return bridge.create_std__optional_AixScrollOnFooterSizeUpdate_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
     @inline(__always)
     set {
-      self.__implementation.scrollOnComposerSizeUpdate = newValue
+      self.__implementation.scrollOnFooterSizeUpdate = newValue.value
     }
   }
   
@@ -194,11 +176,11 @@ open class HybridAixSpec_cxx {
     }
   }
   
-  public final var scrollIndicatorInsets: bridge.std__optional_AixScrollIndicatorInsets_ {
+  public final var additionalScrollIndicatorInsets: bridge.std__optional_AixScrollIndicatorInsets_ {
     @inline(__always)
     get {
       return { () -> bridge.std__optional_AixScrollIndicatorInsets_ in
-        if let __unwrappedValue = self.__implementation.scrollIndicatorInsets {
+        if let __unwrappedValue = self.__implementation.additionalScrollIndicatorInsets {
           return bridge.create_std__optional_AixScrollIndicatorInsets_(__unwrappedValue)
         } else {
           return .init()
@@ -207,7 +189,7 @@ open class HybridAixSpec_cxx {
     }
     @inline(__always)
     set {
-      self.__implementation.scrollIndicatorInsets = newValue.value
+      self.__implementation.additionalScrollIndicatorInsets = newValue.value
     }
   }
   

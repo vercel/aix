@@ -27,6 +27,7 @@
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 
 #include "AixAdditionalContentInsets.hpp"
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -35,11 +36,12 @@ namespace margelo::nitro::aix {
    */
   struct AixAdditionalContentInsetsProp {
   public:
-    AixAdditionalContentInsets bottom     SWIFT_PRIVATE;
+    std::optional<AixAdditionalContentInsets> top     SWIFT_PRIVATE;
+    std::optional<AixAdditionalContentInsets> bottom     SWIFT_PRIVATE;
 
   public:
     AixAdditionalContentInsetsProp() = default;
-    explicit AixAdditionalContentInsetsProp(AixAdditionalContentInsets bottom): bottom(bottom) {}
+    explicit AixAdditionalContentInsetsProp(std::optional<AixAdditionalContentInsets> top, std::optional<AixAdditionalContentInsets> bottom): top(top), bottom(bottom) {}
   };
 
 } // namespace margelo::nitro::aix
@@ -52,12 +54,14 @@ namespace margelo::nitro {
     static inline margelo::nitro::aix::AixAdditionalContentInsetsProp fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::aix::AixAdditionalContentInsetsProp(
-        JSIConverter<margelo::nitro::aix::AixAdditionalContentInsets>::fromJSI(runtime, obj.getProperty(runtime, "bottom"))
+        JSIConverter<std::optional<margelo::nitro::aix::AixAdditionalContentInsets>>::fromJSI(runtime, obj.getProperty(runtime, "top")),
+        JSIConverter<std::optional<margelo::nitro::aix::AixAdditionalContentInsets>>::fromJSI(runtime, obj.getProperty(runtime, "bottom"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::aix::AixAdditionalContentInsetsProp& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "bottom", JSIConverter<margelo::nitro::aix::AixAdditionalContentInsets>::toJSI(runtime, arg.bottom));
+      obj.setProperty(runtime, "top", JSIConverter<std::optional<margelo::nitro::aix::AixAdditionalContentInsets>>::toJSI(runtime, arg.top));
+      obj.setProperty(runtime, "bottom", JSIConverter<std::optional<margelo::nitro::aix::AixAdditionalContentInsets>>::toJSI(runtime, arg.bottom));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -68,7 +72,8 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<margelo::nitro::aix::AixAdditionalContentInsets>::canConvert(runtime, obj.getProperty(runtime, "bottom"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::aix::AixAdditionalContentInsets>>::canConvert(runtime, obj.getProperty(runtime, "top"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::aix::AixAdditionalContentInsets>>::canConvert(runtime, obj.getProperty(runtime, "bottom"))) return false;
       return true;
     }
   };
