@@ -18,7 +18,7 @@ import {
   AixFooter,
   useAixRef,
   TextFadeInStaggeredIfStreaming,
-} from 'react-native-aix';
+} from 'aix';
 import { useAppleChat, useMessages } from './src/apple';
 import {
   KeyboardProvider,

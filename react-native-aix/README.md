@@ -1,10 +1,10 @@
-# react-native-aix
+# aix
 
-react-native-aix is a react native package built with Nitro
+aix is a react native package built with Nitro
 
-[![Version](https://img.shields.io/npm/v/react-native-aix.svg)](https://www.npmjs.com/package/react-native-aix)
-[![Downloads](https://img.shields.io/npm/dm/react-native-aix.svg)](https://www.npmjs.com/package/react-native-aix)
-[![License](https://img.shields.io/npm/l/react-native-aix.svg)](https://github.com/patrickkabwe/react-native-aix/LICENSE)
+[![Version](https://img.shields.io/npm/v/aix.svg)](https://www.npmjs.com/package/aix)
+[![Downloads](https://img.shields.io/npm/dm/aix.svg)](https://www.npmjs.com/package/aix)
+[![License](https://img.shields.io/npm/l/aix.svg)](https://github.com/patrickkabwe/aix/LICENSE)
 
 ## Requirements
 
@@ -17,7 +17,7 @@ react-native-aix is a react native package built with Nitro
 ## Installation
 
 ```bash
-bun add react-native-aix react-native-nitro-modules
+bun add aix react-native-nitro-modules
 ```
 
 ## Credits

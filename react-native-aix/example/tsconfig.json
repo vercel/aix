@@ -5,7 +5,7 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "react-native-aix": ["../src"]
+      "aix": ["../src"]
     }
   }
 }

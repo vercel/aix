@@ -113,7 +113,7 @@ const defaultMessages: UIMessage[] = [
   },
   {
     role: 'user',
-    content: 'How can I use Turbopack in React Native?',
+    content: 'How can I use the new TurboModules in React Native?',
   },
   {
     role: 'assistant',
