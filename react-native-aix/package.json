@@ -1,8 +1,11 @@
 {
   "name": "aix",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.1",
   "author": "Fernando Rojo",
-  "repository": "https://github.com/vercel/aix.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel/aix.git"
+  },
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "devDependencies": {
