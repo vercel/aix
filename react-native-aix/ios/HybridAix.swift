@@ -30,18 +30,12 @@ protocol AixContext: AnyObject {
     
     /// Register the composer view
     func registerComposerView(_ composerView: HybridAixComposer)
-<<<<<<< HEAD
 
     /// Unregister the composer view
     func unregisterComposerView(_ composerView: HybridAixComposer)
 
     /// Called when the composer's height changes
     func reportComposerHeightChange(height: CGFloat)
-=======
-    
-    /// Unregister the composer view
-    func unregisterComposerView(_ composerView: HybridAixComposer)
->>>>>>> e1f4b6081b44dde75cebf1c5e876c6c02fd5a7ef
 }
 
 extension UIView {
