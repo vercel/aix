@@ -89,10 +89,11 @@ function Chat({ children }: { children: React.ReactNode }) {
     ),
     scrollview: () => (
       <ScrollView {...examples.scrollProps}>
-        {messages.map(message => (
+        {messages.map((message, index) => (
           <CellRenderer
             index={messages.indexOf(message)}
             isLast={messages.indexOf(message) === messages.length - 1}
+            key={index}
           >
             {renderItem(message, messages.indexOf(message))}
           </CellRenderer>
@@ -218,13 +219,13 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
             styles.button,
             inputValue.length === 0
               ? {
-                  backgroundColor: PlatformColor('systemGray6'),
-                  borderColor: PlatformColor('systemGray5'),
-                }
+                backgroundColor: PlatformColor('systemGray6'),
+                borderColor: PlatformColor('systemGray5'),
+              }
               : {
-                  backgroundColor: PlatformColor('systemGray3'),
-                  borderColor: PlatformColor('separator'),
-                },
+                backgroundColor: PlatformColor('systemGray3'),
+                borderColor: PlatformColor('separator'),
+              },
           ]}
           onPress={async () => {
             setInputValue('');
