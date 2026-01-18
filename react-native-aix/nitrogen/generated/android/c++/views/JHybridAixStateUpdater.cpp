@@ -64,6 +64,14 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setPenultimateCellIndex(props.penultimateCellIndex.value);
     // TODO: Set isDirty = false
   }
+  if (props.shouldApplyContentInsets.isDirty) {
+    view->setShouldApplyContentInsets(props.shouldApplyContentInsets.value);
+    // TODO: Set isDirty = false
+  }
+  if (props.onWillApplyContentInsets.isDirty) {
+    view->setOnWillApplyContentInsets(props.onWillApplyContentInsets.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

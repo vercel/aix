@@ -106,6 +106,16 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setPenultimateCellIndex(newViewProps.penultimateCellIndex.value);
     newViewProps.penultimateCellIndex.isDirty = false;
   }
+  // shouldApplyContentInsets: optional
+  if (newViewProps.shouldApplyContentInsets.isDirty) {
+    swiftPart.setShouldApplyContentInsets(newViewProps.shouldApplyContentInsets.value);
+    newViewProps.shouldApplyContentInsets.isDirty = false;
+  }
+  // onWillApplyContentInsets: optional
+  if (newViewProps.onWillApplyContentInsets.isDirty) {
+    swiftPart.setOnWillApplyContentInsets(newViewProps.onWillApplyContentInsets.value);
+    newViewProps.onWillApplyContentInsets.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 

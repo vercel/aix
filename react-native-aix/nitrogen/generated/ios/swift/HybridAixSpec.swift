@@ -18,6 +18,8 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var additionalScrollIndicatorInsets: AixScrollIndicatorInsets? { get set }
   var mainScrollViewID: String? { get set }
   var penultimateCellIndex: Double? { get set }
+  var shouldApplyContentInsets: Bool? { get set }
+  var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? { get set }
 
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void

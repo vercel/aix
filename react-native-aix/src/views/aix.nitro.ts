@@ -45,6 +45,13 @@ export interface AixScrollOnFooterSizeUpdate {
   animated?: boolean
 }
 
+export interface AixContentInsets {
+  top: number
+  left: number
+  bottom: number
+  right: number
+}
+
 export interface AixProps extends HybridViewProps {
   shouldStartAtEnd: boolean
   /**
@@ -111,6 +118,9 @@ export interface AixProps extends HybridViewProps {
    *
    */
   penultimateCellIndex?: number
+
+  shouldApplyContentInsets?: boolean
+  onWillApplyContentInsets?: (insets: AixContentInsets) => void
 }
 
 export interface AixMethods extends HybridViewMethods {

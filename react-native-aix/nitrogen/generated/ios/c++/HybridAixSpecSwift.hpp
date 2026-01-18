@@ -22,6 +22,8 @@ namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
+// Forward declaration of `AixContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixContentInsets; }
 
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
@@ -30,6 +32,8 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 #include "AixScrollIndicatorInsets.hpp"
 #include "AixScrollIndicatorInsetValue.hpp"
 #include <string>
+#include "AixContentInsets.hpp"
+#include <functional>
 
 #include "Aix-Swift-Cxx-Umbrella.hpp"
 
@@ -118,6 +122,20 @@ namespace margelo::nitro::aix {
     }
     inline void setPenultimateCellIndex(std::optional<double> penultimateCellIndex) noexcept override {
       _swiftPart.setPenultimateCellIndex(penultimateCellIndex);
+    }
+    inline std::optional<bool> getShouldApplyContentInsets() noexcept override {
+      auto __result = _swiftPart.getShouldApplyContentInsets();
+      return __result;
+    }
+    inline void setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) noexcept override {
+      _swiftPart.setShouldApplyContentInsets(shouldApplyContentInsets);
+    }
+    inline std::optional<std::function<void(const AixContentInsets& /* insets */)>> getOnWillApplyContentInsets() noexcept override {
+      auto __result = _swiftPart.getOnWillApplyContentInsets();
+      return __result;
+    }
+    inline void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) noexcept override {
+      _swiftPart.setOnWillApplyContentInsets(onWillApplyContentInsets);
     }
 
   public:
