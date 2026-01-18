@@ -9,9 +9,33 @@ import {
   Text,
   Keyboard,
   Pressable,
-  PlatformColor,
+  Platform,
   useColorScheme,
 } from 'react-native';
+
+// Cross-platform color helper - iOS uses system colors, Android uses fallbacks
+const colors = {
+  label: Platform.select({ ios: 'label', default: '#000000' }),
+  placeholderText: Platform.select({ ios: 'placeholderText', default: '#8E8E93' }),
+  separator: Platform.select({ ios: 'separator', default: '#C6C6C8' }),
+  systemBackground: Platform.select({ ios: 'systemBackground', default: '#FFFFFF' }),
+  secondarySystemBackground: Platform.select({ ios: 'secondarySystemBackground', default: '#F2F2F7' }),
+  systemGray3: Platform.select({ ios: 'systemGray3', default: '#C7C7CC' }),
+  systemGray5: Platform.select({ ios: 'systemGray5', default: '#E5E5EA' }),
+  systemGray6: Platform.select({ ios: 'systemGray6', default: '#F2F2F7' }),
+} as const;
+
+// Dark mode variants
+const darkColors = {
+  label: Platform.select({ ios: 'label', default: '#FFFFFF' }),
+  placeholderText: Platform.select({ ios: 'placeholderText', default: '#8E8E93' }),
+  separator: Platform.select({ ios: 'separator', default: '#38383A' }),
+  systemBackground: Platform.select({ ios: 'systemBackground', default: '#000000' }),
+  secondarySystemBackground: Platform.select({ ios: 'secondarySystemBackground', default: '#1C1C1E' }),
+  systemGray3: Platform.select({ ios: 'systemGray3', default: '#48484A' }),
+  systemGray5: Platform.select({ ios: 'systemGray5', default: '#2C2C2E' }),
+  systemGray6: Platform.select({ ios: 'systemGray6', default: '#1C1C1E' }),
+} as const;
 import {
   Aix,
   AixCell,
@@ -89,10 +113,11 @@ function Chat({ children }: { children: React.ReactNode }) {
     ),
     scrollview: () => (
       <ScrollView {...examples.scrollProps}>
-        {messages.map(message => (
+        {messages.map((message, i) => (
           <CellRenderer
             index={messages.indexOf(message)}
             isLast={messages.indexOf(message) === messages.length - 1}
+            key={i}
           >
             {renderItem(message, messages.indexOf(message))}
           </CellRenderer>
@@ -170,13 +195,21 @@ function FloatingFooter({ children }: { children: React.ReactNode }) {
   );
 }
 
+function Header() {
+  const colorScheme = useColorScheme();
+  const c = colorScheme === 'dark' ? darkColors : colors;
+  return (
+    <View style={[styles.header, { backgroundColor: c.systemBackground, borderBottomColor: c.separator }]}>
+      <Text style={[styles.headerText, { color: c.label }]}>Chat</Text>
+    </View>
+  );
+}
+
 function App() {
   return (
     <KeyboardProvider>
       <Chat>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Chat</Text>
-        </View>
+        <Header />
       </Chat>
     </KeyboardProvider>
   );
@@ -184,6 +217,8 @@ function App() {
 
 function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const c = isDark ? darkColors : colors;
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<TextInput>(null);
   return (
@@ -192,10 +227,9 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
         style={[
           styles.footerBackground,
           {
-            experimental_backgroundImage:
-              colorScheme === 'dark'
-                ? `linear-gradient(to bottom, #00000000, #000000)`
-                : `linear-gradient(to bottom, #ffffff00, #ffffff)`,
+            experimental_backgroundImage: isDark
+              ? `linear-gradient(to bottom, #00000000, #000000)`
+              : `linear-gradient(to bottom, #ffffff00, #ffffff)`,
           },
         ]}
       />
@@ -203,8 +237,8 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
         <View style={{ flex: 1, justifyContent: 'center' }}>
           <TextInput
             onChangeText={setInputValue}
-            style={[styles.input]}
-            placeholderTextColor={PlatformColor('placeholderText')}
+            style={[styles.input, { color: c.label, backgroundColor: c.systemBackground, borderColor: c.separator }]}
+            placeholderTextColor={c.placeholderText}
             placeholder="Type something..."
             ref={inputRef}
             multiline
@@ -218,12 +252,12 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
             styles.button,
             inputValue.length === 0
               ? {
-                  backgroundColor: PlatformColor('systemGray6'),
-                  borderColor: PlatformColor('systemGray5'),
+                  backgroundColor: c.systemGray6,
+                  borderColor: c.systemGray5,
                 }
               : {
-                  backgroundColor: PlatformColor('systemGray3'),
-                  borderColor: PlatformColor('separator'),
+                  backgroundColor: c.systemGray3,
+                  borderColor: c.separator,
                 },
           ]}
           onPress={async () => {
@@ -234,7 +268,7 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
             });
           }}
         >
-          <Text style={styles.buttonText}>↑</Text>
+          <Text style={[styles.buttonText, { color: c.label }]}>↑</Text>
         </Pressable>
       </View>
     </>
@@ -242,9 +276,11 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
 }
 
 function UserMessage({ content }: { content: string }) {
+  const colorScheme = useColorScheme();
+  const c = colorScheme === 'dark' ? darkColors : colors;
   return (
-    <View style={styles.userMessage}>
-      <Text style={[styles.text]}>{content}</Text>
+    <View style={[styles.userMessage, { backgroundColor: c.secondarySystemBackground }]}>
+      <Text style={[styles.text, { color: c.label }]}>{content}</Text>
     </View>
   );
 }
@@ -256,12 +292,14 @@ function AssistantMessage({
   content: string;
   shouldAnimate: boolean;
 }) {
+  const colorScheme = useColorScheme();
+  const c = colorScheme === 'dark' ? darkColors : colors;
   return (
     <View>
       <Text
         style={[
           styles.text,
-          { paddingHorizontal: gap(4), paddingVertical: gap(2) },
+          { paddingHorizontal: gap(4), paddingVertical: gap(2), color: c.label },
         ]}
       >
         <TextFadeInStaggeredIfStreaming disabled={!shouldAnimate}>
@@ -294,7 +332,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize,
     lineHeight: lineHeight(fontSize),
-    color: PlatformColor('label'),
   },
   footerRow: {
     alignItems: 'flex-end',
@@ -304,17 +341,13 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize,
-    color: PlatformColor('label'),
-    backgroundColor: PlatformColor('systemBackground'),
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
     paddingVertical: (44 - lineHeight(fontSize)) / 2,
     borderRadius: 24,
     borderCurve: 'continuous',
     paddingHorizontal: gap(4),
   },
   userMessage: {
-    backgroundColor: PlatformColor('secondarySystemBackground'),
     paddingHorizontal: gap(4),
     paddingVertical: gap(2),
     borderRadius: 20,
@@ -337,12 +370,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 24,
-    backgroundColor: PlatformColor('systemGray8'),
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
   },
   buttonText: {
-    color: PlatformColor('label'),
     fontSize: 20,
     fontWeight: '500',
   },
@@ -358,14 +388,11 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: PlatformColor('systemBackground'),
     borderBottomWidth: 1,
-    borderBottomColor: PlatformColor('separator'),
   },
   headerText: {
     fontSize: 18,
     fontWeight: '600',
-    color: PlatformColor('label'),
   },
 });
 

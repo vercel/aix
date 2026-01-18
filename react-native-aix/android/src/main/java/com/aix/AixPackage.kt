@@ -1,29 +1,31 @@
-package com.aix;
+package com.aix
 
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.module.model.ReactModuleInfoProvider;
-import com.facebook.react.TurboReactPackage;
-import com.facebook.react.uimanager.ViewManager;
-import com.margelo.nitro.aix.*;
-import com.margelo.nitro.aix.views.*;
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.model.ReactModuleInfoProvider
+import com.facebook.react.TurboReactPackage
+import com.facebook.react.uimanager.ViewManager
+import com.margelo.nitro.aix.AixOnLoad
 
+class AixPackage : TurboReactPackage() {
+    override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? = null
 
-public class AixPackage : TurboReactPackage() {
-  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? = null
+    override fun getReactModuleInfoProvider(): ReactModuleInfoProvider = ReactModuleInfoProvider { emptyMap() }
 
-  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider = ReactModuleInfoProvider { emptyMap() }
-  
-  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-    val viewManagers = ArrayList<ViewManager<*, *>>()
-    viewManagers.add(HybridAixManager())
-    return viewManagers
-  }
-
-  companion object {
-    init {
-      AixOnLoad.initializeNative()
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+        // Use custom ViewGroupManager implementations instead of generated SimpleViewManager ones
+        // This allows the views to have children from React Native
+        return listOf(
+            AixViewManager(),
+            AixCellViewManager(),
+            AixComposerViewManager()
+        )
     }
-  }
+
+    companion object {
+        init {
+            AixOnLoad.initializeNative()
+        }
+    }
 }
 
