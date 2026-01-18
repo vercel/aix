@@ -400,6 +400,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             bottom: Double(targetBottom),
             right: nil
         )
+
+        print("[aix] applyContentInset \(targetBottom)")
         
         // If shouldApplyContentInsets is explicitly false, call callback and return
         if shouldApplyContentInsets == false {

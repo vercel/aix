@@ -1,6 +1,7 @@
 import './src/polyfill';
 
-import React, { useRef, useState } from 'react';
+import React, {
+  useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -28,6 +29,7 @@ import {
 import Animated, {
   interpolate,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   useAnimatedProps,
 } from 'react-native-reanimated';
@@ -71,14 +73,16 @@ function Chat({ children }: { children: React.ReactNode }) {
     bottomInset.set(insets.bottom ?? null);
   });
 
-  // Apply content insets via animated props on the ScrollView
+  const contentInset = useDerivedValue(() => ({
+    top: 0,
+    bottom: bottomInset.get() ?? 0,
+    left: 0,
+    right: 0,
+  }));
+
+  // Apply content insets via animated` props on the ScrollView
   const animatedScrollViewProps = useAnimatedProps(() => ({
-    contentInset: {
-      top: 0,
-      bottom: bottomInset.value ?? 0,
-      left: 0,
-      right: 0,
-    },
+    contentInset: contentInset.get(),
   }));
 
   const renderItem = (message: (typeof messages)[number], index: number) =>
@@ -90,6 +94,7 @@ function Chat({ children }: { children: React.ReactNode }) {
         shouldAnimate={animateMessageIndex === index}
       />
     );
+
 
   const examples = {
     scrollProps: {
@@ -104,7 +109,8 @@ function Chat({ children }: { children: React.ReactNode }) {
         data={messages}
         getItemType={item => item.role}
         keyExtractor={(_, index) => index.toString()}
-        animatedProps={animatedScrollViewProps}
+        
+        contentInset={contentInset}
         renderItem={({ item, index }) => (
           <CellRenderer index={index} isLast={index === messages.length - 1}>
             {renderItem(item, index)}
@@ -138,7 +144,7 @@ function Chat({ children }: { children: React.ReactNode }) {
         renderItem={({ item, index }) => renderItem(item, index)}
       />
     ),
-  };
+  }; 
 
   return (
     <Aix

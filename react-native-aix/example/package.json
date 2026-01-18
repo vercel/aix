@@ -13,7 +13,7 @@
   "dependencies": {
     "@azure/core-asynciterator-polyfill": "^1.0.2",
     "@babel/plugin-transform-export-namespace-from": "^7.27.1",
-    "@legendapp/list": "^2.0.19",
+    "@legendapp/list": "3.0.0-beta.20",
     "@react-native-ai/apple": "^0.11.0",
     "@react-native/new-app-screen": "0.82.1",
     "@shopify/flash-list": "^2.2.0",
