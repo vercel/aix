@@ -46,10 +46,10 @@ export interface AixScrollOnFooterSizeUpdate {
 }
 
 export interface AixContentInsets {
-  top: number
-  left: number
-  bottom: number
-  right: number
+  top?: number
+  left?: number
+  bottom?: number
+  right?: number
 }
 
 export interface AixProps extends HybridViewProps {

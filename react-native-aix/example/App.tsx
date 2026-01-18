@@ -18,6 +18,7 @@ import {
   AixFooter,
   useAixRef,
   TextFadeInStaggeredIfStreaming,
+  useContentInsetHandler,
 } from 'aix';
 import { useAppleChat, useMessages } from './src/apple';
 import {
@@ -27,8 +28,10 @@ import {
 import Animated, {
   interpolate,
   useAnimatedStyle,
+  useSharedValue,
+  useAnimatedProps,
 } from 'react-native-reanimated';
-import { LegendList } from '@legendapp/list';
+import { AnimatedLegendList as LegendList } from '@legendapp/list/reanimated';
 import { FlashList } from '@shopify/flash-list';
 
 function CellRenderer({
@@ -57,6 +60,27 @@ function Chat({ children }: { children: React.ReactNode }) {
     null,
   );
 
+  console.log('[Chat]');
+
+  // JS-controlled content insets via Reanimated
+  const bottomInset = useSharedValue<number | null>(null);
+
+  const contentInsetHandler = useContentInsetHandler((insets) => {
+    'worklet'
+    console.log('[useContentInsetHandler]', insets);
+    bottomInset.set(insets.bottom ?? null);
+  });
+
+  // Apply content insets via animated props on the ScrollView
+  const animatedScrollViewProps = useAnimatedProps(() => ({
+    contentInset: {
+      top: 0,
+      bottom: bottomInset.value ?? 0,
+      left: 0,
+      right: 0,
+    },
+  }));
+
   const renderItem = (message: (typeof messages)[number], index: number) =>
     message.role === 'user' ? (
       <UserMessage content={message.content} />
@@ -80,6 +104,7 @@ function Chat({ children }: { children: React.ReactNode }) {
         data={messages}
         getItemType={item => item.role}
         keyExtractor={(_, index) => index.toString()}
+        animatedProps={animatedScrollViewProps}
         renderItem={({ item, index }) => (
           <CellRenderer index={index} isLast={index === messages.length - 1}>
             {renderItem(item, index)}
@@ -88,7 +113,10 @@ function Chat({ children }: { children: React.ReactNode }) {
       />
     ),
     scrollview: () => (
-      <ScrollView {...examples.scrollProps}>
+      <Animated.ScrollView
+        {...examples.scrollProps}
+        animatedProps={animatedScrollViewProps}
+      >
         {messages.map((message, index) => (
           <CellRenderer
             index={messages.indexOf(message)}
@@ -98,7 +126,7 @@ function Chat({ children }: { children: React.ReactNode }) {
             {renderItem(message, messages.indexOf(message))}
           </CellRenderer>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     ),
     flashList: () => (
       <FlashList
@@ -135,6 +163,9 @@ function Chat({ children }: { children: React.ReactNode }) {
         },
       }}
       mainScrollViewID={mainScrollViewID}
+      // JS-controlled content insets
+      shouldApplyContentInsets={false}
+      onWillApplyContentInsets={contentInsetHandler}
     >
       {children}
       {examples.scrollview()}

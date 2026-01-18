@@ -10,7 +10,7 @@
 #include <fbjni/fbjni.h>
 #include "AixContentInsets.hpp"
 
-
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -31,19 +31,19 @@ namespace margelo::nitro::aix {
     [[nodiscard]]
     AixContentInsets toCpp() const {
       static const auto clazz = javaClassStatic();
-      static const auto fieldTop = clazz->getField<double>("top");
-      double top = this->getFieldValue(fieldTop);
-      static const auto fieldLeft = clazz->getField<double>("left");
-      double left = this->getFieldValue(fieldLeft);
-      static const auto fieldBottom = clazz->getField<double>("bottom");
-      double bottom = this->getFieldValue(fieldBottom);
-      static const auto fieldRight = clazz->getField<double>("right");
-      double right = this->getFieldValue(fieldRight);
+      static const auto fieldTop = clazz->getField<jni::JDouble>("top");
+      jni::local_ref<jni::JDouble> top = this->getFieldValue(fieldTop);
+      static const auto fieldLeft = clazz->getField<jni::JDouble>("left");
+      jni::local_ref<jni::JDouble> left = this->getFieldValue(fieldLeft);
+      static const auto fieldBottom = clazz->getField<jni::JDouble>("bottom");
+      jni::local_ref<jni::JDouble> bottom = this->getFieldValue(fieldBottom);
+      static const auto fieldRight = clazz->getField<jni::JDouble>("right");
+      jni::local_ref<jni::JDouble> right = this->getFieldValue(fieldRight);
       return AixContentInsets(
-        top,
-        left,
-        bottom,
-        right
+        top != nullptr ? std::make_optional(top->value()) : std::nullopt,
+        left != nullptr ? std::make_optional(left->value()) : std::nullopt,
+        bottom != nullptr ? std::make_optional(bottom->value()) : std::nullopt,
+        right != nullptr ? std::make_optional(right->value()) : std::nullopt
       );
     }
 
@@ -53,15 +53,15 @@ namespace margelo::nitro::aix {
      */
     [[maybe_unused]]
     static jni::local_ref<JAixContentInsets::javaobject> fromCpp(const AixContentInsets& value) {
-      using JSignature = JAixContentInsets(double, double, double, double);
+      using JSignature = JAixContentInsets(jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
         clazz,
-        value.top,
-        value.left,
-        value.bottom,
-        value.right
+        value.top.has_value() ? jni::JDouble::valueOf(value.top.value()) : nullptr,
+        value.left.has_value() ? jni::JDouble::valueOf(value.left.value()) : nullptr,
+        value.bottom.has_value() ? jni::JDouble::valueOf(value.bottom.value()) : nullptr,
+        value.right.has_value() ? jni::JDouble::valueOf(value.right.value()) : nullptr
       );
     }
   };

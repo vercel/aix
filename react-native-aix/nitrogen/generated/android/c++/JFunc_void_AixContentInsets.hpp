@@ -14,6 +14,7 @@
 #include <functional>
 #include <NitroModules/JNICallable.hpp>
 #include "JAixContentInsets.hpp"
+#include <optional>
 
 namespace margelo::nitro::aix {
 

@@ -19,51 +19,99 @@ public extension AixContentInsets {
   /**
    * Create a new instance of `AixContentInsets`.
    */
-  init(top: Double, left: Double, bottom: Double, right: Double) {
-    self.init(top, left, bottom, right)
+  init(top: Double?, left: Double?, bottom: Double?, right: Double?) {
+    self.init({ () -> bridge.std__optional_double_ in
+      if let __unwrappedValue = top {
+        return bridge.create_std__optional_double_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_double_ in
+      if let __unwrappedValue = left {
+        return bridge.create_std__optional_double_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_double_ in
+      if let __unwrappedValue = bottom {
+        return bridge.create_std__optional_double_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_double_ in
+      if let __unwrappedValue = right {
+        return bridge.create_std__optional_double_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }())
   }
 
-  var top: Double {
+  var top: Double? {
     @inline(__always)
     get {
-      return self.__top
+      return self.__top.value
     }
     @inline(__always)
     set {
-      self.__top = newValue
+      self.__top = { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
   }
   
-  var left: Double {
+  var left: Double? {
     @inline(__always)
     get {
-      return self.__left
+      return self.__left.value
     }
     @inline(__always)
     set {
-      self.__left = newValue
+      self.__left = { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
   }
   
-  var bottom: Double {
+  var bottom: Double? {
     @inline(__always)
     get {
-      return self.__bottom
+      return self.__bottom.value
     }
     @inline(__always)
     set {
-      self.__bottom = newValue
+      self.__bottom = { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
   }
   
-  var right: Double {
+  var right: Double? {
     @inline(__always)
     get {
-      return self.__right
+      return self.__right.value
     }
     @inline(__always)
     set {
-      self.__right = newValue
+      self.__right = { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
   }
 }

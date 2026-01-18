@@ -25,7 +25,7 @@
 
 
 
-
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -34,14 +34,14 @@ namespace margelo::nitro::aix {
    */
   struct AixContentInsets {
   public:
-    double top     SWIFT_PRIVATE;
-    double left     SWIFT_PRIVATE;
-    double bottom     SWIFT_PRIVATE;
-    double right     SWIFT_PRIVATE;
+    std::optional<double> top     SWIFT_PRIVATE;
+    std::optional<double> left     SWIFT_PRIVATE;
+    std::optional<double> bottom     SWIFT_PRIVATE;
+    std::optional<double> right     SWIFT_PRIVATE;
 
   public:
     AixContentInsets() = default;
-    explicit AixContentInsets(double top, double left, double bottom, double right): top(top), left(left), bottom(bottom), right(right) {}
+    explicit AixContentInsets(std::optional<double> top, std::optional<double> left, std::optional<double> bottom, std::optional<double> right): top(top), left(left), bottom(bottom), right(right) {}
   };
 
 } // namespace margelo::nitro::aix
@@ -54,18 +54,18 @@ namespace margelo::nitro {
     static inline margelo::nitro::aix::AixContentInsets fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::aix::AixContentInsets(
-        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "top")),
-        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "left")),
-        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "bottom")),
-        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "right"))
+        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "top")),
+        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "left")),
+        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "bottom")),
+        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "right"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::aix::AixContentInsets& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "top", JSIConverter<double>::toJSI(runtime, arg.top));
-      obj.setProperty(runtime, "left", JSIConverter<double>::toJSI(runtime, arg.left));
-      obj.setProperty(runtime, "bottom", JSIConverter<double>::toJSI(runtime, arg.bottom));
-      obj.setProperty(runtime, "right", JSIConverter<double>::toJSI(runtime, arg.right));
+      obj.setProperty(runtime, "top", JSIConverter<std::optional<double>>::toJSI(runtime, arg.top));
+      obj.setProperty(runtime, "left", JSIConverter<std::optional<double>>::toJSI(runtime, arg.left));
+      obj.setProperty(runtime, "bottom", JSIConverter<std::optional<double>>::toJSI(runtime, arg.bottom));
+      obj.setProperty(runtime, "right", JSIConverter<std::optional<double>>::toJSI(runtime, arg.right));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -76,10 +76,10 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "top"))) return false;
-      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "left"))) return false;
-      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "bottom"))) return false;
-      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "right"))) return false;
+      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "top"))) return false;
+      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "left"))) return false;
+      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "bottom"))) return false;
+      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "right"))) return false;
       return true;
     }
   };

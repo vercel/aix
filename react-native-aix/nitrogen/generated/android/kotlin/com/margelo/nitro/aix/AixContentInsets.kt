@@ -19,16 +19,16 @@ import com.facebook.proguard.annotations.DoNotStrip
 data class AixContentInsets(
   @DoNotStrip
   @Keep
-  val top: Double,
+  val top: Double?,
   @DoNotStrip
   @Keep
-  val left: Double,
+  val left: Double?,
   @DoNotStrip
   @Keep
-  val bottom: Double,
+  val bottom: Double?,
   @DoNotStrip
   @Keep
-  val right: Double
+  val right: Double?
 ) {
   /* primary constructor */
 
@@ -40,7 +40,7 @@ data class AixContentInsets(
     @Keep
     @Suppress("unused")
     @JvmStatic
-    private fun fromCpp(top: Double, left: Double, bottom: Double, right: Double): AixContentInsets {
+    private fun fromCpp(top: Double?, left: Double?, bottom: Double?, right: Double?): AixContentInsets {
       return AixContentInsets(top, left, bottom, right)
     }
   }
