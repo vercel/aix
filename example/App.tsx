@@ -43,7 +43,7 @@ export default function App() {
       { type: 'user', content: message },
       {
         type: 'system',
-        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 21)),
+        content: 'How are you?\n'.repeat(Math.ceil(Math.random() * 1)),
       },
     ])
   }

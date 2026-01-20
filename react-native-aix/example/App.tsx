@@ -34,6 +34,7 @@ import Animated, {
   useAnimatedProps,
 } from 'react-native-reanimated';
 import { AnimatedLegendList as LegendList } from '@legendapp/list/reanimated';
+import { useIsLastItem } from '@legendapp/list';
 import { FlashList } from '@shopify/flash-list';
 
 function CellRenderer({
@@ -50,6 +51,13 @@ function CellRenderer({
     <AixCell key={index} index={index} isLast={isLast} {...props}>
       {children}
     </AixCell>
+  );
+}
+
+function LegendListCellRenderer({ index, ...props }: { index: number, children: React.ReactNode }) {
+  const isLast = useIsLastItem();
+  return (
+    <CellRenderer index={index} isLast={isLast} {...props} />
   );
 }
 
@@ -112,9 +120,9 @@ function Chat({ children }: { children: React.ReactNode }) {
         
         contentInset={contentInset}
         renderItem={({ item, index }) => (
-          <CellRenderer index={index} isLast={index === messages.length - 1}>
+          <LegendListCellRenderer index={index}>
             {renderItem(item, index)}
-          </CellRenderer>
+          </LegendListCellRenderer>
         )}
       />
     ),
@@ -171,10 +179,10 @@ function Chat({ children }: { children: React.ReactNode }) {
       mainScrollViewID={mainScrollViewID}
       // JS-controlled content insets
       shouldApplyContentInsets={false}
-      onWillApplyContentInsets={contentInsetHandler}
+      onWillApplyContentInsets={contentInsetHandler} 
     >
       {children}
-      {examples.scrollview()}
+      {examples.legendList()}
       <FloatingFooter>
         <AixFooter style={styles.footer}>
           <Composer
