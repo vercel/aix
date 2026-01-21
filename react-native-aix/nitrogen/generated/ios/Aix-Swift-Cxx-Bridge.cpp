@@ -16,6 +16,14 @@
 
 namespace margelo::nitro::aix::bridge::swift {
 
+  // pragma MARK: std::function<void(const AixContentInsets& /* insets */)>
+  Func_void_AixContentInsets create_Func_void_AixContentInsets(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = Aix::Func_void_AixContentInsets::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const AixContentInsets& insets) mutable -> void {
+      swiftClosure.call(insets);
+    };
+  }
+  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   std::shared_ptr<HybridAixSpec> create_std__shared_ptr_HybridAixSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
     Aix::HybridAixSpec_cxx swiftPart = Aix::HybridAixSpec_cxx::fromUnsafe(swiftUnsafePointer);

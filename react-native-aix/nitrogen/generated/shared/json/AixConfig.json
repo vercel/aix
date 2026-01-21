@@ -11,6 +11,8 @@
     "additionalScrollIndicatorInsets": true,
     "mainScrollViewID": true,
     "penultimateCellIndex": true,
+    "shouldApplyContentInsets": true,
+    "onWillApplyContentInsets": true,
     "hybridRef": true
   }
 }

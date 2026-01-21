@@ -30,18 +30,12 @@ protocol AixContext: AnyObject {
     
     /// Register the composer view
     func registerComposerView(_ composerView: HybridAixComposer)
-<<<<<<< HEAD
 
     /// Unregister the composer view
     func unregisterComposerView(_ composerView: HybridAixComposer)
 
     /// Called when the composer's height changes
     func reportComposerHeightChange(height: CGFloat)
-=======
-    
-    /// Unregister the composer view
-    func unregisterComposerView(_ composerView: HybridAixComposer)
->>>>>>> e1f4b6081b44dde75cebf1c5e876c6c02fd5a7ef
 }
 
 extension UIView {
@@ -96,6 +90,9 @@ extension UIView {
 class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var penultimateCellIndex: Double?
+    
+    var shouldApplyContentInsets: Bool? = nil
+    var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
 
     var additionalContentInsets: AixAdditionalContentInsetsProp?
 
@@ -394,11 +391,28 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         guard let scrollView else { return }
 
         let targetTop = additionalContentInsetTop
+        let targetBottom = overrideContentInsetBottom ?? self.contentInsetBottom
+        
+        // Create insets struct for callback (fields are optional in the interface)
+        let insets = AixContentInsets(
+            top: Double(targetTop),
+            left: nil,
+            bottom: Double(targetBottom),
+            right: nil
+        )
+
+        print("[aix] applyContentInset \(targetBottom)")
+        
+        // If shouldApplyContentInsets is explicitly false, call callback and return
+        if shouldApplyContentInsets == false {
+            onWillApplyContentInsets?(insets)
+            return
+        }
+        
+        // Default behavior: apply insets directly
         if scrollView.contentInset.top != targetTop {
             scrollView.contentInset.top = targetTop
         }
-
-        let targetBottom = overrideContentInsetBottom ?? self.contentInsetBottom
         if scrollView.contentInset.bottom != targetBottom {
             scrollView.contentInset.bottom = targetBottom
         }

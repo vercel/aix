@@ -95,6 +95,26 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.penultimateCellIndex: ") + exc.what());
       }
     }()),
+    shouldApplyContentInsets([&]() -> CachedProp<std::optional<bool>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("shouldApplyContentInsets", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.shouldApplyContentInsets;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<bool>>::fromRawValue(*runtime, value, sourceProps.shouldApplyContentInsets);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.shouldApplyContentInsets: ") + exc.what());
+      }
+    }()),
+    onWillApplyContentInsets([&]() -> CachedProp<std::optional<std::function<void(const AixContentInsets& /* insets */)>>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("onWillApplyContentInsets", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.onWillApplyContentInsets;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<std::function<void(const AixContentInsets& /* insets */)>>>::fromRawValue(*runtime, value.asObject(*runtime).getProperty(*runtime, "f"), sourceProps.onWillApplyContentInsets);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.onWillApplyContentInsets: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -115,6 +135,8 @@ namespace margelo::nitro::aix::views {
     additionalScrollIndicatorInsets(other.additionalScrollIndicatorInsets),
     mainScrollViewID(other.mainScrollViewID),
     penultimateCellIndex(other.penultimateCellIndex),
+    shouldApplyContentInsets(other.shouldApplyContentInsets),
+    onWillApplyContentInsets(other.onWillApplyContentInsets),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
@@ -126,6 +148,8 @@ namespace margelo::nitro::aix::views {
       case hashString("additionalScrollIndicatorInsets"): return true;
       case hashString("mainScrollViewID"): return true;
       case hashString("penultimateCellIndex"): return true;
+      case hashString("shouldApplyContentInsets"): return true;
+      case hashString("onWillApplyContentInsets"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

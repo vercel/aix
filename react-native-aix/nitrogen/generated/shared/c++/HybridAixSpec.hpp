@@ -19,12 +19,16 @@ namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
+// Forward declaration of `AixContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixContentInsets; }
 
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include <string>
+#include "AixContentInsets.hpp"
+#include <functional>
 
 namespace margelo::nitro::aix {
 
@@ -67,6 +71,10 @@ namespace margelo::nitro::aix {
       virtual void setMainScrollViewID(const std::optional<std::string>& mainScrollViewID) = 0;
       virtual std::optional<double> getPenultimateCellIndex() = 0;
       virtual void setPenultimateCellIndex(std::optional<double> penultimateCellIndex) = 0;
+      virtual std::optional<bool> getShouldApplyContentInsets() = 0;
+      virtual void setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) = 0;
+      virtual std::optional<std::function<void(const AixContentInsets& /* insets */)>> getOnWillApplyContentInsets() = 0;
+      virtual void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) = 0;
 
     public:
       // Methods

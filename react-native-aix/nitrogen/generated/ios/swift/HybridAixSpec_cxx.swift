@@ -233,6 +233,62 @@ open class HybridAixSpec_cxx {
       self.__implementation.penultimateCellIndex = newValue.value
     }
   }
+  
+  public final var shouldApplyContentInsets: bridge.std__optional_bool_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_bool_ in
+        if let __unwrappedValue = self.__implementation.shouldApplyContentInsets {
+          return bridge.create_std__optional_bool_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.shouldApplyContentInsets = { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(newValue) {
+          let __unwrapped = bridge.get_std__optional_bool_(newValue)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
+  
+  public final var onWillApplyContentInsets: bridge.std__optional_std__function_void_const_AixContentInsets_____insets______ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_std__function_void_const_AixContentInsets_____insets______ in
+        if let __unwrappedValue = self.__implementation.onWillApplyContentInsets {
+          return bridge.create_std__optional_std__function_void_const_AixContentInsets_____insets______({ () -> bridge.Func_void_AixContentInsets in
+            let __closureWrapper = Func_void_AixContentInsets(__unwrappedValue)
+            return bridge.create_Func_void_AixContentInsets(__closureWrapper.toUnsafe())
+          }())
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.onWillApplyContentInsets = { () -> ((_ insets: AixContentInsets) -> Void)? in
+        if bridge.has_value_std__optional_std__function_void_const_AixContentInsets_____insets______(newValue) {
+          let __unwrapped = bridge.get_std__optional_std__function_void_const_AixContentInsets_____insets______(newValue)
+          return { () -> (AixContentInsets) -> Void in
+            let __wrappedFunction = bridge.wrap_Func_void_AixContentInsets(__unwrapped)
+            return { (__insets: AixContentInsets) -> Void in
+              __wrappedFunction.call(__insets)
+            }
+          }()
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
 
   // Methods
   @inline(__always)

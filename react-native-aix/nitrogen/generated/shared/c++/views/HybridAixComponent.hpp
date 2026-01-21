@@ -21,9 +21,10 @@
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include <string>
+#include "AixContentInsets.hpp"
+#include <functional>
 #include <memory>
 #include "HybridAixSpec.hpp"
-#include <functional>
 
 namespace margelo::nitro::aix::views {
 
@@ -53,6 +54,8 @@ namespace margelo::nitro::aix::views {
     CachedProp<std::optional<AixScrollIndicatorInsets>> additionalScrollIndicatorInsets;
     CachedProp<std::optional<std::string>> mainScrollViewID;
     CachedProp<std::optional<double>> penultimateCellIndex;
+    CachedProp<std::optional<bool>> shouldApplyContentInsets;
+    CachedProp<std::optional<std::function<void(const AixContentInsets& /* insets */)>>> onWillApplyContentInsets;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> hybridRef;
 
   private:
