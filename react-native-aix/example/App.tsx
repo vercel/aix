@@ -53,6 +53,7 @@ function CellRenderer({
     </AixCell>
   );
 }
+let isUsingExperimentalLegendList: boolean = true;
 
 function LegendListCellRenderer({ index, ...props }: { index: number, children: React.ReactNode }) {
   const isLast = useIsLastItem();
@@ -69,8 +70,6 @@ function Chat({ children }: { children: React.ReactNode }) {
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
   );
-
-  console.log('[Chat]');
 
   // JS-controlled content insets via Reanimated
   const bottomInset = useSharedValue<number | null>(null);
@@ -104,6 +103,7 @@ function Chat({ children }: { children: React.ReactNode }) {
     );
 
 
+
   const examples = {
     scrollProps: {
       keyboardDismissMode: 'interactive',
@@ -117,11 +117,12 @@ function Chat({ children }: { children: React.ReactNode }) {
         data={messages}
         getItemType={item => item.role}
         keyExtractor={(_, index) => index.toString()}
+        maintainVisibleContentPosition
         alwaysRender={{
           bottom: 2
         }}
-        
-        contentInset={contentInset}
+        // @ts-ignore
+        contentInset={isUsingExperimentalLegendList ? contentInset : undefined}
         renderItem={({ item, index }) => (
           <LegendListCellRenderer index={index}>
             {renderItem(item, index)}
@@ -181,8 +182,10 @@ function Chat({ children }: { children: React.ReactNode }) {
       }}
       mainScrollViewID={mainScrollViewID}
       // JS-controlled content insets
-      shouldApplyContentInsets={false}
-      onWillApplyContentInsets={contentInsetHandler} 
+      {...isUsingExperimentalLegendList && {
+        shouldApplyContentInsets: false,
+        onWillApplyContentInsets: contentInsetHandler,
+      }} 
     >
       {children}
       {examples.legendList()}
