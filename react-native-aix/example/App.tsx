@@ -134,6 +134,7 @@ function Chat({ children }: { children: React.ReactNode }) {
       <Animated.ScrollView
         {...examples.scrollProps}
         animatedProps={animatedScrollViewProps}
+        contentInset={isUsingExperimentalLegendList ? contentInset : undefined}
       >
         {messages.map((message, index) => (
           <CellRenderer
@@ -188,7 +189,7 @@ function Chat({ children }: { children: React.ReactNode }) {
       }} 
     >
       {children}
-      {examples.legendList()}
+      {examples.scrollview()}
       <FloatingFooter>
         <AixFooter style={styles.footer}>
           <Composer
