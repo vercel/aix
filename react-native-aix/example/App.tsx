@@ -117,6 +117,9 @@ function Chat({ children }: { children: React.ReactNode }) {
         data={messages}
         getItemType={item => item.role}
         keyExtractor={(_, index) => index.toString()}
+        alwaysRender={{
+          bottom: 2
+        }}
         
         contentInset={contentInset}
         renderItem={({ item, index }) => (
