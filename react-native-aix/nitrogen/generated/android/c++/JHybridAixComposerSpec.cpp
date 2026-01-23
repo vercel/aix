@@ -7,9 +7,16 @@
 
 #include "JHybridAixComposerSpec.hpp"
 
+// Forward declaration of `AixStickToKeyboard` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboard; }
+// Forward declaration of `AixStickToKeyboardOffset` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboardOffset; }
 
-
-
+#include "AixStickToKeyboard.hpp"
+#include <optional>
+#include "JAixStickToKeyboard.hpp"
+#include "AixStickToKeyboardOffset.hpp"
+#include "JAixStickToKeyboardOffset.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -40,7 +47,15 @@ namespace margelo::nitro::aix {
   }
 
   // Properties
-  
+  std::optional<AixStickToKeyboard> JHybridAixComposerSpec::getStickToKeyboard() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixStickToKeyboard>()>("getStickToKeyboard");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->toCpp()) : std::nullopt;
+  }
+  void JHybridAixComposerSpec::setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixStickToKeyboard> /* stickToKeyboard */)>("setStickToKeyboard");
+    method(_javaPart, stickToKeyboard.has_value() ? JAixStickToKeyboard::fromCpp(stickToKeyboard.value()) : nullptr);
+  }
 
   // Methods
   

@@ -55,7 +55,7 @@ function CellRenderer({
     </AixCell>
   );
 }
-let isUsingExperimentalLegendList: boolean = true;
+let isUsingExperimentalLegendList: boolean = false;
 
 function LegendListCellRenderer({
   index,
@@ -201,24 +201,31 @@ function Chat({ children }: { children: React.ReactNode }) {
     >
       {children}
       {examples.scrollview()}
-      <FloatingFooter>
-        <AixFooter style={styles.footer}>
-          <Composer
-            onScrollToEnd={() => aix.current?.scrollToEnd(true)}
-            isNearEnd={isNearEnd}
-            onSubmit={message => {
-              const nextAssistantMessageIndex = messages.length + 1;
-              aix.current?.scrollToIndexWhenBlankSizeReady(
-                nextAssistantMessageIndex,
-                true,
-                false,
-              );
-              setAnimateMessageIndex(nextAssistantMessageIndex);
-              send(message);
-            }}
-          />
-        </AixFooter>
-      </FloatingFooter>
+      <AixFooter
+        style={styles.footer}
+        stickToKeyboard={{
+          enabled: true,
+          offset: {
+            whenKeyboardClosed: safeAreaInsetsBottom,
+            whenKeyboardOpen: 0,
+          },
+        }}
+      >
+        <Composer
+          onScrollToEnd={() => aix.current?.scrollToEnd(true)}
+          isNearEnd={isNearEnd}
+          onSubmit={message => {
+            const nextAssistantMessageIndex = messages.length + 1;
+            aix.current?.scrollToIndexWhenBlankSizeReady(
+              nextAssistantMessageIndex,
+              true,
+              false,
+            );
+            setAnimateMessageIndex(nextAssistantMessageIndex);
+            send(message);
+          }}
+        />
+      </AixFooter>
     </Aix>
   );
 }
@@ -303,7 +310,19 @@ function Composer({
           />
         </View>
 
-        <Button
+        <Pressable
+          style={[
+            styles.button,
+            inputValue.length === 0
+              ? {
+                  backgroundColor: PlatformColor('systemGray6'),
+                  borderColor: PlatformColor('systemGray5'),
+                }
+              : {
+                  backgroundColor: PlatformColor('systemGray3'),
+                  borderColor: PlatformColor('separator'),
+                },
+          ]}
           onPress={async () => {
             setInputValue('');
             onSubmit(inputValue);
@@ -313,7 +332,7 @@ function Composer({
           }}
         >
           <Text style={styles.buttonText}>↑</Text>
-        </Button>
+        </Pressable>
       </View>
     </>
   );

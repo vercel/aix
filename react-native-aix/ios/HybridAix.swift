@@ -15,19 +15,19 @@ private var aixContextKey: UInt8 = 0
 protocol AixContext: AnyObject {
     /// The blank view (last cell) - used for calculating blank size
     var blankView: HybridAixCellView? { get set }
-    
+
     /// The composer view
     var composerView: HybridAixComposer? { get set }
-    
+
     /// Called when the blank view's size changes
     func reportBlankViewSizeChange(size: CGSize, index: Int)
-    
+
     /// Register a cell with the context
     func registerCell(_ cell: HybridAixCellView)
-    
+
     /// Unregister a cell from the context
     func unregisterCell(_ cell: HybridAixCellView)
-    
+
     /// Register the composer view
     func registerComposerView(_ composerView: HybridAixComposer)
 
@@ -36,6 +36,14 @@ protocol AixContext: AnyObject {
 
     /// Called when the composer's height changes
     func reportComposerHeightChange(height: CGFloat)
+
+    // MARK: - Keyboard State (for composer sticky behavior)
+
+    /// Current keyboard height
+    var keyboardHeight: CGFloat { get }
+
+    /// Keyboard height when fully open (for calculating progress)
+    var keyboardHeightWhenOpen: CGFloat { get }
 }
 
 extension UIView {
@@ -619,9 +627,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 startEvent = event
             }
         }
-        
+
         // Update keyboard state
         handleKeyboardMove(height: height, progress: progress)
+
+        // Update composer transform
+        composerView?.applyKeyboardTransform(height: height, heightWhenOpen: keyboardHeightWhenOpen, animated: false)
     }
     
     // MARK: - Initialization
@@ -865,6 +876,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             keyboardProgress = 1.0
             applyContentInset()
             applyScrollIndicatorInsets()
+            composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: keyboardHeightWhenOpen, animated: false)
             return
         }
 
@@ -879,6 +891,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             }
             self.applyContentInset()
             self.applyScrollIndicatorInsets()
+            self.composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: self.keyboardHeightWhenOpen, animated: false)
 
             if let (startY, endY) = self.startEvent?.interpolateContentOffsetY {
                 self.scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
@@ -906,6 +919,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             self.keyboardProgress = 0
             self.applyContentInset()
             self.applyScrollIndicatorInsets()
+            self.composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: self.keyboardHeightWhenOpen, animated: false)
         }, completion: { [weak self] _ in
             self?.handleKeyboardDidMove(height: 0, progress: 0)
         })
@@ -918,6 +932,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     func keyboardDidHide(notification: NSNotification) {
         print("[Aix] keyboardDidHide")
         keyboardHeightWhenOpen = 0
+        composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: 0, animated: false)
     }
 
     func keyboardWillChangeFrame(notification: NSNotification) {

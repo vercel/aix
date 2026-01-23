@@ -4,6 +4,7 @@
   "bubblingEventTypes": {},
   "directEventTypes": {},
   "validAttributes": {
+    "stickToKeyboard": true,
     "hybridRef": true
   }
 }

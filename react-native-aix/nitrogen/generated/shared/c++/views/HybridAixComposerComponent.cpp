@@ -25,6 +25,16 @@ namespace margelo::nitro::aix::views {
                                                  const HybridAixComposerProps& sourceProps,
                                                  const react::RawProps& rawProps):
     react::ViewProps(context, sourceProps, rawProps, filterObjectKeys),
+    stickToKeyboard([&]() -> CachedProp<std::optional<AixStickToKeyboard>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("stickToKeyboard", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.stickToKeyboard;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<AixStickToKeyboard>>::fromRawValue(*runtime, value, sourceProps.stickToKeyboard);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("AixComposer.stickToKeyboard: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixComposerSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -38,10 +48,12 @@ namespace margelo::nitro::aix::views {
 
   HybridAixComposerProps::HybridAixComposerProps(const HybridAixComposerProps& other):
     react::ViewProps(),
+    stickToKeyboard(other.stickToKeyboard),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixComposerProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
+      case hashString("stickToKeyboard"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }
