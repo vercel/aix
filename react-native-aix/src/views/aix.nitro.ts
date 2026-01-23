@@ -139,7 +139,19 @@ export type AixCellView = HybridView<
   { ios: 'swift'; android: 'kotlin' }
 >
 
-export interface AixComposerProps extends HybridViewProps {}
+export interface AixStickToKeyboardOffset {
+  whenKeyboardOpen: number
+  whenKeyboardClosed: number
+}
+
+export interface AixStickToKeyboard {
+  enabled: boolean
+  offset?: AixStickToKeyboardOffset
+}
+
+export interface AixComposerProps extends HybridViewProps {
+  stickToKeyboard?: AixStickToKeyboard
+}
 
 export type AixComposer = HybridView<
   AixComposerProps,

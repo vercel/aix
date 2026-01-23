@@ -14,7 +14,8 @@ namespace margelo::nitro::aix {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
-      
+      prototype.registerHybridGetter("stickToKeyboard", &HybridAixComposerSpec::getStickToKeyboard);
+      prototype.registerHybridSetter("stickToKeyboard", &HybridAixComposerSpec::setStickToKeyboard);
     });
   }
 

@@ -16,10 +16,11 @@
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
 
+#include "AixStickToKeyboard.hpp"
+#include <optional>
 #include <memory>
 #include "HybridAixComposerSpec.hpp"
 #include <functional>
-#include <optional>
 
 namespace margelo::nitro::aix::views {
 
@@ -42,6 +43,7 @@ namespace margelo::nitro::aix::views {
                            const react::RawProps& rawProps);
 
   public:
+    CachedProp<std::optional<AixStickToKeyboard>> stickToKeyboard;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixComposerSpec>& /* ref */)>>> hybridRef;
 
   private:

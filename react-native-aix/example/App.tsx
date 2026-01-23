@@ -72,7 +72,7 @@ function Chat({ children }: { children: React.ReactNode }) {
       keyboardDismissMode: 'interactive',
       nativeID: mainScrollViewID,
     } satisfies Partial<React.ComponentProps<typeof ScrollView>>,
-    
+
     legendList: () => (
       <LegendList
         {...examples.scrollProps}
@@ -106,7 +106,12 @@ function Chat({ children }: { children: React.ReactNode }) {
         data={messages}
         getItemType={item => item.role}
         keyExtractor={(_, index) => index.toString()}
-        CellRendererComponent={(props) => <CellRenderer isLast={props.index === messages.length - 1} {...props} />}
+        CellRendererComponent={props => (
+          <CellRenderer
+            isLast={props.index === messages.length - 1}
+            {...props}
+          />
+        )}
         renderItem={({ item, index }) => renderItem(item, index)}
       />
     ),
@@ -138,22 +143,29 @@ function Chat({ children }: { children: React.ReactNode }) {
     >
       {children}
       {examples.scrollview()}
-      <FloatingFooter>
-        <AixFooter style={styles.footer}>
-          <Composer
-            onSubmit={message => {
-              const nextAssistantMessageIndex = messages.length + 1;
-              aix.current?.scrollToIndexWhenBlankSizeReady(
-                nextAssistantMessageIndex,
-                true,
-                false,
-              );
-              setAnimateMessageIndex(nextAssistantMessageIndex);
-              send(message);
-            }}
-          />
-        </AixFooter>
-      </FloatingFooter>
+      <AixFooter
+        style={styles.footer}
+        stickToKeyboard={{
+          enabled: true,
+          offset: {
+            whenKeyboardClosed: safeAreaInsetsBottom,
+            whenKeyboardOpen: 0,
+          },
+        }}
+      >
+        <Composer
+          onSubmit={message => {
+            const nextAssistantMessageIndex = messages.length + 1;
+            aix.current?.scrollToIndexWhenBlankSizeReady(
+              nextAssistantMessageIndex,
+              true,
+              false,
+            );
+            setAnimateMessageIndex(nextAssistantMessageIndex);
+            send(message);
+          }}
+        />
+      </AixFooter>
     </Aix>
   );
 }
@@ -219,13 +231,13 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
             styles.button,
             inputValue.length === 0
               ? {
-                backgroundColor: PlatformColor('systemGray6'),
-                borderColor: PlatformColor('systemGray5'),
-              }
+                  backgroundColor: PlatformColor('systemGray6'),
+                  borderColor: PlatformColor('systemGray5'),
+                }
               : {
-                backgroundColor: PlatformColor('systemGray3'),
-                borderColor: PlatformColor('separator'),
-              },
+                  backgroundColor: PlatformColor('systemGray3'),
+                  borderColor: PlatformColor('separator'),
+                },
           ]}
           onPress={async () => {
             setInputValue('');

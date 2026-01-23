@@ -50,7 +50,8 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    
+    std::optional<AixStickToKeyboard> getStickToKeyboard() override;
+    void setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) override;
 
   public:
     // Methods

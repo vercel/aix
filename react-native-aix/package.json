@@ -84,12 +84,12 @@
   ],
   "license": "MIT",
   "prettier": {
-    "quoteProps": "consistent",
+    "trailingComma": "all",
+    "semi": false,
     "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "useTabs": false,
-    "semi": false
+    "arrowParens": "always",
+    "printWidth": 100,
+    "jsxSingleQuote": true
   },
   "publishConfig": {
     "access": "public",

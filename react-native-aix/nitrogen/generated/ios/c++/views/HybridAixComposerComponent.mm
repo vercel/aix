@@ -71,7 +71,11 @@ using namespace margelo::nitro::aix::views;
   // 2. Update each prop individually
   swiftPart.beforeUpdate();
 
-  
+  // stickToKeyboard: optional
+  if (newViewProps.stickToKeyboard.isDirty) {
+    swiftPart.setStickToKeyboard(newViewProps.stickToKeyboard.value);
+    newViewProps.stickToKeyboard.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 

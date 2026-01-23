@@ -36,7 +36,10 @@ void JHybridAixComposerStateUpdater::updateViewProps(jni::alias_ref<jni::JClass>
     throw std::runtime_error("HybridAixComposerState's data doesn't contain any props!");
   }
   const HybridAixComposerProps& props = maybeProps.value();
-  
+  if (props.stickToKeyboard.isDirty) {
+    view->setStickToKeyboard(props.stickToKeyboard.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

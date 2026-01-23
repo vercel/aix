@@ -13,9 +13,11 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `AixStickToKeyboard` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboard; }
 
-
-
+#include "AixStickToKeyboard.hpp"
+#include <optional>
 
 namespace margelo::nitro::aix {
 
@@ -44,7 +46,8 @@ namespace margelo::nitro::aix {
 
     public:
       // Properties
-      
+      virtual std::optional<AixStickToKeyboard> getStickToKeyboard() = 0;
+      virtual void setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) = 0;
 
     public:
       // Methods

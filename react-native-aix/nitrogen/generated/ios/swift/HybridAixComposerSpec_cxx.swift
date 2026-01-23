@@ -114,7 +114,22 @@ open class HybridAixComposerSpec_cxx {
   }
 
   // Properties
-  
+  public final var stickToKeyboard: bridge.std__optional_AixStickToKeyboard_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_AixStickToKeyboard_ in
+        if let __unwrappedValue = self.__implementation.stickToKeyboard {
+          return bridge.create_std__optional_AixStickToKeyboard_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.stickToKeyboard = newValue.value
+    }
+  }
 
   // Methods
   public final func getView() -> UnsafeMutableRawPointer {

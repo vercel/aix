@@ -18,6 +18,10 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixScrollOnFooterSizeUpdate` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
+// Forward declaration of `AixStickToKeyboardOffset` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboardOffset; }
+// Forward declaration of `AixStickToKeyboard` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboard; }
 // Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
@@ -39,6 +43,8 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "AixScrollIndicatorInsetValue.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include "AixScrollOnFooterSizeUpdate.hpp"
+#include "AixStickToKeyboard.hpp"
+#include "AixStickToKeyboardOffset.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixSpec.hpp"
@@ -206,6 +212,36 @@ namespace margelo::nitro::aix::bridge::swift {
   // pragma MARK: std::weak_ptr<HybridAixCellViewSpec>
   using std__weak_ptr_HybridAixCellViewSpec_ = std::weak_ptr<HybridAixCellViewSpec>;
   inline std__weak_ptr_HybridAixCellViewSpec_ weakify_std__shared_ptr_HybridAixCellViewSpec_(const std::shared_ptr<HybridAixCellViewSpec>& strong) noexcept { return strong; }
+  
+  // pragma MARK: std::optional<AixStickToKeyboardOffset>
+  /**
+   * Specialized version of `std::optional<AixStickToKeyboardOffset>`.
+   */
+  using std__optional_AixStickToKeyboardOffset_ = std::optional<AixStickToKeyboardOffset>;
+  inline std::optional<AixStickToKeyboardOffset> create_std__optional_AixStickToKeyboardOffset_(const AixStickToKeyboardOffset& value) noexcept {
+    return std::optional<AixStickToKeyboardOffset>(value);
+  }
+  inline bool has_value_std__optional_AixStickToKeyboardOffset_(const std::optional<AixStickToKeyboardOffset>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixStickToKeyboardOffset get_std__optional_AixStickToKeyboardOffset_(const std::optional<AixStickToKeyboardOffset>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::optional<AixStickToKeyboard>
+  /**
+   * Specialized version of `std::optional<AixStickToKeyboard>`.
+   */
+  using std__optional_AixStickToKeyboard_ = std::optional<AixStickToKeyboard>;
+  inline std::optional<AixStickToKeyboard> create_std__optional_AixStickToKeyboard_(const AixStickToKeyboard& value) noexcept {
+    return std::optional<AixStickToKeyboard>(value);
+  }
+  inline bool has_value_std__optional_AixStickToKeyboard_(const std::optional<AixStickToKeyboard>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixStickToKeyboard get_std__optional_AixStickToKeyboard_(const std::optional<AixStickToKeyboard>& optional) noexcept {
+    return *optional;
+  }
   
   // pragma MARK: std::shared_ptr<HybridAixComposerSpec>
   /**

@@ -11,7 +11,7 @@ import NitroModules
 /// See ``HybridAixComposerSpec``
 public protocol HybridAixComposerSpec_protocol: HybridObject, HybridView {
   // Properties
-  
+  var stickToKeyboard: AixStickToKeyboard? { get set }
 
   // Methods
   

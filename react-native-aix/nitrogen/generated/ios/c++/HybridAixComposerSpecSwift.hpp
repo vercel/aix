@@ -12,9 +12,14 @@
 // Forward declaration of `HybridAixComposerSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixComposerSpec_cxx; }
 
+// Forward declaration of `AixStickToKeyboard` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboard; }
+// Forward declaration of `AixStickToKeyboardOffset` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixStickToKeyboardOffset; }
 
-
-
+#include "AixStickToKeyboard.hpp"
+#include <optional>
+#include "AixStickToKeyboardOffset.hpp"
 
 #include "Aix-Swift-Cxx-Umbrella.hpp"
 
@@ -56,7 +61,13 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    
+    inline std::optional<AixStickToKeyboard> getStickToKeyboard() noexcept override {
+      auto __result = _swiftPart.getStickToKeyboard();
+      return __result;
+    }
+    inline void setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) noexcept override {
+      _swiftPart.setStickToKeyboard(stickToKeyboard);
+    }
 
   public:
     // Methods
