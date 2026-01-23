@@ -1,15 +1,12 @@
 <img src="https://github.com/vercel/aix/blob/main/Aix.png?raw=true"
 alt="aix" width="1600" height="900" />
 
-Primitives for building beautiful AI chat apps with React Native.
+# AIX
+
+Primitives for building AI apps in React Native.
 
 > aix is currently in alpha preview. The API will change, and it is not yet
 > feature complete.
-
-We're rewriting the engine that powers the chat experience in the v0 mobile app
-with a focus on native feel.
-
-aix is a native module with UIKit with Nitro Modules.
 
 ## Installation
 
