@@ -15,9 +15,16 @@ UI Primitives for building AI apps in React Native.
 - Support for absolute-positioned composers
 - Detect "is scrolled near end" for ScrollToEnd buttons
 
-To learn about the motivation behind AIX, you can read our blog post on [How we built the v0 iOS app](https://vercel.com/blog/how-we-built-the-v0-ios-app). AIX is an opinionated, feature-complete, and extensible way to implement every single feature mentioned in that blog post.
+To learn about the motivation behind AIX, you can read our blog post on
+[How we built the v0 iOS app](https://vercel.com/blog/how-we-built-the-v0-ios-app).
+AIX is an opinionated, feature-complete, and extensible way to implement every
+single feature mentioned in that blog post.
 
-When building AIX, we started by copying the code from v0 into a separate repository. However, as we worked to make it flexible for use cases outside of our own app, we decided to rewrite it from scratch in native code. What you see here is a Nitro Module which handles all business logic in UIKit. We plan on adding support for Android as well and welcome contributions.
+When building AIX, we started by copying the code from v0 into a separate
+repository. However, as we worked to make it flexible for use cases outside of
+our own app, we decided to rewrite it from scratch in native code. What you see
+here is a Nitro Module which handles all business logic in UIKit. We plan on
+adding support for Android as well and welcome contributions.
 
 > aix is currently in alpha preview. The API may change.
 
@@ -99,8 +106,8 @@ export function ChatScreen({ messages }) {
         stickToKeyboard={{
           enabled: true,
           offset: {
-            opened: 0,
-            closed: -bottom,
+            whenKeyboardOpen: 0,
+            whenKeyboardClosed: -bottom,
           },
         }}
       >
