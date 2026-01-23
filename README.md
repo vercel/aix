@@ -8,14 +8,16 @@ UI Primitives for building AI apps in React Native.
 ## Features
 
 - Start a chat scrolled to end on the first frame
-- Animated scrolling to new messages when they send
+- Animate scrolling to new messages when they send
 - Float messages to the top of the screen with automated "blank size" handling
-- Animate in messages during streaming
-- Full keyboard handling on the main thread in native code
-- Floating composer on top of the scrollable area with automatic scrolling
-- Scroll to end button handling
+- Animate message content as it streams
+- Keyboard handling out-of-the-box with no external dependencies
+- Support for absolute-positioned composers
+- Detect "is scrolled near end" for ScrollToEnd buttons
 
-AIX aims to be opinionated, feature-complete, and extensible. We rewrote our JS-based implementation in UIKit using Nitro Modules for greater control.
+To learn about the motivation behind AIX, you can read our blog post on [How we built the v0 iOS app](https://vercel.com/blog/how-we-built-the-v0-ios-app). AIX is an opinionated, feature-complete, and extensible way to implement every single feature mentioned in that blog post.
+
+When building AIX, we started by copying the code from v0 into a separate repository. However, as we worked to make it flexible for use cases outside of our own app, we decided to rewrite it from scratch in native code. What you see here is a Nitro Module which handles all business logic in UIKit. We plan on adding support for Android as well and welcome contributions.
 
 > aix is currently in alpha preview. The API may change.
 
