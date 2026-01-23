@@ -215,6 +215,43 @@ namespace margelo::nitro::aix::bridge::swift {
     return *optional;
   }
   
+  // pragma MARK: std::function<void(bool /* isNearEnd */)>
+  /**
+   * Specialized version of `std::function<void(bool)>`.
+   */
+  using Func_void_bool = std::function<void(bool /* isNearEnd */)>;
+  /**
+   * Wrapper class for a `std::function<void(bool / * isNearEnd * /)>`, this can be used from Swift.
+   */
+  class Func_void_bool_Wrapper final {
+  public:
+    explicit Func_void_bool_Wrapper(std::function<void(bool /* isNearEnd */)>&& func): _function(std::make_unique<std::function<void(bool /* isNearEnd */)>>(std::move(func))) {}
+    inline void call(bool isNearEnd) const noexcept {
+      _function->operator()(isNearEnd);
+    }
+  private:
+    std::unique_ptr<std::function<void(bool /* isNearEnd */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_bool create_Func_void_bool(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_bool_Wrapper wrap_Func_void_bool(Func_void_bool value) noexcept {
+    return Func_void_bool_Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::optional<std::function<void(bool /* isNearEnd */)>>
+  /**
+   * Specialized version of `std::optional<std::function<void(bool / * isNearEnd * /)>>`.
+   */
+  using std__optional_std__function_void_bool____isNearEnd______ = std::optional<std::function<void(bool /* isNearEnd */)>>;
+  inline std::optional<std::function<void(bool /* isNearEnd */)>> create_std__optional_std__function_void_bool____isNearEnd______(const std::function<void(bool /* isNearEnd */)>& value) noexcept {
+    return std::optional<std::function<void(bool /* isNearEnd */)>>(value);
+  }
+  inline bool has_value_std__optional_std__function_void_bool____isNearEnd______(const std::optional<std::function<void(bool /* isNearEnd */)>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::function<void(bool /* isNearEnd */)> get_std__optional_std__function_void_bool____isNearEnd______(const std::optional<std::function<void(bool /* isNearEnd */)>>& optional) noexcept {
+    return *optional;
+  }
+  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   /**
    * Specialized version of `std::shared_ptr<HybridAixSpec>`.

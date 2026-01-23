@@ -24,6 +24,14 @@ namespace margelo::nitro::aix::bridge::swift {
     };
   }
   
+  // pragma MARK: std::function<void(bool /* isNearEnd */)>
+  Func_void_bool create_Func_void_bool(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = Aix::Func_void_bool::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](bool isNearEnd) mutable -> void {
+      swiftClosure.call(isNearEnd);
+    };
+  }
+  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   std::shared_ptr<HybridAixSpec> create_std__shared_ptr_HybridAixSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
     Aix::HybridAixSpec_cxx swiftPart = Aix::HybridAixSpec_cxx::fromUnsafe(swiftUnsafePointer);

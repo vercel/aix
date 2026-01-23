@@ -68,6 +68,8 @@ namespace margelo::nitro::aix {
     void setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) override;
     std::optional<std::function<void(const AixContentInsets& /* insets */)>> getOnWillApplyContentInsets() override;
     void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) override;
+    std::optional<std::function<void(bool /* isNearEnd */)>> getOnScrolledNearEndChange() override;
+    void setOnScrolledNearEndChange(const std::optional<std::function<void(bool /* isNearEnd */)>>& onScrolledNearEndChange) override;
 
   public:
     // Methods

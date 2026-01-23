@@ -97,7 +97,8 @@ The main container component that provides keyboard-aware behavior and manages s
 |------|------|---------|-------------|
 | `shouldStartAtEnd` | `boolean` | - | Whether the scroll view should start scrolled to the end of the content. |
 | `scrollOnFooterSizeUpdate` | `object` | `{ enabled: true, scrolledToEndThreshold: 100, animated: false }` | Control the behavior of scrolling when the footer size changes. By default, changing the height of the footer will shift content up in the scroll view. |
-| `scrollEndReachedThreshold` | `number` | `max(blankSize, 200)` | The number of pixels from the bottom of the scroll view to the end of the content that is considered "near the end". Used to determine if content should shift up when keyboard opens. |
+| `scrollEndReachedThreshold` | `number` | `max(blankSize, 200)` | The number of pixels from the bottom of the scroll view to the end of the content that is considered "near the end". Used by `onScrolledNearEndChange` and to determine if content should shift up when keyboard opens. |
+| `onScrolledNearEndChange` | `(isNearEnd: boolean) => void` | - | Callback fired when the scroll position transitions between "near end" and "not near end" states. Reactive to user scrolling, content size changes, parent size changes, and keyboard height changes. Uses `scrollEndReachedThreshold` to determine the threshold. |
 | `additionalContentInsets` | `object` | - | Additional content insets applied when keyboard is open or closed. Shape: `{ top?: { whenKeyboardOpen, whenKeyboardClosed }, bottom?: { whenKeyboardOpen, whenKeyboardClosed } }` |
 | `additionalScrollIndicatorInsets` | `object` | - | Additional insets for the scroll indicator, added to existing safe area insets. Applied to `verticalScrollIndicatorInsets` on iOS. |
 | `mainScrollViewID` | `string` | - | The `nativeID` of the scroll view to use. If provided, will search for a scroll view with this `accessibilityIdentifier`. |
@@ -177,6 +178,36 @@ function Chat({ messages }) {
   };
   
   return <Aix ref={aix}>{/* ... */}</Aix>;
+}
+```
+
+---
+
+### Scroll to End Button
+
+You can use `onScrolledNearEndChange` to show a "scroll to end" button when the user scrolls away from the bottom:
+
+```tsx
+import { Aix, useAixRef } from 'aix';
+import { useState } from 'react';
+
+function Chat() {
+  const aix = useAixRef();
+  const [isNearEnd, setIsNearEnd] = useState(false);
+
+  return (
+    <Aix
+      ref={aix}
+      scrollEndReachedThreshold={200}
+      onScrolledNearEndChange={setIsNearEnd}
+    >
+      {/* ScrollView and messages... */}
+
+      {!isNearEnd && (
+        <Button onPress={() => aix.current?.scrollToEnd(true)} />
+      )}
+    </Aix>
+  );
 }
 ```
 

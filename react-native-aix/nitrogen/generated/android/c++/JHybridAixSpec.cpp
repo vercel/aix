@@ -37,6 +37,7 @@ namespace margelo::nitro::aix { struct AixContentInsets; }
 #include "JFunc_void_AixContentInsets.hpp"
 #include <NitroModules/JNICallable.hpp>
 #include "JAixContentInsets.hpp"
+#include "JFunc_void_bool.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -155,6 +156,23 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_AixContentInsets::javaobject> /* onWillApplyContentInsets */)>("setOnWillApplyContentInsets_cxx");
     method(_javaPart, onWillApplyContentInsets.has_value() ? JFunc_void_AixContentInsets_cxx::fromCpp(onWillApplyContentInsets.value()) : nullptr);
+  }
+  std::optional<std::function<void(bool /* isNearEnd */)>> JHybridAixSpec::getOnScrolledNearEndChange() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JFunc_void_bool::javaobject>()>("getOnScrolledNearEndChange_cxx");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional([&]() -> std::function<void(bool /* isNearEnd */)> {
+      if (__result->isInstanceOf(JFunc_void_bool_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_bool_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void_bool, void(bool)>(std::move(__resultRef));
+      }
+    }()) : std::nullopt;
+  }
+  void JHybridAixSpec::setOnScrolledNearEndChange(const std::optional<std::function<void(bool /* isNearEnd */)>>& onScrolledNearEndChange) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_bool::javaobject> /* onScrolledNearEndChange */)>("setOnScrolledNearEndChange_cxx");
+    method(_javaPart, onScrolledNearEndChange.has_value() ? JFunc_void_bool_cxx::fromCpp(onScrolledNearEndChange.value()) : nullptr);
   }
 
   // Methods

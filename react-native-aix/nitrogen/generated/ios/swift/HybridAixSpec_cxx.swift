@@ -289,6 +289,38 @@ open class HybridAixSpec_cxx {
       }()
     }
   }
+  
+  public final var onScrolledNearEndChange: bridge.std__optional_std__function_void_bool____isNearEnd______ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_std__function_void_bool____isNearEnd______ in
+        if let __unwrappedValue = self.__implementation.onScrolledNearEndChange {
+          return bridge.create_std__optional_std__function_void_bool____isNearEnd______({ () -> bridge.Func_void_bool in
+            let __closureWrapper = Func_void_bool(__unwrappedValue)
+            return bridge.create_Func_void_bool(__closureWrapper.toUnsafe())
+          }())
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.onScrolledNearEndChange = { () -> ((_ isNearEnd: Bool) -> Void)? in
+        if bridge.has_value_std__optional_std__function_void_bool____isNearEnd______(newValue) {
+          let __unwrapped = bridge.get_std__optional_std__function_void_bool____isNearEnd______(newValue)
+          return { () -> (Bool) -> Void in
+            let __wrappedFunction = bridge.wrap_Func_void_bool(__unwrapped)
+            return { (__isNearEnd: Bool) -> Void in
+              __wrappedFunction.call(__isNearEnd)
+            }
+          }()
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
 
   // Methods
   @inline(__always)
