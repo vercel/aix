@@ -1,4 +1,4 @@
-<img src="https://github.com/vercel/aix/raw/main/docs/content/images/logo.png"
+<img src="https://github.com/vercel/aix/blob/main/Aix.png?raw=true"
 alt="aix" width="1600" height="900" />
 
 Primitives for building beautiful AI chat apps with React Native.
