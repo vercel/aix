@@ -3,10 +3,21 @@ alt="aix" width="1600" height="900" />
 
 # AIX
 
-Primitives for building AI apps in React Native.
+UI Primitives for building AI apps in React Native.
 
-> aix is currently in alpha preview. The API will change, and it is not yet
-> feature complete.
+## Features
+
+- Start a chat scrolled to end on the first frame
+- Animated scrolling to new messages when they send
+- Float messages to the top of the screen with automated "blank size" handling
+- Animate in messages during streaming
+- Full keyboard handling on the main thread in native code
+- Floating composer on top of the scrollable area with automatic scrolling
+- Scroll to end button handling
+
+AIX aims to be opinionated, feature-complete, and extensible. We rewrote our JS-based implementation in UIKit using Nitro Modules for greater control.
+
+> aix is currently in alpha preview. The API may change.
 
 ## Installation
 
@@ -158,12 +169,6 @@ function Chat() {
 }
 ```
 
-## TODOs
-
-- [ ] Android support
-- [ ] LegendList support
-- [ ] FlashList support
-
 ## API Reference
 
 ### `Aix`
@@ -272,6 +277,10 @@ function Chat({ messages }) {
 ---
 
 ## TODOs
+
+- [ ] Android support
+- [ ] LegendList support
+- [ ] FlashList support
 
 ## Requirements
 
