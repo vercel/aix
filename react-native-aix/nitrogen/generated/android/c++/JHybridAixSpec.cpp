@@ -17,6 +17,8 @@ namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
+// Forward declaration of `AixContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixContentInsets; }
 
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
@@ -30,6 +32,11 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 #include "AixScrollIndicatorInsetValue.hpp"
 #include "JAixScrollIndicatorInsetValue.hpp"
 #include <string>
+#include "AixContentInsets.hpp"
+#include <functional>
+#include "JFunc_void_AixContentInsets.hpp"
+#include <NitroModules/JNICallable.hpp>
+#include "JAixContentInsets.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -122,6 +129,32 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::setPenultimateCellIndex(std::optional<double> penultimateCellIndex) {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* penultimateCellIndex */)>("setPenultimateCellIndex");
     method(_javaPart, penultimateCellIndex.has_value() ? jni::JDouble::valueOf(penultimateCellIndex.value()) : nullptr);
+  }
+  std::optional<bool> JHybridAixSpec::getShouldApplyContentInsets() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JBoolean>()>("getShouldApplyContentInsets");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(static_cast<bool>(__result->value())) : std::nullopt;
+  }
+  void JHybridAixSpec::setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* shouldApplyContentInsets */)>("setShouldApplyContentInsets");
+    method(_javaPart, shouldApplyContentInsets.has_value() ? jni::JBoolean::valueOf(shouldApplyContentInsets.value()) : nullptr);
+  }
+  std::optional<std::function<void(const AixContentInsets& /* insets */)>> JHybridAixSpec::getOnWillApplyContentInsets() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JFunc_void_AixContentInsets::javaobject>()>("getOnWillApplyContentInsets_cxx");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional([&]() -> std::function<void(const AixContentInsets& /* insets */)> {
+      if (__result->isInstanceOf(JFunc_void_AixContentInsets_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_AixContentInsets_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void_AixContentInsets, void(AixContentInsets)>(std::move(__resultRef));
+      }
+    }()) : std::nullopt;
+  }
+  void JHybridAixSpec::setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_AixContentInsets::javaobject> /* onWillApplyContentInsets */)>("setOnWillApplyContentInsets_cxx");
+    method(_javaPart, onWillApplyContentInsets.has_value() ? JFunc_void_AixContentInsets_cxx::fromCpp(onWillApplyContentInsets.value()) : nullptr);
   }
 
   // Methods

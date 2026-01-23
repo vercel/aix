@@ -7,6 +7,8 @@ export * from './fade-in'
 
 export { Aix, type AixRef } from './aix'
 export { AixFooter } from './footer'
+export { useContentInsetHandler } from './hooks/useContentInsetHandler'
+export type { AixContentInsets } from './views/aix.nitro'
 
 export const AixCell = getHostComponent<AixCellViewProps, {}>(
   'AixCellView',

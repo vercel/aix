@@ -19,6 +19,7 @@
     "react-native": "0.82",
     "react-native-builder-bob": "^0.37.0",
     "react-native-nitro-modules": "0.31.10",
+    "react-native-reanimated": "^3.17.0",
     "conventional-changelog-conventionalcommits": "^9.1.0",
     "semantic-release": "^24.2.9",
     "typescript": "^5.8.3"
@@ -26,7 +27,8 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-nitro-modules": "*"
+    "react-native-nitro-modules": "*",
+    "react-native-reanimated": ">=3.0.0"
   },
   "bugs": "https://github.com/vercel/aix/issues",
   "description": "aix is a react native package built with Nitro",

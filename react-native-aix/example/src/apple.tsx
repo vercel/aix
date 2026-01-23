@@ -1,6 +1,8 @@
 import { apple } from '@react-native-ai/apple';
 import { streamText } from 'ai';
-import { useState } from 'react';
+import {
+  useRef,
+  useState } from 'react';
 import '@azure/core-asynciterator-polyfill';
 
 type UIMessage = {
@@ -15,8 +17,9 @@ export function useAppleChat({
   setMessages: (fn: (messages: UIMessage[]) => UIMessage[]) => void;
   messages: UIMessage[];
 }) {
+  const controller = useRef(new AbortController())
   return {
-    send: async function (message: string) {
+    send: async function(message: string) {
       if (!apple.isAvailable()) {
         return setMessages(messages => [
           ...messages,
@@ -27,6 +30,8 @@ export function useAppleChat({
           },
         ]);
       }
+      controller.current.abort()
+      controller.current = new AbortController()
       const assistantMessageIndex = messages.length + 1;
       setMessages(messages => [
         ...messages,
@@ -46,6 +51,7 @@ export function useAppleChat({
             content: message,
           },
         ],
+        abortSignal: controller.current.signal,
       });
 
       let content = '';

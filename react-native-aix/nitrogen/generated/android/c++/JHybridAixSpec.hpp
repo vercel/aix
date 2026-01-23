@@ -64,6 +64,10 @@ namespace margelo::nitro::aix {
     void setMainScrollViewID(const std::optional<std::string>& mainScrollViewID) override;
     std::optional<double> getPenultimateCellIndex() override;
     void setPenultimateCellIndex(std::optional<double> penultimateCellIndex) override;
+    std::optional<bool> getShouldApplyContentInsets() override;
+    void setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) override;
+    std::optional<std::function<void(const AixContentInsets& /* insets */)>> getOnWillApplyContentInsets() override;
+    void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) override;
 
   public:
     // Methods

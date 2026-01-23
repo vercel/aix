@@ -83,6 +83,26 @@ abstract class HybridAixSpec: HybridView() {
   @set:DoNotStrip
   @set:Keep
   abstract var penultimateCellIndex: Double?
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var shouldApplyContentInsets: Boolean?
+  
+  abstract var onWillApplyContentInsets: ((insets: AixContentInsets) -> Unit)?
+  
+  private var onWillApplyContentInsets_cxx: Func_void_AixContentInsets?
+    @Keep
+    @DoNotStrip
+    get() {
+      return onWillApplyContentInsets?.let { Func_void_AixContentInsets_java(it) }
+    }
+    @Keep
+    @DoNotStrip
+    set(value) {
+      onWillApplyContentInsets = value?.let { it }
+    }
 
   // Methods
   @DoNotStrip

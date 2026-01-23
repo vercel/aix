@@ -12,6 +12,8 @@
 namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 // Forward declaration of `AixAdditionalContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
+// Forward declaration of `AixContentInsets` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixContentInsets; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
@@ -40,6 +42,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 // Include C++ defined types
 #include "AixAdditionalContentInsets.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
+#include "AixContentInsets.hpp"
 #include "AixScrollIndicatorInsetValue.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include "AixScrollOnFooterSizeUpdate.hpp"
@@ -50,6 +53,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "HybridAixSpec.hpp"
 #include <NitroModules/Result.hpp>
 #include <exception>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -177,6 +181,43 @@ namespace margelo::nitro::aix::bridge::swift {
     return optional.has_value();
   }
   inline std::string get_std__optional_std__string_(const std::optional<std::string>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::function<void(const AixContentInsets& /* insets */)>
+  /**
+   * Specialized version of `std::function<void(const AixContentInsets&)>`.
+   */
+  using Func_void_AixContentInsets = std::function<void(const AixContentInsets& /* insets */)>;
+  /**
+   * Wrapper class for a `std::function<void(const AixContentInsets& / * insets * /)>`, this can be used from Swift.
+   */
+  class Func_void_AixContentInsets_Wrapper final {
+  public:
+    explicit Func_void_AixContentInsets_Wrapper(std::function<void(const AixContentInsets& /* insets */)>&& func): _function(std::make_unique<std::function<void(const AixContentInsets& /* insets */)>>(std::move(func))) {}
+    inline void call(AixContentInsets insets) const noexcept {
+      _function->operator()(insets);
+    }
+  private:
+    std::unique_ptr<std::function<void(const AixContentInsets& /* insets */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_AixContentInsets create_Func_void_AixContentInsets(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_AixContentInsets_Wrapper wrap_Func_void_AixContentInsets(Func_void_AixContentInsets value) noexcept {
+    return Func_void_AixContentInsets_Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::optional<std::function<void(const AixContentInsets& /* insets */)>>
+  /**
+   * Specialized version of `std::optional<std::function<void(const AixContentInsets& / * insets * /)>>`.
+   */
+  using std__optional_std__function_void_const_AixContentInsets_____insets______ = std::optional<std::function<void(const AixContentInsets& /* insets */)>>;
+  inline std::optional<std::function<void(const AixContentInsets& /* insets */)>> create_std__optional_std__function_void_const_AixContentInsets_____insets______(const std::function<void(const AixContentInsets& /* insets */)>& value) noexcept {
+    return std::optional<std::function<void(const AixContentInsets& /* insets */)>>(value);
+  }
+  inline bool has_value_std__optional_std__function_void_const_AixContentInsets_____insets______(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::function<void(const AixContentInsets& /* insets */)> get_std__optional_std__function_void_const_AixContentInsets_____insets______(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& optional) noexcept {
     return *optional;
   }
   
