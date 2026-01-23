@@ -1,7 +1,6 @@
 import './src/polyfill';
 
-import React, {
-  useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -32,6 +31,9 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   useAnimatedProps,
+  FadeIn,
+  FadeOut,
+  Keyframe,
 } from 'react-native-reanimated';
 import { AnimatedLegendList as LegendList } from '@legendapp/list/reanimated';
 import { useIsLastItem } from '@legendapp/list';
@@ -55,11 +57,15 @@ function CellRenderer({
 }
 let isUsingExperimentalLegendList: boolean = true;
 
-function LegendListCellRenderer({ index, ...props }: { index: number, children: React.ReactNode }) {
+function LegendListCellRenderer({
+  index,
+  ...props
+}: {
+  index: number;
+  children: React.ReactNode;
+}) {
   const isLast = useIsLastItem();
-  return (
-    <CellRenderer index={index} isLast={isLast} {...props} />
-  );
+  return <CellRenderer index={index} isLast={isLast} {...props} />;
 }
 
 function Chat({ children }: { children: React.ReactNode }) {
@@ -75,8 +81,8 @@ function Chat({ children }: { children: React.ReactNode }) {
   // JS-controlled content insets via Reanimated
   const bottomInset = useSharedValue<number | null>(null);
 
-  const contentInsetHandler = useContentInsetHandler((insets) => {
-    'worklet'
+  const contentInsetHandler = useContentInsetHandler(insets => {
+    'worklet';
     console.log('[useContentInsetHandler]', insets);
     bottomInset.set(insets.bottom ?? null);
   });
@@ -103,14 +109,12 @@ function Chat({ children }: { children: React.ReactNode }) {
       />
     );
 
-
-
   const examples = {
     scrollProps: {
       keyboardDismissMode: 'interactive',
       nativeID: mainScrollViewID,
     } satisfies Partial<React.ComponentProps<typeof ScrollView>>,
-    
+
     legendList: () => (
       <LegendList
         {...examples.scrollProps}
@@ -120,7 +124,7 @@ function Chat({ children }: { children: React.ReactNode }) {
         keyExtractor={(_, index) => index.toString()}
         maintainVisibleContentPosition
         alwaysRender={{
-          bottom: 2
+          bottom: 2,
         }}
         // @ts-ignore
         contentInset={isUsingExperimentalLegendList ? contentInset : undefined}
@@ -154,11 +158,16 @@ function Chat({ children }: { children: React.ReactNode }) {
         data={messages}
         getItemType={item => item.role}
         keyExtractor={(_, index) => index.toString()}
-        CellRendererComponent={(props) => <CellRenderer isLast={props.index === messages.length - 1} {...props} />}
+        CellRendererComponent={props => (
+          <CellRenderer
+            isLast={props.index === messages.length - 1}
+            {...props}
+          />
+        )}
         renderItem={({ item, index }) => renderItem(item, index)}
       />
     ),
-  }; 
+  };
 
   return (
     <Aix
@@ -185,10 +194,10 @@ function Chat({ children }: { children: React.ReactNode }) {
       }}
       mainScrollViewID={mainScrollViewID}
       // JS-controlled content insets
-      {...isUsingExperimentalLegendList && {
+      {...(isUsingExperimentalLegendList && {
         shouldApplyContentInsets: false,
         onWillApplyContentInsets: contentInsetHandler,
-      }} 
+      })}
     >
       {children}
       {examples.scrollview()}
@@ -239,12 +248,36 @@ function App() {
   );
 }
 
-function Composer({ onSubmit, onScrollToEnd, isNearEnd }: { onSubmit: (message: string) => void, onScrollToEnd: () => void, isNearEnd: boolean }) {
+function Composer({
+  onSubmit,
+  onScrollToEnd,
+  isNearEnd,
+}: {
+  onSubmit: (message: string) => void;
+  onScrollToEnd: () => void;
+  isNearEnd: boolean;
+}) {
   const colorScheme = useColorScheme();
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<TextInput>(null);
   return (
     <>
+      {!isNearEnd && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: -48,
+            paddingLeft: 16,
+            transformOrigin: 'bottom center',
+          }}
+          entering={buttonAnimation.entering}
+          exiting={buttonAnimation.exiting}
+        >
+          <Button onPress={onScrollToEnd} disabled={isNearEnd}>
+            <Text style={styles.buttonText}>↓</Text>
+          </Button>
+        </Animated.View>
+      )}
       <View
         style={[
           styles.footerBackground,
@@ -257,9 +290,6 @@ function Composer({ onSubmit, onScrollToEnd, isNearEnd }: { onSubmit: (message: 
         ]}
       />
       <View style={styles.footerRow}>
-        <Button onPress={onScrollToEnd} disabled={isNearEnd}>
-          <Text style={styles.buttonText}>↓</Text>
-        </Button>
         <View style={{ flex: 1, justifyContent: 'center' }}>
           <TextInput
             onChangeText={setInputValue}
@@ -273,7 +303,7 @@ function Composer({ onSubmit, onScrollToEnd, isNearEnd }: { onSubmit: (message: 
           />
         </View>
 
-        <Button 
+        <Button
           onPress={async () => {
             setInputValue('');
             onSubmit(inputValue);
@@ -289,24 +319,58 @@ function Composer({ onSubmit, onScrollToEnd, isNearEnd }: { onSubmit: (message: 
   );
 }
 
-function Button({ children, onPress, disabled = false }: { children: React.ReactNode, onPress: () => void, disabled?: boolean }) {
+const buttonAnimation = {
+  entering: new Keyframe({
+    from: {
+      transform: [{ scale: 0.9 }],
+      opacity: 0,
+    },
+    to: {
+      transform: [{ scale: 1 }],
+      opacity: 1,
+    },
+  }).duration(150),
+  exiting: new Keyframe({
+    from: {
+      transform: [{ scale: 1 }],
+      opacity: 1,
+    },
+    to: {
+      transform: [{ scale: 0.8 }],
+      opacity: 0,
+    },
+  }).duration(150),
+};
+
+function Button({
+  children,
+  onPress,
+  disabled = false,
+}: {
+  children: React.ReactNode;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={[
         styles.button,
-        disabled ? {
-          backgroundColor: PlatformColor('systemGray6'),
-          borderColor: PlatformColor('systemGray5'),
-        } : {
-          backgroundColor: PlatformColor('systemGray3'),
-          borderColor: PlatformColor('separator'),
-        },
+        disabled
+          ? {
+              backgroundColor: PlatformColor('systemGray6'),
+              borderColor: PlatformColor('systemGray5'),
+            }
+          : {
+              backgroundColor: PlatformColor('systemGray3'),
+              borderColor: PlatformColor('separator'),
+            },
       ]}
     >
       {children}
-    </Pressable>)
+    </Pressable>
+  );
 }
 
 function UserMessage({ content }: { content: string }) {
