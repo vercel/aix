@@ -116,6 +116,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setOnWillApplyContentInsets(newViewProps.onWillApplyContentInsets.value);
     newViewProps.onWillApplyContentInsets.isDirty = false;
   }
+  // onScrolledNearEndChange: optional
+  if (newViewProps.onScrolledNearEndChange.isDirty) {
+    swiftPart.setOnScrolledNearEndChange(newViewProps.onScrolledNearEndChange.value);
+    newViewProps.onScrolledNearEndChange.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 

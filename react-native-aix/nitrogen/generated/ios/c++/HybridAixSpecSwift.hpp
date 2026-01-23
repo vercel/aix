@@ -137,6 +137,13 @@ namespace margelo::nitro::aix {
     inline void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) noexcept override {
       _swiftPart.setOnWillApplyContentInsets(onWillApplyContentInsets);
     }
+    inline std::optional<std::function<void(bool /* isNearEnd */)>> getOnScrolledNearEndChange() noexcept override {
+      auto __result = _swiftPart.getOnScrolledNearEndChange();
+      return __result;
+    }
+    inline void setOnScrolledNearEndChange(const std::optional<std::function<void(bool /* isNearEnd */)>>& onScrolledNearEndChange) noexcept override {
+      _swiftPart.setOnScrolledNearEndChange(onScrolledNearEndChange);
+    }
 
   public:
     // Methods

@@ -18,9 +18,10 @@ const AixInternal = Animated.createAnimatedComponent(getHostComponent<AixProps, 
 // User-facing props type that accepts regular functions (not wrapped callbacks)
 type AixComponentProps = Omit<
   ComponentProps<typeof AixInternal>,
-  'onWillApplyContentInsets' | 'hybridRef'
+  'onWillApplyContentInsets' | 'onScrolledNearEndChange' | 'hybridRef'
 > & {
   onWillApplyContentInsets?: (insets: AixContentInsets) => void
+  onScrolledNearEndChange?: (isNearEnd: boolean) => void
 }
 
 export const Aix = forwardRef<AixRef, AixComponentProps>(
@@ -39,6 +40,12 @@ export const Aix = forwardRef<AixRef, AixComponentProps>(
         onWillApplyContentInsets={
           props.onWillApplyContentInsets
             ? callback(props.onWillApplyContentInsets)
+            : undefined
+        }
+        // Wrap onScrolledNearEndChange with callback() if provided
+        onScrolledNearEndChange={
+          props.onScrolledNearEndChange
+            ? callback(props.onScrolledNearEndChange)
             : undefined
         }
         hybridRef={

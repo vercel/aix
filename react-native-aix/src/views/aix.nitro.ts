@@ -121,6 +121,11 @@ export interface AixProps extends HybridViewProps {
 
   shouldApplyContentInsets?: boolean
   onWillApplyContentInsets?: (insets: AixContentInsets) => void
+  /**
+   * Called when the scroll position changes between "near end" and "not near end" states.
+   * Uses `scrollEndReachedThreshold` to determine the threshold.
+   */
+  onScrolledNearEndChange?: (isNearEnd: boolean) => void
 }
 
 export interface AixMethods extends HybridViewMethods {
