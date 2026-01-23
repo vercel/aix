@@ -17,6 +17,7 @@
 
 #include "JHybridAixSpec.hpp"
 #include "JFunc_void_AixContentInsets.hpp"
+#include "JFunc_void_bool.hpp"
 #include "views/JHybridAixStateUpdater.hpp"
 #include "JHybridAixCellViewSpec.hpp"
 #include "views/JHybridAixCellViewStateUpdater.hpp"
@@ -35,6 +36,7 @@ int initialize(JavaVM* vm) {
     // Register native JNI methods
     margelo::nitro::aix::JHybridAixSpec::registerNatives();
     margelo::nitro::aix::JFunc_void_AixContentInsets_cxx::registerNatives();
+    margelo::nitro::aix::JFunc_void_bool_cxx::registerNatives();
     margelo::nitro::aix::views::JHybridAixStateUpdater::registerNatives();
     margelo::nitro::aix::JHybridAixCellViewSpec::registerNatives();
     margelo::nitro::aix::views::JHybridAixCellViewStateUpdater::registerNatives();
@@ -45,7 +47,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "Aix",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixSpec::javaobject> object("com/aix/HybridAix");
+        static DefaultConstructableObject<JHybridAixSpec::javaobject> object("com/margelo/nitro/aix/HybridAix");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
@@ -53,7 +55,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "AixCellView",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixCellViewSpec::javaobject> object("com/aix/HybridAixCellView");
+        static DefaultConstructableObject<JHybridAixCellViewSpec::javaobject> object("com/margelo/nitro/aix/HybridAixCellView");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
@@ -61,7 +63,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "AixComposer",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixComposerSpec::javaobject> object("com/aix/HybridAixComposer");
+        static DefaultConstructableObject<JHybridAixComposerSpec::javaobject> object("com/margelo/nitro/aix/HybridAixComposer");
         auto instance = object.create();
         return instance->cthis()->shared();
       }

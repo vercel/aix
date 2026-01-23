@@ -13,6 +13,7 @@
     "penultimateCellIndex": true,
     "shouldApplyContentInsets": true,
     "onWillApplyContentInsets": true,
+    "onScrolledNearEndChange": true,
     "hybridRef": true
   }
 }

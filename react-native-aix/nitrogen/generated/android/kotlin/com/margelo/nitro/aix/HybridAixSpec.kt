@@ -103,6 +103,20 @@ abstract class HybridAixSpec: HybridView() {
     set(value) {
       onWillApplyContentInsets = value?.let { it }
     }
+  
+  abstract var onScrolledNearEndChange: ((isNearEnd: Boolean) -> Unit)?
+  
+  private var onScrolledNearEndChange_cxx: Func_void_bool?
+    @Keep
+    @DoNotStrip
+    get() {
+      return onScrolledNearEndChange?.let { Func_void_bool_java(it) }
+    }
+    @Keep
+    @DoNotStrip
+    set(value) {
+      onScrolledNearEndChange = value?.let { it }
+    }
 
   // Methods
   @DoNotStrip

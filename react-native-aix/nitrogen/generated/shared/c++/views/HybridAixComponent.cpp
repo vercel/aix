@@ -115,6 +115,16 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.onWillApplyContentInsets: ") + exc.what());
       }
     }()),
+    onScrolledNearEndChange([&]() -> CachedProp<std::optional<std::function<void(bool /* isNearEnd */)>>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("onScrolledNearEndChange", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.onScrolledNearEndChange;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<std::function<void(bool /* isNearEnd */)>>>::fromRawValue(*runtime, value.asObject(*runtime).getProperty(*runtime, "f"), sourceProps.onScrolledNearEndChange);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.onScrolledNearEndChange: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -137,6 +147,7 @@ namespace margelo::nitro::aix::views {
     penultimateCellIndex(other.penultimateCellIndex),
     shouldApplyContentInsets(other.shouldApplyContentInsets),
     onWillApplyContentInsets(other.onWillApplyContentInsets),
+    onScrolledNearEndChange(other.onScrolledNearEndChange),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
@@ -150,6 +161,7 @@ namespace margelo::nitro::aix::views {
       case hashString("penultimateCellIndex"): return true;
       case hashString("shouldApplyContentInsets"): return true;
       case hashString("onWillApplyContentInsets"): return true;
+      case hashString("onScrolledNearEndChange"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

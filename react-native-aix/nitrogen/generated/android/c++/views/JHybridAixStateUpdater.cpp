@@ -72,6 +72,10 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setOnWillApplyContentInsets(props.onWillApplyContentInsets.value);
     // TODO: Set isDirty = false
   }
+  if (props.onScrolledNearEndChange.isDirty) {
+    view->setOnScrolledNearEndChange(props.onScrolledNearEndChange.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {
