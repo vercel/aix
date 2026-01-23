@@ -93,6 +93,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     var shouldApplyContentInsets: Bool? = nil
     var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
+    var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? = nil
 
     var additionalContentInsets: AixAdditionalContentInsetsProp?
 
@@ -199,6 +200,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Flag to track if we're currently in an interactive keyboard dismiss
     private var isInInteractiveDismiss = false
     
+    /// Previous "scrolled near end" state for change detection
+    private var prevIsScrolledNearEnd: Bool? = nil
+    
+    /// KVO observation tokens for scroll view
+    private var contentOffsetObservation: NSKeyValueObservation?
+    private var contentSizeObservation: NSKeyValueObservation?
+    private var boundsObservation: NSKeyValueObservation?
+    
     // MARK: - Context References (weak to avoid retain cycles)
     
     weak var blankView: HybridAixCellView? = nil {
@@ -244,10 +253,39 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             scrollView.automaticallyAdjustsScrollIndicatorInsets = false
 
             setupPanGestureObserver()
+            setupScrollViewObservers(scrollView)
             applyScrollIndicatorInsets()
         }
 
         return sv
+    }
+    
+    /// Set up KVO observers on scroll view for contentOffset, contentSize, and bounds changes
+    private func setupScrollViewObservers(_ scrollView: UIScrollView) {
+        // Observe contentOffset (user scrolling)
+        contentOffsetObservation = scrollView.observe(\.contentOffset, options: [.new]) { [weak self] _, _ in
+            self?.updateScrolledNearEndState()
+        }
+        
+        // Observe contentSize (content size changes)
+        contentSizeObservation = scrollView.observe(\.contentSize, options: [.new]) { [weak self] _, _ in
+            self?.updateScrolledNearEndState()
+        }
+        
+        // Observe bounds (parent size changes)
+        boundsObservation = scrollView.observe(\.bounds, options: [.new]) { [weak self] _, _ in
+            self?.updateScrolledNearEndState()
+        }
+    }
+    
+    /// Clean up KVO observers
+    private func removeScrollViewObservers() {
+        contentOffsetObservation?.invalidate()
+        contentOffsetObservation = nil
+        contentSizeObservation?.invalidate()
+        contentSizeObservation = nil
+        boundsObservation?.invalidate()
+        boundsObservation = nil
     }
     
     /// Set up observer on scroll view's pan gesture to detect interactive keyboard dismiss
@@ -416,6 +454,19 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         if scrollView.contentInset.bottom != targetBottom {
             scrollView.contentInset.bottom = targetBottom
         }
+        
+        // Update scrolled near end state after insets change
+        updateScrolledNearEndState()
+    }
+
+    /// Centralized function to check and fire onScrolledNearEndChange callback
+    /// Called from KVO observers and after content inset changes
+    private func updateScrolledNearEndState() {
+        guard scrollView != nil else { return }
+        let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+        guard isNearEnd != prevIsScrolledNearEnd else { return }
+        prevIsScrolledNearEnd = isNearEnd
+        onScrolledNearEndChange?(isNearEnd)
     }
 
     /// Apply scroll indicator insets to the scroll view
@@ -587,6 +638,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     deinit {
         removePanGestureObserver()
+        removeScrollViewObservers()
     }
     
     // MARK: - Lifecycle
@@ -657,6 +709,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 applyContentInset()
                 applyScrollIndicatorInsets()
                 scrollToEndInternal(animated: false)
+                updateScrolledNearEndState()
             }
             didScrollToEndInitially = true
         } else {

@@ -66,6 +66,7 @@ function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
 
   const { messages, setMessages } = useMessages();
+  const [isNearEnd, setIsNearEnd] = useState(false);
   const { send } = useAppleChat({ setMessages, messages });
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
@@ -167,6 +168,7 @@ function Chat({ children }: { children: React.ReactNode }) {
         scrolledToEndThreshold: 200,
         animated: false,
       }}
+      onScrolledNearEndChange={setIsNearEnd}
       style={styles.container}
       ref={aix}
       additionalContentInsets={{
@@ -193,6 +195,8 @@ function Chat({ children }: { children: React.ReactNode }) {
       <FloatingFooter>
         <AixFooter style={styles.footer}>
           <Composer
+            onScrollToEnd={() => aix.current?.scrollToEnd(true)}
+            isNearEnd={isNearEnd}
             onSubmit={message => {
               const nextAssistantMessageIndex = messages.length + 1;
               aix.current?.scrollToIndexWhenBlankSizeReady(
@@ -235,7 +239,7 @@ function App() {
   );
 }
 
-function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
+function Composer({ onSubmit, onScrollToEnd, isNearEnd }: { onSubmit: (message: string) => void, onScrollToEnd: () => void, isNearEnd: boolean }) {
   const colorScheme = useColorScheme();
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<TextInput>(null);
@@ -253,6 +257,9 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
         ]}
       />
       <View style={styles.footerRow}>
+        <Button onPress={onScrollToEnd} disabled={isNearEnd}>
+          <Text style={styles.buttonText}>↓</Text>
+        </Button>
         <View style={{ flex: 1, justifyContent: 'center' }}>
           <TextInput
             onChangeText={setInputValue}
@@ -266,19 +273,7 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
           />
         </View>
 
-        <Pressable
-          style={[
-            styles.button,
-            inputValue.length === 0
-              ? {
-                backgroundColor: PlatformColor('systemGray6'),
-                borderColor: PlatformColor('systemGray5'),
-              }
-              : {
-                backgroundColor: PlatformColor('systemGray3'),
-                borderColor: PlatformColor('separator'),
-              },
-          ]}
+        <Button 
           onPress={async () => {
             setInputValue('');
             onSubmit(inputValue);
@@ -288,10 +283,30 @@ function Composer({ onSubmit }: { onSubmit: (message: string) => void }) {
           }}
         >
           <Text style={styles.buttonText}>↑</Text>
-        </Pressable>
+        </Button>
       </View>
     </>
   );
+}
+
+function Button({ children, onPress, disabled = false }: { children: React.ReactNode, onPress: () => void, disabled?: boolean }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.button,
+        disabled ? {
+          backgroundColor: PlatformColor('systemGray6'),
+          borderColor: PlatformColor('systemGray5'),
+        } : {
+          backgroundColor: PlatformColor('systemGray3'),
+          borderColor: PlatformColor('separator'),
+        },
+      ]}
+    >
+      {children}
+    </Pressable>)
 }
 
 function UserMessage({ content }: { content: string }) {
