@@ -448,13 +448,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         )
 
         print("[aix] applyContentInset \(targetBottom)")
-        
-        // If shouldApplyContentInsets is explicitly false, call callback and return
+
+        // call onWillApplyContentInsets callback
+        onWillApplyContentInsets?(insets)
+
+        // If shouldApplyContentInsets is explicitly false, return
         if shouldApplyContentInsets == false {
-            onWillApplyContentInsets?(insets)
             return
         }
-        
+
         // Default behavior: apply insets directly
         if scrollView.contentInset.top != targetTop {
             scrollView.contentInset.top = targetTop
