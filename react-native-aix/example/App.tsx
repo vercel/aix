@@ -80,9 +80,6 @@ function Chat({ children }: { children: React.ReactNode }) {
     null,
   );
 
-  // JS-controlled content insets via Reanimated
-  const bottomInset = useSharedValue<number | null>(null);
-
   const contentInsetHandler = useContentInsetHandler(insetsWorklet => {
     'worklet';
 
@@ -90,18 +87,6 @@ function Chat({ children }: { children: React.ReactNode }) {
       legendListRef.current?.reportContentInset(insets);
     })(insetsWorklet);
   });
-
-  const contentInset = useDerivedValue(() => ({
-    top: 0,
-    bottom: bottomInset.get() ?? 0,
-    left: 0,
-    right: 0,
-  }));
-
-  // Apply content insets via animated` props on the ScrollView
-  const animatedScrollViewProps = useAnimatedProps(() => ({
-    contentInset: contentInset.get(),
-  }));
 
   const renderItem = (message: (typeof messages)[number], index: number) =>
     message.role === 'user' ? (
@@ -138,10 +123,7 @@ function Chat({ children }: { children: React.ReactNode }) {
       />
     ),
     scrollview: () => (
-      <Animated.ScrollView
-        {...examples.scrollProps}
-        animatedProps={animatedScrollViewProps}
-      >
+      <ScrollView {...examples.scrollProps}>
         {messages.map((message, index) => (
           <CellRenderer
             index={messages.indexOf(message)}
@@ -151,7 +133,7 @@ function Chat({ children }: { children: React.ReactNode }) {
             {renderItem(message, messages.indexOf(message))}
           </CellRenderer>
         ))}
-      </Animated.ScrollView>
+      </ScrollView>
     ),
     flashList: () => (
       <FlashList
