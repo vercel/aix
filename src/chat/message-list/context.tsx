@@ -8,7 +8,7 @@ import type { View } from 'react-native'
 import { useComposerHeightContext } from '../composer/composer-height-context'
 import { useMemoOnce } from '../../utils/use-memo-once'
 import { useSyncLayoutHandler } from '../use-sync-layout'
-import type { LegendListRef, ScrollState } from '@legendapp/list'
+import type { LegendListRef, LegendListState } from '@legendapp/list'
 import { createContext, useCallback, useContext, useRef } from 'react'
 import {
   type LayoutChangeEvent,
@@ -26,7 +26,7 @@ export type MessageListContextType = {
     position: number
   }>
   getPreviousMessageSize: (index: number) => number | undefined
-  getListState: () => ScrollState | undefined
+  getListState: () => LegendListState | undefined
   // Indicates if the chat initially started with exactly one message
   listRef: React.RefObject<LegendListRef | null>
   refOuter: React.RefObject<View | null>
