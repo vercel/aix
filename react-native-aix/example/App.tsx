@@ -11,6 +11,7 @@ import {
   Pressable,
   PlatformColor,
   useColorScheme,
+  Insets,
 } from 'react-native';
 import {
   Aix,
@@ -36,8 +37,9 @@ import Animated, {
   Keyframe,
 } from 'react-native-reanimated';
 import { AnimatedLegendList as LegendList } from '@legendapp/list/reanimated';
-import { useIsLastItem } from '@legendapp/list';
+import { LegendListRef, useIsLastItem } from '@legendapp/list';
 import { FlashList } from '@shopify/flash-list';
+import { runOnJS } from 'react-native-worklets';
 
 function CellRenderer({
   children,
@@ -55,7 +57,6 @@ function CellRenderer({
     </AixCell>
   );
 }
-let isUsingExperimentalLegendList: boolean = false;
 
 function LegendListCellRenderer({
   index,
@@ -70,6 +71,7 @@ function LegendListCellRenderer({
 
 function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
+  const legendListRef = useRef<LegendListRef>(null);
 
   const { messages, setMessages } = useMessages();
   const [isNearEnd, setIsNearEnd] = useState(false);
@@ -81,10 +83,12 @@ function Chat({ children }: { children: React.ReactNode }) {
   // JS-controlled content insets via Reanimated
   const bottomInset = useSharedValue<number | null>(null);
 
-  const contentInsetHandler = useContentInsetHandler(insets => {
+  const contentInsetHandler = useContentInsetHandler(insetsWorklet => {
     'worklet';
-    console.log('[useContentInsetHandler]', insets);
-    bottomInset.set(insets.bottom ?? null);
+
+    runOnJS((insets: Insets) => {
+      legendListRef.current?.reportContentInset(insets);
+    })(insetsWorklet);
   });
 
   const contentInset = useDerivedValue(() => ({
@@ -126,8 +130,6 @@ function Chat({ children }: { children: React.ReactNode }) {
         alwaysRender={{
           bottom: 2,
         }}
-        // @ts-ignore
-        contentInset={isUsingExperimentalLegendList ? contentInset : undefined}
         renderItem={({ item, index }) => (
           <LegendListCellRenderer index={index}>
             {renderItem(item, index)}
@@ -139,7 +141,6 @@ function Chat({ children }: { children: React.ReactNode }) {
       <Animated.ScrollView
         {...examples.scrollProps}
         animatedProps={animatedScrollViewProps}
-        contentInset={isUsingExperimentalLegendList ? contentInset : undefined}
       >
         {messages.map((message, index) => (
           <CellRenderer
@@ -193,11 +194,7 @@ function Chat({ children }: { children: React.ReactNode }) {
         },
       }}
       mainScrollViewID={mainScrollViewID}
-      // JS-controlled content insets
-      {...(isUsingExperimentalLegendList && {
-        shouldApplyContentInsets: false,
-        onWillApplyContentInsets: contentInsetHandler,
-      })}
+      onWillApplyContentInsets={contentInsetHandler}
     >
       {children}
       {examples.scrollview()}
