@@ -80,12 +80,8 @@ function Chat({ children }: { children: React.ReactNode }) {
     null,
   );
 
-  const contentInsetHandler = useContentInsetHandler(insetsWorklet => {
-    'worklet';
-
-    runOnJS((insets: Insets) => {
-      legendListRef.current?.reportContentInset(insets);
-    })(insetsWorklet);
+  const contentInsetHandler = useContentInsetHandler(insets => {
+    legendListRef.current?.reportContentInset(insets);
   });
 
   const renderItem = (message: (typeof messages)[number], index: number) =>
