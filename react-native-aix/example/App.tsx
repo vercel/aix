@@ -107,6 +107,7 @@ function Chat({ children }: { children: React.ReactNode }) {
     legendList: () => (
       <LegendList
         {...examples.scrollProps}
+        ref={legendListRef}
         estimatedItemSize={100}
         data={messages}
         getItemType={item => item.role}
