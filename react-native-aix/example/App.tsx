@@ -55,7 +55,7 @@ function CellRenderer({
     </AixCell>
   );
 }
-let isUsingExperimentalLegendList: boolean = true;
+let isUsingExperimentalLegendList: boolean = false;
 
 function LegendListCellRenderer({
   index,
