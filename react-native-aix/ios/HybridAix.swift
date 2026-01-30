@@ -448,10 +448,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         )
 
         print("[aix] applyContentInset \(targetBottom)")
+        onWillApplyContentInsets?(insets)
         
         // If shouldApplyContentInsets is explicitly false, call callback and return
         if shouldApplyContentInsets == false {
-            onWillApplyContentInsets?(insets)
             return
         }
         
