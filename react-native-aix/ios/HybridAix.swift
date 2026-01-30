@@ -100,6 +100,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     var penultimateCellIndex: Double?
     
     var shouldApplyContentInsets: Bool? = nil
+    var applyContentInsetDelay: Double? = nil
     var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
     var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? = nil
 
@@ -455,16 +456,25 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             return
         }
         
-        // Default behavior: apply insets directly
-        if scrollView.contentInset.top != targetTop {
-            scrollView.contentInset.top = targetTop
-        }
-        if scrollView.contentInset.bottom != targetBottom {
-            scrollView.contentInset.bottom = targetBottom
+        // Helper to actually apply the insets
+        let applyInsets = { [weak self] in
+            guard let self, let scrollView = self.scrollView else { return }
+            if scrollView.contentInset.top != targetTop {
+                scrollView.contentInset.top = targetTop
+            }
+            if scrollView.contentInset.bottom != targetBottom {
+                scrollView.contentInset.bottom = targetBottom
+            }
+            // Update scrolled near end state after insets change
+            self.updateScrolledNearEndState()
         }
         
-        // Update scrolled near end state after insets change
-        updateScrolledNearEndState()
+        // Apply with optional delay
+        if let delay = applyContentInsetDelay, delay > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay / 1000.0, execute: applyInsets)
+        } else {
+            applyInsets()
+        }
     }
 
     /// Centralized function to check and fire onScrolledNearEndChange callback

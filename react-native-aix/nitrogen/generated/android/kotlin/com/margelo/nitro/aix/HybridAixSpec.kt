@@ -90,6 +90,12 @@ abstract class HybridAixSpec: HybridView() {
   @set:Keep
   abstract var shouldApplyContentInsets: Boolean?
   
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var applyContentInsetDelay: Double?
+  
   abstract var onWillApplyContentInsets: ((insets: AixContentInsets) -> Unit)?
   
   private var onWillApplyContentInsets_cxx: Func_void_AixContentInsets?

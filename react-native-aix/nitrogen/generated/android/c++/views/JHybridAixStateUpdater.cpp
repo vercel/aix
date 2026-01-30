@@ -68,6 +68,10 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setShouldApplyContentInsets(props.shouldApplyContentInsets.value);
     // TODO: Set isDirty = false
   }
+  if (props.applyContentInsetDelay.isDirty) {
+    view->setApplyContentInsetDelay(props.applyContentInsetDelay.value);
+    // TODO: Set isDirty = false
+  }
   if (props.onWillApplyContentInsets.isDirty) {
     view->setOnWillApplyContentInsets(props.onWillApplyContentInsets.value);
     // TODO: Set isDirty = false

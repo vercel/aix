@@ -73,6 +73,8 @@ namespace margelo::nitro::aix {
       virtual void setPenultimateCellIndex(std::optional<double> penultimateCellIndex) = 0;
       virtual std::optional<bool> getShouldApplyContentInsets() = 0;
       virtual void setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) = 0;
+      virtual std::optional<double> getApplyContentInsetDelay() = 0;
+      virtual void setApplyContentInsetDelay(std::optional<double> applyContentInsetDelay) = 0;
       virtual std::optional<std::function<void(const AixContentInsets& /* insets */)>> getOnWillApplyContentInsets() = 0;
       virtual void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) = 0;
       virtual std::optional<std::function<void(bool /* isNearEnd */)>> getOnScrolledNearEndChange() = 0;

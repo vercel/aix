@@ -130,6 +130,13 @@ namespace margelo::nitro::aix {
     inline void setShouldApplyContentInsets(std::optional<bool> shouldApplyContentInsets) noexcept override {
       _swiftPart.setShouldApplyContentInsets(shouldApplyContentInsets);
     }
+    inline std::optional<double> getApplyContentInsetDelay() noexcept override {
+      auto __result = _swiftPart.getApplyContentInsetDelay();
+      return __result;
+    }
+    inline void setApplyContentInsetDelay(std::optional<double> applyContentInsetDelay) noexcept override {
+      _swiftPart.setApplyContentInsetDelay(applyContentInsetDelay);
+    }
     inline std::optional<std::function<void(const AixContentInsets& /* insets */)>> getOnWillApplyContentInsets() noexcept override {
       auto __result = _swiftPart.getOnWillApplyContentInsets();
       return __result;

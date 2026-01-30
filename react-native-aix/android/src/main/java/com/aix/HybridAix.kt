@@ -5,7 +5,7 @@ import android.view.View
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.uimanager.ThemedReactContext
-import com.margelo.nitro.aix.HybridAixSpec
+import com.margelo.nitro.aix.*
 
 @Keep
 @DoNotStrip
@@ -14,14 +14,24 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec() {
     override val view: View = View(context)
 
     // Props
-    private var _isRed = false
-    override var isRed: Boolean
-        get() = _isRed
-        set(value) {
-            _isRed = value
-            view.setBackgroundColor(
-                if (value) Color.RED
-                else Color.BLACK
-            )
-        }
+    override var shouldStartAtEnd: Boolean = true
+    override var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate? = null
+    override var scrollEndReachedThreshold: Double? = null
+    override var additionalContentInsets: AixAdditionalContentInsetsProp? = null
+    override var additionalScrollIndicatorInsets: AixScrollIndicatorInsets? = null
+    override var mainScrollViewID: String? = null
+    override var penultimateCellIndex: Double? = null
+    override var shouldApplyContentInsets: Boolean? = null
+    override var applyContentInsetDelay: Double? = null
+    override var onWillApplyContentInsets: ((insets: AixContentInsets) -> Unit)? = null
+    override var onScrolledNearEndChange: ((isNearEnd: Boolean) -> Unit)? = null
+
+    // Methods
+    override fun scrollToEnd(animated: Boolean?) {
+        // TODO: Implement for Android
+    }
+
+    override fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?) {
+        // TODO: Implement for Android
+    }
 }

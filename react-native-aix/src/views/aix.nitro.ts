@@ -120,6 +120,13 @@ export interface AixProps extends HybridViewProps {
   penultimateCellIndex?: number
 
   shouldApplyContentInsets?: boolean
+  /**
+   * Optional delay in milliseconds before applying content insets to the scroll view.
+   * 
+   * This can help work around race conditions where insets are applied before
+   * React commits layout changes.
+   */
+  applyContentInsetDelay?: number
   onWillApplyContentInsets?: (insets: AixContentInsets) => void
   /**
    * Called when the scroll position changes between "near end" and "not near end" states.
