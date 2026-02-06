@@ -12,6 +12,7 @@
     "mainScrollViewID": true,
     "penultimateCellIndex": true,
     "shouldApplyContentInsets": true,
+    "applyContentInsetDelay": true,
     "onWillApplyContentInsets": true,
     "onScrolledNearEndChange": true,
     "hybridRef": true

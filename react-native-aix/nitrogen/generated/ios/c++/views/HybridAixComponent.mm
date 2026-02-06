@@ -111,6 +111,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setShouldApplyContentInsets(newViewProps.shouldApplyContentInsets.value);
     newViewProps.shouldApplyContentInsets.isDirty = false;
   }
+  // applyContentInsetDelay: optional
+  if (newViewProps.applyContentInsetDelay.isDirty) {
+    swiftPart.setApplyContentInsetDelay(newViewProps.applyContentInsetDelay.value);
+    newViewProps.applyContentInsetDelay.isDirty = false;
+  }
   // onWillApplyContentInsets: optional
   if (newViewProps.onWillApplyContentInsets.isDirty) {
     swiftPart.setOnWillApplyContentInsets(newViewProps.onWillApplyContentInsets.value);

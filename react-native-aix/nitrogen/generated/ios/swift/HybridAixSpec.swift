@@ -19,6 +19,7 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var mainScrollViewID: String? { get set }
   var penultimateCellIndex: Double? { get set }
   var shouldApplyContentInsets: Bool? { get set }
+  var applyContentInsetDelay: Double? { get set }
   var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? { get set }
   var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? { get set }
 

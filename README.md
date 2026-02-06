@@ -283,6 +283,12 @@ function Chat({ messages }) {
 }
 ```
 
+### Rules
+
+- Do **NOT** apply padding to `contentContainerStyle`. Instead, use padding on
+  children directly.
+- Do **NOT** apply padding to `AixFooter`. Instead, use padding on its children
+
 ---
 
 ## TODOs
