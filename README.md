@@ -5,6 +5,8 @@ alt="aix" width="1600" height="900" />
 
 UI Primitives for building AI apps in React Native.
 
+> aix is currently in alpha preview. The API is likely to change.
+
 ## Features
 
 - Start a chat scrolled to end on the first frame
@@ -25,8 +27,6 @@ repository. However, as we worked to make it flexible for use cases outside of
 our own app, we decided to rewrite it from scratch in native code. What you see
 here is a Nitro Module which handles all business logic in UIKit. We plan on
 adding support for Android as well and welcome contributions.
-
-> aix is currently in alpha preview. The API may change.
 
 ## Installation
 
