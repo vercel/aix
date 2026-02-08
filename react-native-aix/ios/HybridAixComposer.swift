@@ -121,7 +121,10 @@ class HybridAixComposer: HybridAixComposerSpec {
         let currentHeight = view.bounds.height
         if currentHeight != lastReportedHeight {
             lastReportedHeight = currentHeight
-            getAixContext()?.reportComposerHeightChange(height: currentHeight)
+            if let ctx = cachedAixContext {
+                ctx.reportComposerHeightChange(height: currentHeight)
+                applyKeyboardTransform(height: ctx.keyboardHeight, heightWhenOpen: ctx.keyboardHeightWhenOpen, animated: false)
+            }
         }
     }
 
