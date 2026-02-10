@@ -480,7 +480,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Centralized function to check and fire onScrolledNearEndChange callback
     /// Called from KVO observers and after content inset changes
     private func updateScrolledNearEndState() {
-        guard scrollView != nil else { return }
+        guard didScrollToEndInitially, scrollView != nil else { return }
         let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         guard isNearEnd != prevIsScrolledNearEnd else { return }
         prevIsScrolledNearEnd = isNearEnd
@@ -730,7 +730,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 applyContentInset()
                 applyScrollIndicatorInsets()
                 scrollToEndInternal(animated: false)
-                updateScrolledNearEndState()
+                prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
             }
             didScrollToEndInitially = true
         } else {
