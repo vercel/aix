@@ -1,6 +1,12 @@
 import './src/polyfill';
 
-import React, { useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   StyleSheet,
@@ -11,14 +17,18 @@ import {
   Pressable,
   PlatformColor,
   useColorScheme,
+  Image,
 } from 'react-native';
 import {
   Aix,
   AixCell,
   AixFooter,
+  AixInputWrapper,
+  AixDropzone,
   useAixRef,
   TextFadeInStaggeredIfStreaming,
   useContentInsetHandler,
+  type AixInputWrapperOnPasteEvent,
 } from 'aix';
 import { useAppleChat, useMessages } from './src/apple';
 import {
@@ -31,13 +41,54 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   useAnimatedProps,
+  Keyframe,
   FadeIn,
   FadeOut,
-  Keyframe,
 } from 'react-native-reanimated';
 import { AnimatedLegendList as LegendList } from '@legendapp/list/reanimated';
 import { useIsLastItem } from '@legendapp/list';
 import { FlashList } from '@shopify/flash-list';
+
+type AttachmentsContextType = {
+  attachments: AixInputWrapperOnPasteEvent[];
+  addAttachments: (newAttachments: AixInputWrapperOnPasteEvent[]) => void;
+  clearAttachments: () => void;
+};
+
+const AttachmentsContext = createContext<AttachmentsContextType>({
+  attachments: [],
+  addAttachments: () => {},
+  clearAttachments: () => {},
+});
+
+function useAttachments() {
+  return useContext(AttachmentsContext);
+}
+
+function AttachmentsProvider({ children }: { children: React.ReactNode }) {
+  const [attachments, setAttachments] = useState<AixInputWrapperOnPasteEvent[]>(
+    [],
+  );
+
+  const addAttachments = useCallback(
+    (newAttachments: AixInputWrapperOnPasteEvent[]) => {
+      setAttachments(prev => [...prev, ...newAttachments]);
+    },
+    [],
+  );
+
+  const clearAttachments = useCallback(() => {
+    setAttachments([]);
+  }, []);
+
+  return (
+    <AttachmentsContext.Provider
+      value={{ attachments, addAttachments, clearAttachments }}
+    >
+      {children}
+    </AttachmentsContext.Provider>
+  );
+}
 
 function CellRenderer({
   children,
@@ -139,7 +190,9 @@ function Chat({ children }: { children: React.ReactNode }) {
       <Animated.ScrollView
         {...examples.scrollProps}
         animatedProps={animatedScrollViewProps}
-        contentInset={isUsingExperimentalLegendList ? contentInset : undefined}
+        contentInset={
+          isUsingExperimentalLegendList ? contentInset.get() : undefined
+        }
       >
         {messages.map((message, index) => (
           <CellRenderer
@@ -170,63 +223,93 @@ function Chat({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Aix
-      shouldStartAtEnd={true}
-      scrollOnFooterSizeUpdate={{
-        enabled: true,
-        scrolledToEndThreshold: 200,
-        animated: false,
+    <AttachmentsProvider>
+      <DropzoneWithAttachments>
+        <Aix
+          shouldStartAtEnd={true}
+          scrollOnFooterSizeUpdate={{
+            enabled: true,
+            scrolledToEndThreshold: 200,
+            animated: false,
+          }}
+          onScrolledNearEndChange={isNearEnd => {
+            console.log('onScrolledNearEndChange', isNearEnd);
+            setIsNearEnd(isNearEnd);
+          }}
+          style={styles.container}
+          ref={aix}
+          additionalContentInsets={{
+            bottom: {
+              whenKeyboardClosed: safeAreaInsetsBottom,
+              whenKeyboardOpen: 0,
+            },
+          }}
+          additionalScrollIndicatorInsets={{
+            bottom: {
+              whenKeyboardClosed: safeAreaInsetsBottom,
+              whenKeyboardOpen: 0,
+            },
+          }}
+          mainScrollViewID={mainScrollViewID}
+          // JS-controlled content insets
+          {...(isUsingExperimentalLegendList && {
+            shouldApplyContentInsets: false,
+            onWillApplyContentInsets: contentInsetHandler,
+          })}
+        >
+          {children}
+          {examples.scrollview()}
+          <AixFooter
+            style={styles.footer}
+            fixInput
+            stickToKeyboard={{
+              enabled: true,
+              offset: {
+                whenKeyboardClosed: safeAreaInsetsBottom,
+                whenKeyboardOpen: 0,
+              },
+            }}
+          >
+            <Composer
+              onScrollToEnd={() => aix.current?.scrollToEnd(true)}
+              isNearEnd={isNearEnd}
+              onSubmit={message => {
+                const nextAssistantMessageIndex = messages.length + 1;
+                aix.current?.scrollToIndexWhenBlankSizeReady(
+                  nextAssistantMessageIndex,
+                  true,
+                  false,
+                );
+                setAnimateMessageIndex(nextAssistantMessageIndex);
+                send(message);
+              }}
+            />
+          </AixFooter>
+        </Aix>
+      </DropzoneWithAttachments>
+    </AttachmentsProvider>
+  );
+}
+
+function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
+  const { addAttachments } = useAttachments();
+  return (
+    <AixDropzone
+      onDrop={events => {
+        console.log('onDrop', events);
+        addAttachments(events);
       }}
-      onScrolledNearEndChange={setIsNearEnd}
-      style={styles.container}
-      ref={aix}
-      additionalContentInsets={{
-        bottom: {
-          whenKeyboardClosed: safeAreaInsetsBottom,
-          whenKeyboardOpen: 0,
-        },
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
       }}
-      additionalScrollIndicatorInsets={{
-        bottom: {
-          whenKeyboardClosed: safeAreaInsetsBottom,
-          whenKeyboardOpen: 0,
-        },
-      }}
-      mainScrollViewID={mainScrollViewID}
-      // JS-controlled content insets
-      {...(isUsingExperimentalLegendList && {
-        shouldApplyContentInsets: false,
-        onWillApplyContentInsets: contentInsetHandler,
-      })}
     >
       {children}
-      {examples.scrollview()}
-      <AixFooter
-        style={styles.footer}
-        stickToKeyboard={{
-          enabled: true,
-          offset: {
-            whenKeyboardClosed: safeAreaInsetsBottom,
-            whenKeyboardOpen: 0,
-          },
-        }}
-      >
-        <Composer
-          onScrollToEnd={() => aix.current?.scrollToEnd(true)}
-          isNearEnd={isNearEnd}
-          onSubmit={message => {
-            const nextAssistantMessageIndex = messages.length + 1;
-            aix.current?.scrollToIndexWhenBlankSizeReady(
-              nextAssistantMessageIndex,
-              true,
-              false,
-            );
-            setAnimateMessageIndex(nextAssistantMessageIndex);
-            send(message);
-          }}
-        />
-      </AixFooter>
-    </Aix>
+    </AixDropzone>
   );
 }
 
@@ -266,6 +349,7 @@ function Composer({
 }) {
   const colorScheme = useColorScheme();
   const [inputValue, setInputValue] = useState('');
+  const { attachments, addAttachments } = useAttachments();
   const inputRef = useRef<TextInput>(null);
   return (
     <>
@@ -297,17 +381,55 @@ function Composer({
         ]}
       />
       <View style={styles.footerRow}>
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <TextInput
-            onChangeText={setInputValue}
-            style={[styles.input]}
-            placeholderTextColor={PlatformColor('placeholderText')}
-            placeholder="Type something..."
-            ref={inputRef}
-            multiline
-            value={inputValue}
-            autoFocus
-          />
+        <View style={styles.inputContainer}>
+          {attachments.length > 0 ? (
+            <ScrollView
+              horizontal
+              style={styles.attachmentsContainer}
+              contentContainerStyle={styles.attachmentsContentContainer}
+            >
+              {attachments.map((attachment, index) =>
+                attachment.type === 'image' ? (
+                  <Animated.Image
+                    entering={FadeIn}
+                    exiting={FadeOut}
+                    source={{ uri: attachment.filePath }}
+                    style={styles.attachment}
+                    key={index}
+                  />
+                ) : (
+                  <Animated.View
+                    entering={FadeIn}
+                    exiting={FadeOut}
+                    key={index}
+                    style={styles.attachment}
+                  >
+                    <Text style={styles.attachmentText}>
+                      {attachment.fileExtension?.toUpperCase() ?? 'FILE'}
+                    </Text>
+                  </Animated.View>
+                ),
+              )}
+            </ScrollView>
+          ) : null}
+          <AixInputWrapper
+            editMenuDefaultActions={['paste']}
+            onPaste={(events: AixInputWrapperOnPasteEvent[]) => {
+              addAttachments(events);
+            }}
+            style={{ flex: 1 }}
+          >
+            <TextInput
+              placeholderTextColor={PlatformColor('placeholderText')}
+              placeholder="Type something..."
+              onChangeText={setInputValue}
+              style={styles.input}
+              value={inputValue}
+              ref={inputRef}
+              multiline
+              autoFocus
+            />
+          </AixInputWrapper>
         </View>
 
         <Pressable
@@ -453,16 +575,22 @@ const styles = StyleSheet.create({
     paddingVertical,
     gap: gap(3),
   },
-  input: {
-    fontSize,
-    color: PlatformColor('label'),
+  inputContainer: {
     backgroundColor: PlatformColor('systemBackground'),
     borderWidth: 1,
     borderColor: PlatformColor('separator'),
-    paddingVertical: (44 - lineHeight(fontSize)) / 2,
     borderRadius: 24,
     borderCurve: 'continuous',
+    minHeight: 44,
+    flex: 1,
+    overflow: 'hidden',
+  },
+  input: {
+    fontSize,
+    color: PlatformColor('label'),
+    paddingVertical: (44 - lineHeight(fontSize)) / 2,
     paddingHorizontal: gap(4),
+    minHeight: 44,
   },
   userMessage: {
     backgroundColor: PlatformColor('secondarySystemBackground'),
@@ -517,6 +645,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: PlatformColor('label'),
+  },
+  attachment: {
+    backgroundColor: PlatformColor('systemGray3'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    height: 80,
+    width: 80,
+    borderWidth: 1,
+    borderColor: PlatformColor('separator'),
+    borderCurve: 'continuous',
+  },
+  attachmentsContainer: {
+    paddingHorizontal: gap(2),
+    paddingVertical: gap(2),
+  },
+  attachmentsContentContainer: {
+    gap: gap(2),
+  },
+  attachmentText: {
+    fontSize: 14,
+    color: PlatformColor('secondaryLabel'),
+    fontWeight: '500',
   },
 });
 

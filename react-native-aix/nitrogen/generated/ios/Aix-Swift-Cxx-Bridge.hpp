@@ -14,6 +14,8 @@ namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
+// Forward declaration of `AixInputWrapperOnPasteEvent` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixInputWrapperOnPasteEvent; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
@@ -28,6 +30,10 @@ namespace margelo::nitro::aix { struct AixStickToKeyboard; }
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixComposerSpec; }
+// Forward declaration of `HybridAixDropzoneSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixDropzoneSpec; }
+// Forward declaration of `HybridAixInputWrapperSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixInputWrapperSpec; }
 // Forward declaration of `HybridAixSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixSpec; }
 
@@ -36,6 +42,10 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 namespace Aix { class HybridAixCellViewSpec_cxx; }
 // Forward declaration of `HybridAixComposerSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixComposerSpec_cxx; }
+// Forward declaration of `HybridAixDropzoneSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixDropzoneSpec_cxx; }
+// Forward declaration of `HybridAixInputWrapperSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixInputWrapperSpec_cxx; }
 // Forward declaration of `HybridAixSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixSpec_cxx; }
 
@@ -43,6 +53,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "AixAdditionalContentInsets.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixContentInsets.hpp"
+#include "AixInputWrapperOnPasteEvent.hpp"
 #include "AixScrollIndicatorInsetValue.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include "AixScrollOnFooterSizeUpdate.hpp"
@@ -50,6 +61,8 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "AixStickToKeyboardOffset.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
+#include "HybridAixDropzoneSpec.hpp"
+#include "HybridAixInputWrapperSpec.hpp"
 #include "HybridAixSpec.hpp"
 #include <NitroModules/Result.hpp>
 #include <exception>
@@ -57,6 +70,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 /**
  * Contains specialized versions of C++ templated types so they can be accessed from Swift,
@@ -332,5 +346,103 @@ namespace margelo::nitro::aix::bridge::swift {
   // pragma MARK: std::weak_ptr<HybridAixComposerSpec>
   using std__weak_ptr_HybridAixComposerSpec_ = std::weak_ptr<HybridAixComposerSpec>;
   inline std__weak_ptr_HybridAixComposerSpec_ weakify_std__shared_ptr_HybridAixComposerSpec_(const std::shared_ptr<HybridAixComposerSpec>& strong) noexcept { return strong; }
+  
+  // pragma MARK: std::vector<std::string>
+  /**
+   * Specialized version of `std::vector<std::string>`.
+   */
+  using std__vector_std__string_ = std::vector<std::string>;
+  inline std::vector<std::string> create_std__vector_std__string_(size_t size) noexcept {
+    std::vector<std::string> vector;
+    vector.reserve(size);
+    return vector;
+  }
+  
+  // pragma MARK: std::optional<std::vector<std::string>>
+  /**
+   * Specialized version of `std::optional<std::vector<std::string>>`.
+   */
+  using std__optional_std__vector_std__string__ = std::optional<std::vector<std::string>>;
+  inline std::optional<std::vector<std::string>> create_std__optional_std__vector_std__string__(const std::vector<std::string>& value) noexcept {
+    return std::optional<std::vector<std::string>>(value);
+  }
+  inline bool has_value_std__optional_std__vector_std__string__(const std::optional<std::vector<std::string>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::vector<std::string> get_std__optional_std__vector_std__string__(const std::optional<std::vector<std::string>>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::vector<AixInputWrapperOnPasteEvent>
+  /**
+   * Specialized version of `std::vector<AixInputWrapperOnPasteEvent>`.
+   */
+  using std__vector_AixInputWrapperOnPasteEvent_ = std::vector<AixInputWrapperOnPasteEvent>;
+  inline std::vector<AixInputWrapperOnPasteEvent> create_std__vector_AixInputWrapperOnPasteEvent_(size_t size) noexcept {
+    std::vector<AixInputWrapperOnPasteEvent> vector;
+    vector.reserve(size);
+    return vector;
+  }
+  
+  // pragma MARK: std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>
+  /**
+   * Specialized version of `std::function<void(const std::vector<AixInputWrapperOnPasteEvent>&)>`.
+   */
+  using Func_void_std__vector_AixInputWrapperOnPasteEvent_ = std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>;
+  /**
+   * Wrapper class for a `std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& / * events * /)>`, this can be used from Swift.
+   */
+  class Func_void_std__vector_AixInputWrapperOnPasteEvent__Wrapper final {
+  public:
+    explicit Func_void_std__vector_AixInputWrapperOnPasteEvent__Wrapper(std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>&& func): _function(std::make_unique<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>>(std::move(func))) {}
+    inline void call(std::vector<AixInputWrapperOnPasteEvent> events) const noexcept {
+      _function->operator()(events);
+    }
+  private:
+    std::unique_ptr<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_std__vector_AixInputWrapperOnPasteEvent_ create_Func_void_std__vector_AixInputWrapperOnPasteEvent_(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__vector_AixInputWrapperOnPasteEvent__Wrapper wrap_Func_void_std__vector_AixInputWrapperOnPasteEvent_(Func_void_std__vector_AixInputWrapperOnPasteEvent_ value) noexcept {
+    return Func_void_std__vector_AixInputWrapperOnPasteEvent__Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>>
+  /**
+   * Specialized version of `std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& / * events * /)>>`.
+   */
+  using std__optional_std__function_void_const_std__vector_AixInputWrapperOnPasteEvent______events______ = std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>>;
+  inline std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>> create_std__optional_std__function_void_const_std__vector_AixInputWrapperOnPasteEvent______events______(const std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>& value) noexcept {
+    return std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>>(value);
+  }
+  inline bool has_value_std__optional_std__function_void_const_std__vector_AixInputWrapperOnPasteEvent______events______(const std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)> get_std__optional_std__function_void_const_std__vector_AixInputWrapperOnPasteEvent______events______(const std::optional<std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>>& optional) noexcept {
+    return *optional;
+  }
+  
+  // pragma MARK: std::shared_ptr<HybridAixInputWrapperSpec>
+  /**
+   * Specialized version of `std::shared_ptr<HybridAixInputWrapperSpec>`.
+   */
+  using std__shared_ptr_HybridAixInputWrapperSpec_ = std::shared_ptr<HybridAixInputWrapperSpec>;
+  std::shared_ptr<HybridAixInputWrapperSpec> create_std__shared_ptr_HybridAixInputWrapperSpec_(void* NON_NULL swiftUnsafePointer) noexcept;
+  void* NON_NULL get_std__shared_ptr_HybridAixInputWrapperSpec_(std__shared_ptr_HybridAixInputWrapperSpec_ cppType);
+  
+  // pragma MARK: std::weak_ptr<HybridAixInputWrapperSpec>
+  using std__weak_ptr_HybridAixInputWrapperSpec_ = std::weak_ptr<HybridAixInputWrapperSpec>;
+  inline std__weak_ptr_HybridAixInputWrapperSpec_ weakify_std__shared_ptr_HybridAixInputWrapperSpec_(const std::shared_ptr<HybridAixInputWrapperSpec>& strong) noexcept { return strong; }
+  
+  // pragma MARK: std::shared_ptr<HybridAixDropzoneSpec>
+  /**
+   * Specialized version of `std::shared_ptr<HybridAixDropzoneSpec>`.
+   */
+  using std__shared_ptr_HybridAixDropzoneSpec_ = std::shared_ptr<HybridAixDropzoneSpec>;
+  std::shared_ptr<HybridAixDropzoneSpec> create_std__shared_ptr_HybridAixDropzoneSpec_(void* NON_NULL swiftUnsafePointer) noexcept;
+  void* NON_NULL get_std__shared_ptr_HybridAixDropzoneSpec_(std__shared_ptr_HybridAixDropzoneSpec_ cppType);
+  
+  // pragma MARK: std::weak_ptr<HybridAixDropzoneSpec>
+  using std__weak_ptr_HybridAixDropzoneSpec_ = std::weak_ptr<HybridAixDropzoneSpec>;
+  inline std__weak_ptr_HybridAixDropzoneSpec_ weakify_std__shared_ptr_HybridAixDropzoneSpec_(const std::shared_ptr<HybridAixDropzoneSpec>& strong) noexcept { return strong; }
 
 } // namespace margelo::nitro::aix::bridge::swift

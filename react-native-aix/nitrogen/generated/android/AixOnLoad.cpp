@@ -23,6 +23,11 @@
 #include "views/JHybridAixCellViewStateUpdater.hpp"
 #include "JHybridAixComposerSpec.hpp"
 #include "views/JHybridAixComposerStateUpdater.hpp"
+#include "JHybridAixInputWrapperSpec.hpp"
+#include "JFunc_void_std__vector_AixInputWrapperOnPasteEvent_.hpp"
+#include "views/JHybridAixInputWrapperStateUpdater.hpp"
+#include "JHybridAixDropzoneSpec.hpp"
+#include "views/JHybridAixDropzoneStateUpdater.hpp"
 #include <NitroModules/DefaultConstructableObject.hpp>
 
 namespace margelo::nitro::aix {
@@ -42,6 +47,11 @@ int initialize(JavaVM* vm) {
     margelo::nitro::aix::views::JHybridAixCellViewStateUpdater::registerNatives();
     margelo::nitro::aix::JHybridAixComposerSpec::registerNatives();
     margelo::nitro::aix::views::JHybridAixComposerStateUpdater::registerNatives();
+    margelo::nitro::aix::JHybridAixInputWrapperSpec::registerNatives();
+    margelo::nitro::aix::JFunc_void_std__vector_AixInputWrapperOnPasteEvent__cxx::registerNatives();
+    margelo::nitro::aix::views::JHybridAixInputWrapperStateUpdater::registerNatives();
+    margelo::nitro::aix::JHybridAixDropzoneSpec::registerNatives();
+    margelo::nitro::aix::views::JHybridAixDropzoneStateUpdater::registerNatives();
 
     // Register Nitro Hybrid Objects
     HybridObjectRegistry::registerHybridObjectConstructor(
@@ -64,6 +74,22 @@ int initialize(JavaVM* vm) {
       "AixComposer",
       []() -> std::shared_ptr<HybridObject> {
         static DefaultConstructableObject<JHybridAixComposerSpec::javaobject> object("com/aix/HybridAixComposer");
+        auto instance = object.create();
+        return instance->cthis()->shared();
+      }
+    );
+    HybridObjectRegistry::registerHybridObjectConstructor(
+      "AixInputWrapper",
+      []() -> std::shared_ptr<HybridObject> {
+        static DefaultConstructableObject<JHybridAixInputWrapperSpec::javaobject> object("com/aix/HybridAixInputWrapper");
+        auto instance = object.create();
+        return instance->cthis()->shared();
+      }
+    );
+    HybridObjectRegistry::registerHybridObjectConstructor(
+      "AixDropzone",
+      []() -> std::shared_ptr<HybridObject> {
+        static DefaultConstructableObject<JHybridAixDropzoneSpec::javaobject> object("com/aix/HybridAixDropzone");
         auto instance = object.create();
         return instance->cthis()->shared();
       }

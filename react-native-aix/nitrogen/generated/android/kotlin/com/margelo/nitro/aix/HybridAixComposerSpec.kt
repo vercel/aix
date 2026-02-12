@@ -47,6 +47,12 @@ abstract class HybridAixComposerSpec: HybridView() {
   @set:DoNotStrip
   @set:Keep
   abstract var stickToKeyboard: AixStickToKeyboard?
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var fixInput: Boolean?
 
   // Methods
   
