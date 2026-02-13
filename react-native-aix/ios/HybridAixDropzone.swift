@@ -80,6 +80,7 @@ private final class DropzoneDelegate: NSObject, UIDropInteractionDelegate {
     func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
         let providers = session.items.map { $0.itemProvider }
         var images: [UIImage] = []
+        let lock = NSLock()
         let group = DispatchGroup()
 
         for provider in providers {
@@ -88,7 +89,9 @@ private final class DropzoneDelegate: NSObject, UIDropInteractionDelegate {
             provider.loadObject(ofClass: UIImage.self) { object, _ in
                 defer { group.leave() }
                 guard let image = object as? UIImage else { return }
+                lock.lock()
                 images.append(image)
+                lock.unlock()
             }
         }
 
