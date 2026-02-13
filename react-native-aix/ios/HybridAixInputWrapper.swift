@@ -237,6 +237,7 @@ class HybridAixInputWrapper: HybridAixInputWrapperSpec {
 
     func checkForFiles(itemProviders: [NSItemProvider], completion: @escaping ([AixInputWrapperOnPasteEvent]) -> Void) {
         var events: [AixInputWrapperOnPasteEvent] = []
+        let lock = NSLock()
         let group = DispatchGroup()
 
         for provider in itemProviders {
@@ -248,6 +249,8 @@ class HybridAixInputWrapper: HybridAixInputWrapperSpec {
                     if let uri = try? PasteFileManager.save(data: data, fileExtension: "pdf") {
                         print("\(LOG_TAG) PDF saved to \(uri)")
                         let fileURL = URL(fileURLWithPath: uri)
+                        lock.lock()
+                        defer { lock.unlock() }
                         events.append(AixInputWrapperOnPasteEvent(
                             type: "file",
                             filePath: uri,
@@ -264,6 +267,8 @@ class HybridAixInputWrapper: HybridAixInputWrapperSpec {
                     if let uri = try? PasteFileManager.save(data: data, fileExtension: "svg") {
                         print("\(LOG_TAG) SVG saved to \(uri)")
                         let fileURL = URL(fileURLWithPath: uri)
+                        lock.lock()
+                        defer { lock.unlock() }
                         events.append(AixInputWrapperOnPasteEvent(
                             type: "file",
                             filePath: uri,
@@ -280,6 +285,8 @@ class HybridAixInputWrapper: HybridAixInputWrapperSpec {
                     if let uri = try? PasteFileManager.save(image: image) {
                         print("\(LOG_TAG) Image saved to \(uri)")
                         let fileURL = URL(fileURLWithPath: uri)
+                        lock.lock()
+                        defer { lock.unlock() }
                         events.append(AixInputWrapperOnPasteEvent(
                             type: "image",
                             filePath: uri,
