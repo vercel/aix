@@ -68,6 +68,13 @@ namespace margelo::nitro::aix {
     inline void setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) noexcept override {
       _swiftPart.setStickToKeyboard(stickToKeyboard);
     }
+    inline std::optional<bool> getFixInput() noexcept override {
+      auto __result = _swiftPart.getFixInput();
+      return __result;
+    }
+    inline void setFixInput(std::optional<bool> fixInput) noexcept override {
+      _swiftPart.setFixInput(fixInput);
+    }
 
   public:
     // Methods

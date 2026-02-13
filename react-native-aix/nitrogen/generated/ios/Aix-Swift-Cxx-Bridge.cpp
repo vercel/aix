@@ -11,6 +11,8 @@
 #include "Aix-Swift-Cxx-Umbrella.hpp"
 #include "HybridAixCellViewSpecSwift.hpp"
 #include "HybridAixComposerSpecSwift.hpp"
+#include "HybridAixDropzoneSpecSwift.hpp"
+#include "HybridAixInputWrapperSpecSwift.hpp"
 #include "HybridAixSpecSwift.hpp"
 #include <NitroModules/NitroDefines.hpp>
 
@@ -77,6 +79,46 @@ namespace margelo::nitro::aix::bridge::swift {
     }
     #endif
     Aix::HybridAixComposerSpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
+    return swiftPart.toUnsafe();
+  }
+  
+  // pragma MARK: std::function<void(const std::vector<AixInputWrapperOnPasteEvent>& /* events */)>
+  Func_void_std__vector_AixInputWrapperOnPasteEvent_ create_Func_void_std__vector_AixInputWrapperOnPasteEvent_(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = Aix::Func_void_std__vector_AixInputWrapperOnPasteEvent_::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const std::vector<AixInputWrapperOnPasteEvent>& events) mutable -> void {
+      swiftClosure.call(events);
+    };
+  }
+  
+  // pragma MARK: std::shared_ptr<HybridAixInputWrapperSpec>
+  std::shared_ptr<HybridAixInputWrapperSpec> create_std__shared_ptr_HybridAixInputWrapperSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
+    Aix::HybridAixInputWrapperSpec_cxx swiftPart = Aix::HybridAixInputWrapperSpec_cxx::fromUnsafe(swiftUnsafePointer);
+    return std::make_shared<margelo::nitro::aix::HybridAixInputWrapperSpecSwift>(swiftPart);
+  }
+  void* NON_NULL get_std__shared_ptr_HybridAixInputWrapperSpec_(std__shared_ptr_HybridAixInputWrapperSpec_ cppType) {
+    std::shared_ptr<margelo::nitro::aix::HybridAixInputWrapperSpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::aix::HybridAixInputWrapperSpecSwift>(cppType);
+    #ifdef NITRO_DEBUG
+    if (swiftWrapper == nullptr) [[unlikely]] {
+      throw std::runtime_error("Class \"HybridAixInputWrapperSpec\" is not implemented in Swift!");
+    }
+    #endif
+    Aix::HybridAixInputWrapperSpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
+    return swiftPart.toUnsafe();
+  }
+  
+  // pragma MARK: std::shared_ptr<HybridAixDropzoneSpec>
+  std::shared_ptr<HybridAixDropzoneSpec> create_std__shared_ptr_HybridAixDropzoneSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
+    Aix::HybridAixDropzoneSpec_cxx swiftPart = Aix::HybridAixDropzoneSpec_cxx::fromUnsafe(swiftUnsafePointer);
+    return std::make_shared<margelo::nitro::aix::HybridAixDropzoneSpecSwift>(swiftPart);
+  }
+  void* NON_NULL get_std__shared_ptr_HybridAixDropzoneSpec_(std__shared_ptr_HybridAixDropzoneSpec_ cppType) {
+    std::shared_ptr<margelo::nitro::aix::HybridAixDropzoneSpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::aix::HybridAixDropzoneSpecSwift>(cppType);
+    #ifdef NITRO_DEBUG
+    if (swiftWrapper == nullptr) [[unlikely]] {
+      throw std::runtime_error("Class \"HybridAixDropzoneSpec\" is not implemented in Swift!");
+    }
+    #endif
+    Aix::HybridAixDropzoneSpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
     return swiftPart.toUnsafe();
   }
 

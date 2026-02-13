@@ -52,6 +52,8 @@ namespace margelo::nitro::aix {
     // Properties
     std::optional<AixStickToKeyboard> getStickToKeyboard() override;
     void setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) override;
+    std::optional<bool> getFixInput() override;
+    void setFixInput(std::optional<bool> fixInput) override;
 
   public:
     // Methods

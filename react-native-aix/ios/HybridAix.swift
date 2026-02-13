@@ -91,6 +91,19 @@ extension UIView {
         }
         return nil
     }
+
+    /// Recursively search subviews to find the first UITextField or UITextView
+    func findTextInput() -> UIView? {
+        if self is UITextField || self is UITextView {
+            return self
+        }
+        for subview in subviews {
+            if let input = subview.findTextInput() {
+                return input
+            }
+        }
+        return nil
+    }
 }
 
 // MARK: - HybridAix (Root Context)
@@ -115,7 +128,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var scrollOnComposerSizeUpdate: AixScrollOnFooterSizeUpdate?
 
-    var mainScrollViewID: String?
+    var mainScrollViewID: String? {
+        didSet {
+            guard mainScrollViewID != oldValue else { return }
+            removePanGestureObserver()
+            removeScrollViewObservers()
+            cachedScrollView = nil
+            didSetupPanGestureObserver = false
+        }
+    }
     
     func scrollToEnd(animated: Bool?) {
         // Dispatch to main thread since this may be called from RN background thread
@@ -144,7 +165,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
-    private var didScrollToEndInitially = false
+    private var didScrollToEndInitiallyForId: String? = nil
+
+    private var didScrollToEndInitially: Bool {
+        return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
+    }
     
     // MARK: - Inner View
     
@@ -732,7 +757,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 scrollToEndInternal(animated: false)
                 prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
             }
-            didScrollToEndInitially = true
+            didScrollToEndInitiallyForId = mainScrollViewID ?? ""
         } else {
             applyContentInset()
             applyScrollIndicatorInsets()

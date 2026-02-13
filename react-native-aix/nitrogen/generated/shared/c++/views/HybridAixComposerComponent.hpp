@@ -44,6 +44,7 @@ namespace margelo::nitro::aix::views {
 
   public:
     CachedProp<std::optional<AixStickToKeyboard>> stickToKeyboard;
+    CachedProp<std::optional<bool>> fixInput;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixComposerSpec>& /* ref */)>>> hybridRef;
 
   private:

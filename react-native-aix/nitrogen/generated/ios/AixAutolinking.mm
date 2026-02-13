@@ -13,6 +13,8 @@
 #include "HybridAixSpecSwift.hpp"
 #include "HybridAixCellViewSpecSwift.hpp"
 #include "HybridAixComposerSpecSwift.hpp"
+#include "HybridAixInputWrapperSpecSwift.hpp"
+#include "HybridAixDropzoneSpecSwift.hpp"
 
 @interface AixAutolinking : NSObject
 @end
@@ -41,6 +43,20 @@
     "AixComposer",
     []() -> std::shared_ptr<HybridObject> {
       std::shared_ptr<HybridAixComposerSpec> hybridObject = Aix::AixAutolinking::createAixComposer();
+      return hybridObject;
+    }
+  );
+  HybridObjectRegistry::registerHybridObjectConstructor(
+    "AixInputWrapper",
+    []() -> std::shared_ptr<HybridObject> {
+      std::shared_ptr<HybridAixInputWrapperSpec> hybridObject = Aix::AixAutolinking::createAixInputWrapper();
+      return hybridObject;
+    }
+  );
+  HybridObjectRegistry::registerHybridObjectConstructor(
+    "AixDropzone",
+    []() -> std::shared_ptr<HybridObject> {
+      std::shared_ptr<HybridAixDropzoneSpec> hybridObject = Aix::AixAutolinking::createAixDropzone();
       return hybridObject;
     }
   );

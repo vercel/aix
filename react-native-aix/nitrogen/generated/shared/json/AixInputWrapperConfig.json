@@ -1,0 +1,14 @@
+{
+  "uiViewClassName": "AixInputWrapper",
+  "supportsRawText": false,
+  "bubblingEventTypes": {},
+  "directEventTypes": {},
+  "validAttributes": {
+    "pasteConfiguration": true,
+    "editMenuDefaultActions": true,
+    "maxLines": true,
+    "maxChars": true,
+    "onPaste": true,
+    "hybridRef": true
+  }
+}

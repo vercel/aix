@@ -40,6 +40,10 @@ void JHybridAixComposerStateUpdater::updateViewProps(jni::alias_ref<jni::JClass>
     view->setStickToKeyboard(props.stickToKeyboard.value);
     // TODO: Set isDirty = false
   }
+  if (props.fixInput.isDirty) {
+    view->setFixInput(props.fixInput.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

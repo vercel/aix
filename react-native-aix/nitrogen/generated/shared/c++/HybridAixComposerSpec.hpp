@@ -48,6 +48,8 @@ namespace margelo::nitro::aix {
       // Properties
       virtual std::optional<AixStickToKeyboard> getStickToKeyboard() = 0;
       virtual void setStickToKeyboard(const std::optional<AixStickToKeyboard>& stickToKeyboard) = 0;
+      virtual std::optional<bool> getFixInput() = 0;
+      virtual void setFixInput(std::optional<bool> fixInput) = 0;
 
     public:
       // Methods

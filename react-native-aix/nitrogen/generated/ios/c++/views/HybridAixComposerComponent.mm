@@ -76,6 +76,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setStickToKeyboard(newViewProps.stickToKeyboard.value);
     newViewProps.stickToKeyboard.isDirty = false;
   }
+  // fixInput: optional
+  if (newViewProps.fixInput.isDirty) {
+    swiftPart.setFixInput(newViewProps.fixInput.value);
+    newViewProps.fixInput.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 

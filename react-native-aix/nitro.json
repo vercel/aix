@@ -20,6 +20,14 @@
     "AixComposer": {
       "swift": "HybridAixComposer",
       "kotlin": "HybridAixComposer"
+    },
+    "AixInputWrapper": {
+      "swift": "HybridAixInputWrapper",
+      "kotlin": "HybridAixInputWrapper"
+    },
+    "AixDropzone": {
+      "swift": "HybridAixDropzone",
+      "kotlin": "HybridAixDropzone"
     }
   },
   "ignorePaths": ["**/node_modules"]

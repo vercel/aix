@@ -7,6 +7,9 @@ export * from './fade-in'
 
 export { Aix, type AixRef } from './aix'
 export { AixFooter } from './footer'
+export { AixInputWrapper } from './input-wrapper'
+export { AixDropzone } from './dropzone'
+export type { AixInputWrapperOnPasteEvent } from './views/aix.nitro'
 export { useContentInsetHandler } from './hooks/useContentInsetHandler'
 export type { AixContentInsets } from './views/aix.nitro'
 

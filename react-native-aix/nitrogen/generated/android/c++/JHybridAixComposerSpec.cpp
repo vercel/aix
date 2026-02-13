@@ -56,6 +56,15 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JAixStickToKeyboard> /* stickToKeyboard */)>("setStickToKeyboard");
     method(_javaPart, stickToKeyboard.has_value() ? JAixStickToKeyboard::fromCpp(stickToKeyboard.value()) : nullptr);
   }
+  std::optional<bool> JHybridAixComposerSpec::getFixInput() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JBoolean>()>("getFixInput");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(static_cast<bool>(__result->value())) : std::nullopt;
+  }
+  void JHybridAixComposerSpec::setFixInput(std::optional<bool> fixInput) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* fixInput */)>("setFixInput");
+    method(_javaPart, fixInput.has_value() ? jni::JBoolean::valueOf(fixInput.value()) : nullptr);
+  }
 
   // Methods
   
