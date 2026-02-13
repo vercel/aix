@@ -70,7 +70,7 @@ enum PasteFileManager {
         }
 
         if removed > 0 {
-            print("\(LOG_TAG) Cleaned up \(removed) old paste file(s)")
+            print("[PasteFileManager] Cleaned up \(removed) old paste file(s)")
         }
     }
 
