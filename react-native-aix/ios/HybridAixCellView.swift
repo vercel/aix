@@ -6,14 +6,16 @@
 //
 
 import Foundation
+import os.log
 import UIKit
+
+private let log = Logger(subsystem: "com.aix", category: "cell")
 
 /// HybridAixCellView wraps each list item in the chat (the "blank" cell at the end)
 /// It tracks its index and whether it's the last item,
 /// and reports size changes to the AixContext
 class HybridAixCellView: HybridAixCellViewSpec {
-    
-    
+
     // MARK: - Inner View
 
     /// Custom UIView that notifies owner when layout changes
@@ -32,11 +34,6 @@ class HybridAixCellView: HybridAixCellViewSpec {
         override func layoutSubviews() {
             super.layoutSubviews()
             owner?.handleLayoutChange()
-        }
-
-        override func didMoveToSuperview() {
-            super.didMoveToSuperview()
-            owner?.handleDidMoveToSuperview()
         }
 
         override func didMoveToWindow() {
@@ -106,45 +103,47 @@ class HybridAixCellView: HybridAixCellViewSpec {
     }
     
     // MARK: - Lifecycle Handlers
-    
-    /// Called when the view is added to a superview
-    private func handleDidMoveToSuperview() {
-        // Don't register here - hierarchy may not be complete yet
-        // Wait for didMoveToWindow instead
-    }
-    
+
     /// Called when the view is added to a window (full hierarchy is connected)
     private func handleDidMoveToWindow() {
-        guard view.window != nil else { return }
-        
+        guard view.window != nil else {
+            log.debug("didMoveToWindow index=\(self.index) isLast=\(self.isLast) — no window")
+            return
+        }
+
+        log.debug("didMoveToWindow index=\(self.index) isLast=\(self.isLast)")
+
         // Clear cached context since hierarchy changed
         cachedAixContext = nil
-        
+
+        // Reset lastReportedSize so handleLayoutChange will fire even if
+        // the cell is reused with the same dimensions, and mark the view
+        // dirty so layoutSubviews is guaranteed to fire on the next pass
+        // (which is when contentSize is correct for scroll-to-end).
+        lastReportedSize = .zero
+        view.setNeedsLayout()
+
         // Register with the new context
-        if let ctx = getAixContext() {
-            ctx.registerCell(self)
-        }
+        getAixContext()?.registerCell(self)
     }
-    
+
     /// Called when the view is about to be removed from superview
     private func handleWillRemoveFromSuperview() {
+        log.debug("willRemoveFromSuperview index=\(self.index) isLast=\(self.isLast)")
         // Unregister from context before removal
-        if let ctx = cachedAixContext {
-            ctx.unregisterCell(self)
-        }
+        cachedAixContext?.unregisterCell(self)
         cachedAixContext = nil
     }
-    
+
     /// Called when layoutSubviews fires (size may have changed)
     private func handleLayoutChange() {
         // Only report size changes for the last cell (blank view)
         // and only if the size actually changed
         let currentSize = view.bounds.size
         if isLast && currentSize != lastReportedSize {
+            log.debug("layoutChange index=\(self.index) size=\(self.lastReportedSize.debugDescription) → \(currentSize.debugDescription)")
             lastReportedSize = currentSize
-            if let ctx = getAixContext() {
-                ctx.reportBlankViewSizeChange(size: currentSize, index: Int(index))
-            }
+            getAixContext()?.reportBlankViewSizeChange(size: currentSize, index: Int(index))
         }
     }
     
@@ -158,16 +157,19 @@ class HybridAixCellView: HybridAixCellViewSpec {
     
     /// Update blank view status (called when isLast changes)
     private func updateBlankViewStatus() {
-        guard let ctx = getAixContext() else { return }
-        
+        guard let ctx = getAixContext() else {
+            log.warning("updateBlankViewStatus index=\(self.index) isLast=\(self.isLast) — no AixContext")
+            return
+        }
+
         if isLast {
-            // This cell is now the last one - become the blank view
+            log.debug("updateBlankViewStatus index=\(self.index) isLast=true — setting blankView, size=\(self.view.bounds.size.debugDescription)")
             ctx.blankView = self
             let currentSize = view.bounds.size
             lastReportedSize = currentSize
             ctx.reportBlankViewSizeChange(size: currentSize, index: Int(index))
         } else if ctx.blankView === self {
-            // This cell is no longer last - clear blank view reference
+            log.debug("updateBlankViewStatus index=\(self.index) isLast=false — clearing blankView")
             ctx.blankView = nil
         }
     }

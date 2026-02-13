@@ -84,6 +84,7 @@ namespace margelo::nitro::aix {
       // Methods
       virtual void scrollToEnd(std::optional<bool> animated) = 0;
       virtual void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) = 0;
+      virtual void resetInitialScroll() = 0;
 
     protected:
       // Hybrid Setup

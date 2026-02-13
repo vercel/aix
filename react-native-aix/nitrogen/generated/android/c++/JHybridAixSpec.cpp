@@ -193,5 +193,9 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */, jni::alias_ref<jni::JBoolean> /* waitForKeyboardToEnd */)>("scrollToIndexWhenBlankSizeReady");
     method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr, waitForKeyboardToEnd.has_value() ? jni::JBoolean::valueOf(waitForKeyboardToEnd.value()) : nullptr);
   }
+  void JHybridAixSpec::resetInitialScroll() {
+    static const auto method = javaClassStatic()->getMethod<void()>("resetInitialScroll");
+    method(_javaPart);
+  }
 
 } // namespace margelo::nitro::aix

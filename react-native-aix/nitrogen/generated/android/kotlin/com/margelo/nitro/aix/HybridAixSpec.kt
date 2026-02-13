@@ -133,6 +133,10 @@ abstract class HybridAixSpec: HybridView() {
   @Keep
   abstract fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?): Unit
 
+  @DoNotStrip
+  @Keep
+  abstract fun resetInitialScroll(): Unit
+
   private external fun initHybrid(): HybridData
 
   companion object {

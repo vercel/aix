@@ -166,6 +166,12 @@ namespace margelo::nitro::aix {
         std::rethrow_exception(__result.error());
       }
     }
+    inline void resetInitialScroll() override {
+      auto __result = _swiftPart.resetInitialScroll();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
 
   private:
     Aix::HybridAixSpec_cxx _swiftPart;
