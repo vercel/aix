@@ -31,6 +31,11 @@ class HybridAixCellView: HybridAixCellViewSpec {
             fatalError("init(coder:) has not been implemented")
         }
 
+        /// Let touches pass through to React Native children
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            return false
+        }
+
         override func layoutSubviews() {
             super.layoutSubviews()
             owner?.handleLayoutChange()
