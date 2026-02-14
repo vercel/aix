@@ -137,7 +137,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             didSetupPanGestureObserver = false
         }
     }
-    
+
     func scrollToEnd(animated: Bool?) {
         // Dispatch to main thread since this may be called from RN background thread
         DispatchQueue.main.async { [weak self] in
@@ -170,7 +170,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var didScrollToEndInitially: Bool {
         return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
     }
-    
+
     // MARK: - Inner View
     
     /// Custom UIView that notifies owner when added to superview
@@ -233,6 +233,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     /// Flag to track if we're currently in an interactive keyboard dismiss
     private var isInInteractiveDismiss = false
+
+    /// Whether this instance "owns" the active keyboard session.
+    /// Set when keyboardWillShow fires and the first responder is our descendant;
+    /// cleared on keyboardDidHide. Prevents background screens from reacting to
+    /// keyboard events triggered by a different Aix instance (e.g. stacked screens).
+    private var ownsKeyboardSession = false
     
     /// Previous "scrolled near end" state for change detection
     private var prevIsScrolledNearEnd: Bool? = nil
@@ -559,8 +565,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     // MARK: - Keyboard Observer (notification-based)
 
+    /// Returns true if the current first responder is a descendant of this Aix view hierarchy.
+    private func firstResponderIsDescendant() -> Bool {
+        guard let responder = UIResponder.currentFirstResponder as? UIView else { return false }
+        // Check our own view and the superview that contains the scroll view + composer
+        return responder.isDescendant(of: view.superview ?? view)
+    }
+
     private lazy var keyboardNotifications: KeyboardNotifications = {
-        return KeyboardNotifications(notifications: [.willShow, .willHide, .didShow, .didHide, .willChangeFrame], delegate: self)
+        return KeyboardNotifications(notifications: [.willShow, .willHide, .didHide, .willChangeFrame], delegate: self)
     }()
     
     /// Event captured at the start of a keyboard transition
@@ -897,6 +910,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
 
+        // Only react if the first responder belongs to this Aix instance
+        guard firstResponderIsDescendant() else { return }
+        ownsKeyboardSession = true
+
         let targetHeight = keyboardFrame.height
         print("[Aix] keyboardWillShow: targetHeight=\(targetHeight), duration=\(duration)")
 
@@ -928,7 +945,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             self.applyScrollIndicatorInsets()
             self.composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: self.keyboardHeightWhenOpen, animated: false)
 
-            if let (startY, endY) = self.startEvent?.interpolateContentOffsetY {
+            if let (_, endY) = self.startEvent?.interpolateContentOffsetY {
                 self.scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
             }
         }, completion: { [weak self] _ in
@@ -937,6 +954,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     func keyboardWillHide(notification: NSNotification) {
+        guard ownsKeyboardSession else { return }
         guard let userInfo = notification.userInfo,
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
@@ -965,12 +983,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     func keyboardDidHide(notification: NSNotification) {
-        print("[Aix] keyboardDidHide")
+        guard ownsKeyboardSession else { return }
+        ownsKeyboardSession = false
         keyboardHeightWhenOpen = 0
         composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: 0, animated: false)
     }
 
     func keyboardWillChangeFrame(notification: NSNotification) {
+        guard ownsKeyboardSession else { return }
         guard let userInfo = notification.userInfo,
               let keyboardFrameEnd = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
 
@@ -1185,5 +1205,22 @@ extension KeyboardNotifications {
 
     @objc func keyboardWillChangeFrame(notification: NSNotification) {
         delegate?.keyboardWillChangeFrame(notification: notification)
+    }
+}
+
+// MARK: - First Responder Discovery
+
+extension UIResponder {
+    private weak static var _currentFirstResponder: UIResponder?
+
+    /// Returns the current first responder, or nil if none.
+    static var currentFirstResponder: UIResponder? {
+        _currentFirstResponder = nil
+        UIApplication.shared.sendAction(#selector(findFirstResponder(_:)), to: nil, from: nil, for: nil)
+        return _currentFirstResponder
+    }
+
+    @objc private func findFirstResponder(_ sender: Any) {
+        UIResponder._currentFirstResponder = self
     }
 }
