@@ -26,6 +26,7 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void
   func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws -> Void
+  func resetInitialScroll() throws -> Void
 }
 
 public extension HybridAixSpec_protocol {

@@ -142,6 +142,12 @@ export interface AixMethods extends HybridViewMethods {
     animated?: boolean,
     waitForKeyboardToEnd?: boolean
   ): void
+  /**
+   * Reset the initial scroll state so the next blank view size report
+   * triggers a fresh scroll-to-end. Call this when switching conversations
+   * on the same mounted Aix instance.
+   */
+  resetInitialScroll(): void
 }
 
 export type Aix = HybridView<
