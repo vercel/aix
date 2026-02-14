@@ -119,7 +119,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     var scrollOnComposerSizeUpdate: AixScrollOnFooterSizeUpdate?
 
     var mainScrollViewID: String?
-    
+
     func scrollToEnd(animated: Bool?) {
         // Dispatch to main thread since this may be called from RN background thread
         DispatchQueue.main.async { [weak self] in
@@ -135,9 +135,53 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             log.info("resetInitialScroll executing on main thread")
-            self.didScrollToEndInitially = false
-            self.lastReportedBlankViewSize = (size: .zero, index: 0)
-            self.prevIsScrolledNearEnd = nil
+            self.resetScrollState()
+        }
+    }
+
+    func getFirstVisibleCellInfo() throws -> AixVisibleCellInfo? {
+        guard let scrollView else { return nil }
+
+        let visibleTop = scrollView.contentOffset.y + scrollView.contentInset.top
+
+        // Collect all registered cell indices and sort ascending
+        var indices = [Int]()
+        let enumerator = cells.keyEnumerator()
+        while let key = enumerator.nextObject() as? NSNumber {
+            indices.append(key.intValue)
+        }
+        indices.sort()
+
+        for idx in indices {
+            guard let cell = cells.object(forKey: NSNumber(value: idx)) else { continue }
+            let frame = cell.view.frame
+            // First cell whose bottom edge is below the visible top
+            if frame.maxY > visibleTop {
+                let offset = max(0, visibleTop - frame.origin.y)
+                let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+                return AixVisibleCellInfo(
+                    cellIndex: Double(idx),
+                    offsetInCell: Double(offset),
+                    isNearEnd: isNearEnd
+                )
+            }
+        }
+
+        return nil
+    }
+
+    func scrollToCellOffset(cellIndex: Double, offsetInCell: Double, animated: Bool?) throws {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let scrollView = self.scrollView else { return }
+            let idx = Int(cellIndex)
+            guard let cell = self.cells.object(forKey: NSNumber(value: idx)) else { return }
+
+            let targetY = cell.view.frame.origin.y + CGFloat(offsetInCell) - scrollView.contentInset.top
+            let maxY = scrollView.contentSize.height - scrollView.bounds.height + scrollView.contentInset.bottom
+            let clampedY = min(max(0, targetY), max(0, maxY))
+
+            scrollView.setContentOffset(CGPoint(x: 0, y: clampedY), animated: animated ?? false)
+            self.didScrollToEndInitially = true
         }
     }
 
@@ -162,7 +206,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     private var didScrollToEndInitially = false
-    
+
+    /// Reset scroll tracking state so the next blank-view size report triggers an initial scroll-to-end.
+    /// Used when the view hierarchy is recycled (superview change, window change, or explicit reset).
+    private func resetScrollState() {
+        didScrollToEndInitially = false
+        lastReportedBlankViewSize = (size: .zero, index: 0)
+        prevIsScrolledNearEnd = nil
+    }
+
     // MARK: - Inner View
     
     /// Custom UIView that notifies owner on superview and window changes
@@ -230,6 +282,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     /// Flag to track if we're currently in an interactive keyboard dismiss
     private var isInInteractiveDismiss = false
+
+    /// Whether this instance "owns" the active keyboard session.
+    /// Set when keyboardWillShow fires and the first responder is our descendant;
+    /// cleared on keyboardDidHide. Prevents background screens from reacting to
+    /// keyboard events triggered by a different Aix instance (e.g. stacked screens).
+    private var ownsKeyboardSession = false
     
     /// Previous "scrolled near end" state for change detection
     private var prevIsScrolledNearEnd: Bool?
@@ -544,8 +602,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     // MARK: - Keyboard Observer (notification-based)
 
+    /// Returns true if the current first responder is a descendant of this Aix view hierarchy.
+    private func firstResponderIsDescendant() -> Bool {
+        guard let responder = UIResponder.currentFirstResponder as? UIView else { return false }
+        // Check our own view and the superview that contains the scroll view + composer
+        return responder.isDescendant(of: view.superview ?? view)
+    }
+
     private lazy var keyboardNotifications: KeyboardNotifications = {
-        return KeyboardNotifications(notifications: [.willShow, .willHide, .didShow, .didHide, .willChangeFrame], delegate: self)
+        return KeyboardNotifications(notifications: [.willShow, .willHide, .didHide, .willChangeFrame], delegate: self)
     }()
     
     /// Event captured at the start of a keyboard transition
@@ -678,9 +743,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             // but the JS component remounts.
             if didScrollToEndInitially {
                 log.info("superview reset: didScrollToEndInitially → false")
-                didScrollToEndInitially = false
-                lastReportedBlankViewSize = (size: .zero, index: 0)
-                prevIsScrolledNearEnd = nil
+                resetScrollState()
             }
 
             // Attach context to the superview (HybridAixComponent) so children can find it
@@ -723,9 +786,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             log.info("gained window, didScrollToEndInitially=\(self.didScrollToEndInitially)")
             if didScrollToEndInitially {
                 log.info("window reset: didScrollToEndInitially → false")
-                didScrollToEndInitially = false
-                lastReportedBlankViewSize = (size: .zero, index: 0)
-                prevIsScrolledNearEnd = nil
+                resetScrollState()
             }
         } else {
             log.info("lost window, didScrollToEndInitially=\(self.didScrollToEndInitially)")
@@ -750,8 +811,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var lastReportedBlankViewSize = (size: CGSize.zero, index: 0)
     
     func reportBlankViewSizeChange(size: CGSize, index: Int) {
-        let didAlreadyUpdate = size.height == lastReportedBlankViewSize.size.height && size.width == lastReportedBlankViewSize.size.width && index == lastReportedBlankViewSize.index
-        if didAlreadyUpdate {
+        if size == lastReportedBlankViewSize.size && index == lastReportedBlankViewSize.index {
             log.debug("reportBlankViewSizeChange skip (unchanged) index=\(index) size=\(size.debugDescription)")
             return
         }
@@ -909,6 +969,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
 
+        // Only react if the first responder belongs to this Aix instance
+        guard firstResponderIsDescendant() else { return }
+        ownsKeyboardSession = true
+
         let targetHeight = keyboardFrame.height
 
         guard duration > 0 else { return }
@@ -939,7 +1003,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             self.applyScrollIndicatorInsets()
             self.composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: self.keyboardHeightWhenOpen, animated: false)
 
-            if let (startY, endY) = self.startEvent?.interpolateContentOffsetY {
+            if let (_, endY) = self.startEvent?.interpolateContentOffsetY {
                 self.scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
             }
         }, completion: { [weak self] _ in
@@ -948,6 +1012,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     func keyboardWillHide(notification: NSNotification) {
+        guard ownsKeyboardSession else { return }
         guard let userInfo = notification.userInfo,
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
@@ -970,11 +1035,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     func keyboardDidHide(notification: NSNotification) {
+        guard ownsKeyboardSession else { return }
+        ownsKeyboardSession = false
         keyboardHeightWhenOpen = 0
         composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: 0, animated: false)
     }
 
     func keyboardWillChangeFrame(notification: NSNotification) {
+        guard ownsKeyboardSession else { return }
         guard let userInfo = notification.userInfo,
               let keyboardFrameEnd = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
 
@@ -1174,5 +1242,22 @@ extension KeyboardNotifications {
 
     @objc func keyboardWillChangeFrame(notification: NSNotification) {
         delegate?.keyboardWillChangeFrame(notification: notification)
+    }
+}
+
+// MARK: - First Responder Discovery
+
+extension UIResponder {
+    private weak static var _currentFirstResponder: UIResponder?
+
+    /// Returns the current first responder, or nil if none.
+    static var currentFirstResponder: UIResponder? {
+        _currentFirstResponder = nil
+        UIApplication.shared.sendAction(#selector(findFirstResponder(_:)), to: nil, from: nil, for: nil)
+        return _currentFirstResponder
+    }
+
+    @objc private func findFirstResponder(_ sender: Any) {
+        UIResponder._currentFirstResponder = self
     }
 }
