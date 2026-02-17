@@ -157,6 +157,7 @@ function List({
       data={data}
       getItemType={item => item.role}
       keyExtractor={(_, index) => index.toString()}
+      initialScrollAtEnd
       renderItem={({ item, index }) => {
         if (item.role === 'user') {
           return (

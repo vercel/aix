@@ -91,9 +91,11 @@ function useScrollToEnd(
   const scrollToEnd = useCallback(
     (params: { animated?: boolean } = { animated: true }) => {
       if (listRef.current) {
+        listRef.current.reportContentInset({
+            bottom: bottomInset.get(),
+        })
         listRef.current.scrollToEnd({
           animated: params.animated,
-          viewOffset: -bottomInset.get(),
         })
       }
     },
