@@ -5,7 +5,7 @@
     "": {
       "name": "ai-chat",
       "dependencies": {
-        "@legendapp/list": "2.0.9",
+        "@legendapp/list": "^3.0.0-beta.32",
         "react-native-keyboard-controller": "1.20.1",
         "use-latest-callback": "0.2.4",
       },
@@ -418,7 +418,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@legendapp/list": ["@legendapp/list@2.0.9", "", { "dependencies": { "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-HOSSNK6iJs59UCAiuNqLFJIfUZgUpytv65M88a+oV49kHpa2aSlPKSlZQFbkS0LWrDFljlh1OpbPByXdI18xkw=="],
+    "@legendapp/list": ["@legendapp/list@3.0.0-beta.32", "", { "dependencies": { "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "*" } }, "sha512-lWIdQ1Z3IrR5Iv7I3qOLDYk9Uh/gc03wITNEObTpR2tIYNvgDibOL/3yAznyvkQMuwl3TLquan46Zo0t/XdmIA=="],
 
     "@nicolo-ribaudo/chokidar-2": ["@nicolo-ribaudo/chokidar-2@2.1.8-no-fsevents.3", "", {}, "sha512-s88O1aVtXftvp5bCPB7WnmXc5IwOZZ7YPuwNPt+GtOOXpPvad1LfbmjYv+qII7zP6RU2QGnqve27dnLycEnyEQ=="],
 
