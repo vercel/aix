@@ -1,33 +1,10 @@
-import { callback, getHostComponent } from 'react-native-nitro-modules'
-import AixDropzoneConfig from '../nitrogen/generated/shared/json/AixDropzoneConfig.json'
-import type {
-  AixDropzoneProps,
-  AixInputWrapperOnPasteEvent,
-} from './views/aix.nitro'
-import type { ComponentProps } from 'react'
-import { Platform } from 'react-native'
+import type { PropsWithChildren } from 'react'
+import type { AixInputWrapperOnPasteEvent } from './views/aix.nitro'
 
-const AixDropzoneInternal = getHostComponent<AixDropzoneProps, {}>(
-  'AixDropzone',
-  () => AixDropzoneConfig
-)
-
-type AixDropzoneComponentProps = Omit<
-  ComponentProps<typeof AixDropzoneInternal>,
-  'onDrop' | 'hybridRef'
-> & {
+export type AixDropzoneComponentProps = PropsWithChildren<{
   onDrop?: (events: AixInputWrapperOnPasteEvent[]) => void
-}
+}>
 
 export function AixDropzone(props: AixDropzoneComponentProps) {
-  if (Platform.OS !== 'ios') return <>{props.children}</>
-
-  return (
-    <AixDropzoneInternal
-      {...props}
-      onDrop={props.onDrop ? callback(props.onDrop) : undefined}
-    >
-      {props.children}
-    </AixDropzoneInternal>
-  )
+  return <>{props.children}</>
 }
