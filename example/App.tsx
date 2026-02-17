@@ -371,12 +371,16 @@ function Composer({
   )
 }
 
-function StickyView(
-  props: React.ComponentProps<typeof Animated.View> & {
-    offset?: { opened?: number; closed?: number }
-  }
-) {
+function StickyView({
+  offset,
+  style: styleProp,
+  ...viewProps
+}: React.ComponentProps<typeof Animated.View> & {
+  offset?: { opened?: number; closed?: number }
+}) {
   const { height, progress } = useReanimatedKeyboardAnimation()
+  const openedOffset = offset?.opened ?? 0
+  const closedOffset = offset?.closed ?? 0
 
   const style = useAnimatedStyle(() => {
     const y =
@@ -384,7 +388,7 @@ function StickyView(
       interpolate(
         progress.get(),
         [0, 1],
-        [props.offset?.closed ?? 0, props.offset?.opened ?? 0]
+        [closedOffset, openedOffset]
       )
 
     return {
@@ -392,7 +396,7 @@ function StickyView(
     }
   })
 
-  return <Animated.View {...props} style={[style, props.style]} />
+  return <Animated.View {...viewProps} style={[style, styleProp]} />
 }
 
 function RoundButton({
