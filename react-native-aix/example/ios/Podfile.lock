@@ -1,5 +1,5 @@
 PODS:
-  - Aix (0.1.0):
+  - Aix (0.5.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2989,7 +2989,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Aix: 8a418dceac9e7cb392db18f0af4b745ee0ab870f
+  Aix: 47f62265221cd879b030172b5bbc3edc1511fcd5
   AppleLLM: 5eef16469f548b46362e09eebb9d08fabbefba8f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -3073,4 +3073,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: fbbe7c8166e1f92adfc6df812870e43274d8388a
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
