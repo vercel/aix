@@ -9,12 +9,19 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@azure/core-asynciterator-polyfill": "^1.0.2",
+    "@legendapp/list": "^3.0.0-beta.32",
+    "@react-native-ai/apple": "^0.11.0",
+    "@stardazed/streams-text-encoding": "^1.0.2",
+    "@ungap/structured-clone": "^1.3.0",
+    "ai": "^5.0.108",
     "expo": "~54.0.13",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
     "react-native": "0.81.4",
     "react-native-keyboard-controller": "^1.20.1",
-    "react-native-reanimated": "^4.1.3"
+    "react-native-reanimated": "^4.1.3",
+    "web-streams-polyfill": "^4.2.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

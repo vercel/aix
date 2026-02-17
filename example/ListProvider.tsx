@@ -4,7 +4,6 @@ import {
   ChatAnimationProvider,
   KeyboardStateProvider,
 } from 'ai-chat'
-import { KeyboardProvider } from 'react-native-keyboard-controller'
 
 export function ChatProvider({
   chatId,
@@ -14,14 +13,12 @@ export function ChatProvider({
   children: React.ReactNode
 }) {
   return (
-    <KeyboardProvider>
-      <ComposerHeightContextProvider initialHeight={0}>
-        <MessageListContextProvider key={chatId}>
-          <ChatAnimationProvider>
-            <KeyboardStateProvider>{children}</KeyboardStateProvider>
-          </ChatAnimationProvider>
-        </MessageListContextProvider>
-      </ComposerHeightContextProvider>
-    </KeyboardProvider>
+    <ComposerHeightContextProvider initialHeight={0}>
+      <MessageListContextProvider key={chatId}>
+        <ChatAnimationProvider>
+          <KeyboardStateProvider>{children}</KeyboardStateProvider>
+        </ChatAnimationProvider>
+      </MessageListContextProvider>
+    </ComposerHeightContextProvider>
   )
 }
