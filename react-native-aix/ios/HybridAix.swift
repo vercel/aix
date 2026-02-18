@@ -231,6 +231,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             super.didMoveToSuperview()
             owner?.handleDidMoveToSuperview()
         }
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            guard window != nil else {
+                owner?.handleDidMoveOffScreen()
+                return
+            }
+            owner?.handleDidReturnToScreen()
+        }
         
         override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
             // Never claim to contain any points - let touches pass through
@@ -484,22 +493,30 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return 0
     }
 
+    /// Calculate the blank padding needed so the penultimate cell can scroll to the top
+    /// of the visible area. When `penultimateCellIndex` is negative, the consumer opts out
+    /// entirely and no blank padding is applied.
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
-        
-        let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
-        let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
+
+        // Negative penultimateCellIndex = opt out of blank padding
+        if let idx = penultimateCellIndex, idx < 0 {
+            return 0
+        }
+
+        // Default to the cell immediately before the blank view
+        let penultimateIndex = penultimateCellIndex.map { Int($0) } ?? (Int(blankView.index) - 1)
+        let penultimateCellHeight = getCell(index: penultimateIndex)?.view.frame.height ?? 0
         let blankViewHeight = blankView.view.frame.height
-        
-        // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
-        // The blank size fills the remaining space so the last message can scroll to the top
+
+        // Visible area above all bottom chrome (keyboard, composer, additional insets).
+        // The blank size fills the remaining space so the last message can scroll to the top.
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - cellBeforeBlankViewHeight
+        let inset = visibleAreaHeight - blankViewHeight - penultimateCellHeight
         return max(0, inset)
     }
     
-    /// Calculate the blank size - the space needed to push content up
-    /// so the last message can scroll to the top of the visible area
+    /// Blank size using current keyboard state
     var blankSize: CGFloat {
         return calculateBlankSize(keyboardHeight: keyboardHeight, additionalContentInsetBottom: additionalContentInsetBottom)
     }
@@ -786,6 +803,22 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
+    private func handleDidMoveOffScreen() {
+        didScrollToEndInitiallyForId = nil
+    }
+
+    /// Re-scroll to bottom when navigating back to this screen.
+    /// The `scrollView != nil` check also triggers lazy discovery (caching + KVO setup).
+    private func handleDidReturnToScreen() {
+        guard shouldStartAtEnd, !didScrollToEndInitially, scrollView != nil else { return }
+        UIView.performWithoutAnimation {
+            applyContentInset()
+            applyScrollIndicatorInsets()
+            scrollToEndInternal(animated: false)
+        }
+        didScrollToEndInitiallyForId = mainScrollViewID ?? ""
+    }
+
     @objc private func handleAppDidEnterBackground() {
         isAppInBackground = true
         keyboardNotifications.isEnabled = false
@@ -804,7 +837,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var lastReportedBlankViewSize = (size: CGSize.zero, index: 0)
     
     func reportBlankViewSizeChange(size: CGSize, index: Int) {
-        let didAlreadyUpdate = size.height == lastReportedBlankViewSize.size.height && size.width == lastReportedBlankViewSize.size.width && index == lastReportedBlankViewSize.index
+        let didAlreadyUpdate = size == lastReportedBlankViewSize.size && index == lastReportedBlankViewSize.index
         if didAlreadyUpdate {
             return
         }
