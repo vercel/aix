@@ -12,7 +12,6 @@ export function useMessageListProps({
     animatedProps: useScrollViewAnimatedProps({ bottomInsetPadding }),
     ref: listRef,
     onContentSizeChange,
-    enableAverages: false,
     onScroll,
     maintainVisibleContentPosition: true,
   } satisfies Partial<React.ComponentPropsWithRef<typeof AnimatedLegendList>>
