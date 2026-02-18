@@ -24,6 +24,8 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
+// Forward declaration of `AixVisibleCellInfo` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixVisibleCellInfo; }
 
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
@@ -34,6 +36,7 @@ namespace margelo::nitro::aix { struct AixContentInsets; }
 #include <string>
 #include "AixContentInsets.hpp"
 #include <functional>
+#include "AixVisibleCellInfo.hpp"
 
 #include "Aix-Swift-Cxx-Umbrella.hpp"
 
@@ -162,6 +165,20 @@ namespace margelo::nitro::aix {
     }
     inline void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) override {
       auto __result = _swiftPart.scrollToIndexWhenBlankSizeReady(std::forward<decltype(index)>(index), animated, waitForKeyboardToEnd);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline std::optional<AixVisibleCellInfo> getFirstVisibleCellInfo() override {
+      auto __result = _swiftPart.getFirstVisibleCellInfo();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline void scrollToCellOffset(double cellIndex, double offsetInCell, std::optional<bool> animated) override {
+      auto __result = _swiftPart.scrollToCellOffset(std::forward<decltype(cellIndex)>(cellIndex), std::forward<decltype(offsetInCell)>(offsetInCell), animated);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

@@ -19,6 +19,8 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
+// Forward declaration of `AixVisibleCellInfo` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixVisibleCellInfo; }
 
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
@@ -38,6 +40,8 @@ namespace margelo::nitro::aix { struct AixContentInsets; }
 #include <NitroModules/JNICallable.hpp>
 #include "JAixContentInsets.hpp"
 #include "JFunc_void_bool.hpp"
+#include "AixVisibleCellInfo.hpp"
+#include "JAixVisibleCellInfo.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -192,6 +196,15 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) {
     static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */, jni::alias_ref<jni::JBoolean> /* waitForKeyboardToEnd */)>("scrollToIndexWhenBlankSizeReady");
     method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr, waitForKeyboardToEnd.has_value() ? jni::JBoolean::valueOf(waitForKeyboardToEnd.value()) : nullptr);
+  }
+  std::optional<AixVisibleCellInfo> JHybridAixSpec::getFirstVisibleCellInfo() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixVisibleCellInfo>()>("getFirstVisibleCellInfo");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->toCpp()) : std::nullopt;
+  }
+  void JHybridAixSpec::scrollToCellOffset(double cellIndex, double offsetInCell, std::optional<bool> animated) {
+    static const auto method = javaClassStatic()->getMethod<void(double /* cellIndex */, double /* offsetInCell */, jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToCellOffset");
+    method(_javaPart, cellIndex, offsetInCell, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
   }
 
 } // namespace margelo::nitro::aix

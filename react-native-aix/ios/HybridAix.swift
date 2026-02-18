@@ -145,6 +145,52 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
     
+    func getFirstVisibleCellInfo() throws -> AixVisibleCellInfo? {
+        guard let scrollView else { return nil }
+
+        let visibleTop = scrollView.contentOffset.y + scrollView.contentInset.top
+
+        // Collect all registered cell indices and sort ascending
+        var indices = [Int]()
+        let enumerator = cells.keyEnumerator()
+        while let key = enumerator.nextObject() as? NSNumber {
+            indices.append(key.intValue)
+        }
+        indices.sort()
+
+        for idx in indices {
+            guard let cell = cells.object(forKey: NSNumber(value: idx)) else { continue }
+            let frame = cell.view.frame
+            // First cell whose bottom edge is below the visible top
+            if frame.maxY > visibleTop {
+                let offset = max(0, visibleTop - frame.origin.y)
+                let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+                return AixVisibleCellInfo(
+                    cellIndex: Double(idx),
+                    offsetInCell: Double(offset),
+                    isNearEnd: isNearEnd
+                )
+            }
+        }
+
+        return nil
+    }
+
+    func scrollToCellOffset(cellIndex: Double, offsetInCell: Double, animated: Bool?) throws {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let scrollView = self.scrollView else { return }
+            let idx = Int(cellIndex)
+            guard let cell = self.cells.object(forKey: NSNumber(value: idx)) else { return }
+
+            let targetY = cell.view.frame.origin.y + CGFloat(offsetInCell) - scrollView.contentInset.top
+            let maxY = scrollView.contentSize.height - scrollView.bounds.height + scrollView.contentInset.bottom
+            let clampedY = min(max(0, targetY), max(0, maxY))
+
+            scrollView.setContentOffset(CGPoint(x: 0, y: clampedY), animated: animated ?? false)
+            self.didScrollToEndInitiallyForId = self.mainScrollViewID ?? ""
+        }
+    }
+
     func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
         queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
         
