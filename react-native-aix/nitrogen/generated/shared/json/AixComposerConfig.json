@@ -5,6 +5,7 @@
   "directEventTypes": {},
   "validAttributes": {
     "stickToKeyboard": true,
+    "fixInput": true,
     "hybridRef": true
   }
 }
