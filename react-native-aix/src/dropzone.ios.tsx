@@ -20,9 +20,6 @@ export function AixDropzone(props: AixDropzoneComponentProps) {
     <AixDropzoneInternal
       {...props}
       onDrop={props.onDrop ? callback(props.onDrop) : undefined}
-      style={{
-        flex: 1,
-      }}
     >
       {props.children}
     </AixDropzoneInternal>
