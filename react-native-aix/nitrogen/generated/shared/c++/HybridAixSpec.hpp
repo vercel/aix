@@ -21,6 +21,8 @@ namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
+// Forward declaration of `AixVisibleCellInfo` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixVisibleCellInfo; }
 
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
@@ -29,6 +31,7 @@ namespace margelo::nitro::aix { struct AixContentInsets; }
 #include <string>
 #include "AixContentInsets.hpp"
 #include <functional>
+#include "AixVisibleCellInfo.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -84,6 +87,8 @@ namespace margelo::nitro::aix {
       // Methods
       virtual void scrollToEnd(std::optional<bool> animated) = 0;
       virtual void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) = 0;
+      virtual std::optional<AixVisibleCellInfo> getFirstVisibleCellInfo() = 0;
+      virtual void scrollToCellOffset(double cellIndex, double offsetInCell, std::optional<bool> animated) = 0;
 
     protected:
       // Hybrid Setup

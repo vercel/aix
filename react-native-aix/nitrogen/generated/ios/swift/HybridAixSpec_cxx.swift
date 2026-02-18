@@ -383,6 +383,42 @@ open class HybridAixSpec_cxx {
     }
   }
   
+  @inline(__always)
+  public final func getFirstVisibleCellInfo() -> bridge.Result_std__optional_AixVisibleCellInfo__ {
+    do {
+      let __result = try self.__implementation.getFirstVisibleCellInfo()
+      let __resultCpp = { () -> bridge.std__optional_AixVisibleCellInfo_ in
+        if let __unwrappedValue = __result {
+          return bridge.create_std__optional_AixVisibleCellInfo_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+      return bridge.create_Result_std__optional_AixVisibleCellInfo__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__optional_AixVisibleCellInfo__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func scrollToCellOffset(cellIndex: Double, offsetInCell: Double, animated: bridge.std__optional_bool_) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.scrollToCellOffset(cellIndex: cellIndex, offsetInCell: offsetInCell, animated: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(animated) {
+          let __unwrapped = bridge.get_std__optional_bool_(animated)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }())
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
   public final func getView() -> UnsafeMutableRawPointer {
     return Unmanaged.passRetained(__implementation.view).toOpaque()
   }

@@ -26,6 +26,8 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void
   func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws -> Void
+  func getFirstVisibleCellInfo() throws -> AixVisibleCellInfo?
+  func scrollToCellOffset(cellIndex: Double, offsetInCell: Double, animated: Bool?) throws -> Void
 }
 
 public extension HybridAixSpec_protocol {
