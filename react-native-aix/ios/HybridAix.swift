@@ -135,6 +135,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             removeScrollViewObservers()
             cachedScrollView = nil
             didSetupPanGestureObserver = false
+            // Reset so reportBlankViewSizeChange doesn't skip the initial scroll
+            lastReportedBlankViewSize = (size: .zero, index: 0)
+            prevIsScrolledNearEnd = nil
         }
     }
 
