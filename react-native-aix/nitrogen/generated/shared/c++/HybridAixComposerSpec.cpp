@@ -16,6 +16,8 @@ namespace margelo::nitro::aix {
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridGetter("stickToKeyboard", &HybridAixComposerSpec::getStickToKeyboard);
       prototype.registerHybridSetter("stickToKeyboard", &HybridAixComposerSpec::setStickToKeyboard);
+      prototype.registerHybridGetter("fixInput", &HybridAixComposerSpec::getFixInput);
+      prototype.registerHybridSetter("fixInput", &HybridAixComposerSpec::setFixInput);
     });
   }
 

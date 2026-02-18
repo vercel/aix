@@ -22,7 +22,6 @@ class HybridAixCellView: HybridAixCellViewSpec {
 
         override init(frame: CGRect) {
             super.init(frame: frame)
-            autoresizingMask = [.flexibleWidth]
             isUserInteractionEnabled = false
         }
 

@@ -14,6 +14,8 @@ namespace margelo::nitro::aix { struct AixAdditionalContentInsetsProp; }
 namespace margelo::nitro::aix { struct AixAdditionalContentInsets; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
+// Forward declaration of `AixInputWrapperOnPasteEvent` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixInputWrapperOnPasteEvent; }
 // Forward declaration of `AixScrollIndicatorInsetValue` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixScrollIndicatorInsets` to properly resolve imports.
@@ -28,6 +30,10 @@ namespace margelo::nitro::aix { struct AixStickToKeyboard; }
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixComposerSpec; }
+// Forward declaration of `HybridAixDropzoneSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixDropzoneSpec; }
+// Forward declaration of `HybridAixInputWrapperSpec` to properly resolve imports.
+namespace margelo::nitro::aix { class HybridAixInputWrapperSpec; }
 // Forward declaration of `HybridAixSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixSpec; }
 
@@ -35,6 +41,7 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 #include "AixAdditionalContentInsets.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixContentInsets.hpp"
+#include "AixInputWrapperOnPasteEvent.hpp"
 #include "AixScrollIndicatorInsetValue.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include "AixScrollOnFooterSizeUpdate.hpp"
@@ -42,6 +49,8 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 #include "AixStickToKeyboardOffset.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
+#include "HybridAixDropzoneSpec.hpp"
+#include "HybridAixInputWrapperSpec.hpp"
 #include "HybridAixSpec.hpp"
 #include <NitroModules/Result.hpp>
 #include <exception>
@@ -49,6 +58,7 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 // C++ helpers for Swift
 #include "Aix-Swift-Cxx-Bridge.hpp"
@@ -64,6 +74,10 @@ namespace margelo::nitro::aix { class HybridAixSpec; }
 namespace Aix { class HybridAixCellViewSpec_cxx; }
 // Forward declaration of `HybridAixComposerSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixComposerSpec_cxx; }
+// Forward declaration of `HybridAixDropzoneSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixDropzoneSpec_cxx; }
+// Forward declaration of `HybridAixInputWrapperSpec_cxx` to properly resolve imports.
+namespace Aix { class HybridAixInputWrapperSpec_cxx; }
 // Forward declaration of `HybridAixSpec_cxx` to properly resolve imports.
 namespace Aix { class HybridAixSpec_cxx; }
 
