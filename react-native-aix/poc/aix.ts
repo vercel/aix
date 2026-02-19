@@ -1,9 +1,10 @@
 // @ts-nocheck
 
+// prompt for AI plan mode:
 /**
  * This file is a proof of concept for the Aix library.
  *
- * We are going to implement it in UIKit, but for now I'm using TS since I don't know Swift but I'm a TS expert.
+ * We are going to implement it in UIKit, but for now I'm using TS since I don't love Swift as a TS dev.
  */
 
 class Aix extends AixContext {
