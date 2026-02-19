@@ -432,14 +432,29 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
         
-        let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
-        let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
+        let startIndex: Int
+        let endIndex = Int(blankView.index) - 1
+        if let penultimateCellIndex {
+            startIndex = Int(penultimateCellIndex)
+        } else {
+            startIndex = endIndex
+        }
+        
+        var cellsBeforeBlankViewHeight: CGFloat = 0
+        if startIndex <= endIndex {
+            for i in startIndex...endIndex {
+                if let cell = getCell(index: i) {
+                    cellsBeforeBlankViewHeight += cell.view.frame.height
+                }
+            }
+        }
+        
         let blankViewHeight = blankView.view.frame.height
         
         // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
         // The blank size fills the remaining space so the last message can scroll to the top
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - cellBeforeBlankViewHeight
+        let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         return max(0, inset)
     }
     
