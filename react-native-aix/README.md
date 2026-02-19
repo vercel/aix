@@ -1,12 +1,32 @@
-# aix
+<img src="https://github.com/vercel/aix/blob/main/Aix.png?raw=true"
+alt="aix" width="1600" height="900" />
 
-Primitives for building beautiful AI chat apps with React Native.
+# AIX
 
-> aix is currently in alpha preview. The API will change, and it is not yet feature complete.
+UI Primitives for building AI apps in React Native.
 
-We're rewriting the engine that powers the chat experience in the v0 mobile app with a focus on native feel.
+> aix is currently in alpha preview. The API is likely to change.
 
-aix is a native module with UIKit with Nitro Modules.
+## Features
+
+- Start a chat scrolled to end on the first frame
+- Animate scrolling to new messages when they send
+- Float messages to the top of the screen with automated "blank size" handling
+- Animate message content as it streams
+- Keyboard handling out-of-the-box with no external dependencies
+- Support for absolute-positioned composers
+- Detect "is scrolled near end" for ScrollToEnd buttons
+
+To learn about the motivation behind AIX, you can read our blog post on
+[How we built the v0 iOS app](https://vercel.com/blog/how-we-built-the-v0-ios-app).
+AIX is an opinionated, feature-complete, and extensible way to implement every
+single feature mentioned in that blog post.
+
+When building AIX, we started by copying the code from v0 into a separate
+repository. However, as we worked to make it flexible for use cases outside of
+our own app, we decided to rewrite it from scratch in native code. What you see
+here is a Nitro Module which handles all business logic in UIKit. We plan on
+adding support for Android as well and welcome contributions.
 
 ## Installation
 
@@ -14,15 +34,14 @@ aix is a native module with UIKit with Nitro Modules.
 npm i aix react-native-nitro-modules
 ```
 
-Next, rebuild your native app. For Expo users, run `npx expo prebuild` and rebuild.
+Next, rebuild your native app. For Expo users, run `npx expo prebuild` and
+rebuild.
+
+- For a full example, see the [example app](./react-native-aix/example/App.tsx).
 
 ## Usage
 
 Wrap your `ScrollView` with `Aix`, and wrap your messages with `AixCell`.
-
-<details>
-  <summary>Click here to view a full example</summary>
-</details>
 
 ```tsx
 import { Aix, AixCell } from 'aix'
@@ -31,10 +50,14 @@ import { Composer } from 'path/to/your/composer'
 
 export function ChatScreen({ messages }) {
   return (
-    <Aix style={{ flex: 1 }}>
+    <Aix style={{ flex: 1 }} shouldStartAtEnd>
       <ScrollView>
         {messages.map((message) => (
-          <AixCell key={message.id} index={index} isLast={index === messages.length - 1}>
+          <AixCell
+            key={message.id}
+            index={index}
+            isLast={index === messages.length - 1}
+          >
             <Message message={message} />
           </AixCell>
         ))}
@@ -44,44 +67,123 @@ export function ChatScreen({ messages }) {
 }
 ```
 
-To add a floating composer which lets content scroll under it, you can use the `AixFooter` and `KeyboardStickyView` from `react-native-keyboard-controller`:
+### Add a floating composer
+
+To add a floating composer which lets content scroll under it, you can use the
+`AixFooter`. Pair it with `Aix.scrollOnFooterSizeUpdate` to ensure content
+scrolls under the footer when it changes size.
 
 ```tsx
 import { Aix, AixCell, AixFooter } from 'aix'
-import { KeyboardStickyView } from 'react-native-keyboard-controller'
 
 export function ChatScreen({ messages }) {
+  const { bottom } = useSafeAreaInsets()
+
   return (
-    <Aix style={{ flex: 1 }}>
+    <Aix
+      style={{ flex: 1 }}
+      shouldStartAtEnd
+      scrollOnFooterSizeUpdate={{
+        enabled: true,
+        scrolledToEndThreshold: 100,
+        animated: false,
+      }}
+    >
       <ScrollView>
         {messages.map((message) => (
-          <AixCell key={message.id} index={index} isLast={index === messages.length - 1}>
+          <AixCell
+            key={message.id}
+            index={index}
+            isLast={index === messages.length - 1}
+          >
             <Message message={message} />
           </AixCell>
         ))}
       </ScrollView>
 
-      <KeyboardStickyView offset={{ opened: 0, closed: -bottomInsetPadding }}>
-        <AixFooter fixInput style={{ position: 'absolute', inset: 0, top: 'auto' }}>
-          <Composer />
-        </AixFooter>
-      </KeyboardStickyView>
+      <AixFooter
+        style={{ position: 'absolute', inset: 0, top: 'auto' }}
+        stickToKeyboard={{
+          enabled: true,
+          offset: {
+            whenKeyboardOpen: 0,
+            whenKeyboardClosed: -bottom,
+          },
+        }}
+      >
+        <Composer />
+      </AixFooter>
     </Aix>
   )
 }
 ```
 
-## TODOs
+### Send a message
 
-- [ ] Android support
-- [ ] LegendList support
-- [ ] FlashList support
+When sending a message, you will likely want to scroll to it after it gets added
+to the list.
+
+Simply call `aix.current?.scrollToIndexWhenBlankSizeReady(index)` in your submit
+handler.
+
+The `index` you pass should correspond to the newest message in the list. For AI
+chats, this is typically the next assistant message index.
+
+```tsx
+import { Keyboard } from 'react-native'
+import { useAixRef } from 'aix'
+
+function Chat() {
+  const aix = useAixRef()
+
+  const onSubmit = () => {
+    aix.current?.scrollToIndexWhenBlankSizeReady(messages.length + 1, true)
+    requestAnimationFrame(Keyboard.dismiss)
+  }
+
+  return <Aix ref={aix}>{/* ... */}</Aix>
+}
+```
+
+### Add a scroll to end button
+
+You can use `onScrolledNearEndChange` to show a "scroll to end" button when the
+user scrolls away from the bottom:
+
+```tsx
+import { Aix, useAixRef } from 'aix'
+import { useState } from 'react'
+import { Button } from 'react-native'
+
+function Chat() {
+  const aix = useAixRef()
+  const [isNearEnd, setIsNearEnd] = useState(false)
+
+  return (
+    <Aix
+      ref={aix}
+      scrollEndReachedThreshold={200}
+      onScrolledNearEndChange={setIsNearEnd}
+    >
+      {/* ScrollView and messages... */}
+
+      {!isNearEnd && (
+        <Button
+          onPress={() => aix.current?.scrollToEnd(true)}
+          title='Scroll to end'
+        />
+      )}
+    </Aix>
+  )
+}
+```
 
 ## API Reference
 
 ### `Aix`
 
-The main container component that provides keyboard-aware behavior and manages scrolling for chat interfaces.
+The main container component that provides keyboard-aware behavior and manages
+scrolling for chat interfaces.
 
 #### Props
 
@@ -107,7 +209,11 @@ const aix = useAixRef()
 aix.current?.scrollToEnd(animated)
 
 // Scroll to a specific index when the blank size is ready
-aix.current?.scrollToIndexWhenBlankSizeReady(index, animated, waitForKeyboardToEnd)
+aix.current?.scrollToIndexWhenBlankSizeReady(
+  index,
+  animated,
+  waitForKeyboardToEnd
+)
 ```
 
 | Method                            | Parameters                                                          | Description                                                                |
@@ -119,7 +225,8 @@ aix.current?.scrollToIndexWhenBlankSizeReady(index, animated, waitForKeyboardToE
 
 ### `AixCell`
 
-A wrapper component for each message in the list. It communicates cell position and dimensions to the parent `Aix` component.
+A wrapper component for each message in the list. It communicates cell position
+and dimensions to the parent `Aix` component.
 
 #### Props
 
@@ -132,176 +239,25 @@ A wrapper component for each message in the list. It communicates cell position 
 
 ### `AixFooter`
 
-A footer component for floating composers that allows content to scroll underneath it. The footer's height is automatically tracked for proper scroll offset calculations.
+A footer component for floating composers that allows content to scroll
+underneath it. The footer's height is automatically tracked for proper scroll
+offset calculations.
+
+#### Props
+
+Accepts all standard React Native `View` props.
 
 #### Important Notes
 
-- **Do not apply vertical padding** (`padding`, `paddingBottom`) directly to `AixFooter`. Apply padding to a child view instead.
-- Position the footer absolutely at the bottom of the `Aix` container.
-
-#### Recipe
+- **Do not apply vertical padding** (`padding`, `paddingBottom`) directly to
+  `AixFooter`. Apply padding to a child view instead.
+- Position the footer absolutely at the bottom of the `Aix` container:
 
 ```tsx
-<AixFooter
-  fixInput
-  stickToKeyboard={{
-    enabled: true,
-    offset: {
-      whenKeyboardOpen: 0,
-      whenKeyboardClosed: bottomSafeAreaInset,
-    },
-  }}
-  style={{ position: 'absolute', inset: 0, top: 'auto' }}
->
+<AixFooter style={{ position: 'absolute', inset: 0, top: 'auto' }}>
   <Composer />
 </AixFooter>
 ```
-
-#### Props
-
-| Prop              | Type                 | Default | Description                                                                                                                                                                                                                                       |
-| ----------------- | -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fixInput`        | `boolean`            | -       | Patches the `TextInput` inside the footer to disable scroll bouncing, hide scroll indicators, enable interactive keyboard dismiss, and add swipe-up-to-focus. Recommended for multiline inputs. This may move to `AixInputWrapper` in the future. |
-| `stickToKeyboard` | `AixStickToKeyboard` | -       | Controls whether the footer translates upward with the keyboard. See shape below.                                                                                                                                                                 |
-
-Also accepts all standard React Native `View` props.
-
-**`AixStickToKeyboard`**
-
-| Field                       | Type      | Required | Description                                                                                   |
-| --------------------------- | --------- | -------- | --------------------------------------------------------------------------------------------- |
-| `enabled`                   | `boolean` | Yes      | Whether the footer should translate upward with the keyboard.                                 |
-| `offset.whenKeyboardOpen`   | `number`  | No       | Additional vertical offset applied when the keyboard is fully open.                           |
-| `offset.whenKeyboardClosed` | `number`  | No       | Additional vertical offset applied when the keyboard is closed (e.g. bottom safe area inset). |
-
----
-
-### `AixDropzone`
-
-A wrapper component that enables drag-and-drop file support for your chat interface. Users can drop images, documents, and other files onto the zone.
-
-On iOS, this uses a native drop interaction handler. On other platforms, it renders its children without drop support.
-
-#### Recipe
-
-Wrap your chat screen with `AixDropzone` to handle dropped files:
-
-```tsx
-import { useState } from 'react'
-import { AixDropzone, Aix, type AixInputWrapperOnPasteEvent } from 'aix'
-
-function ChatScreen() {
-  const [attachments, setAttachments] = useState<AixInputWrapperOnPasteEvent[]>([])
-
-  return (
-    <AixDropzone
-      onDrop={(events) => {
-        setAttachments((prev) => [...prev, ...events])
-      }}
-    >
-      <Aix shouldStartAtEnd style={{ flex: 1 }}>
-        {/* ScrollView, messages, footer... */}
-      </Aix>
-    </AixDropzone>
-  )
-}
-```
-
-#### Props
-
-| Prop       | Type                                              | Default | Description                                                                            |
-| ---------- | ------------------------------------------------- | ------- | -------------------------------------------------------------------------------------- |
-| `onDrop`   | `(events: AixInputWrapperOnPasteEvent[]) => void` | -       | Called when the user drops files onto the zone. Each event describes one dropped item. |
-| `children` | `ReactNode`                                       | -       | Content to render inside the drop zone.                                                |
-
-**`AixInputWrapperOnPasteEvent`**
-
-| Field           | Type      | Description                                       |
-| --------------- | --------- | ------------------------------------------------- |
-| `type`          | `string`  | The kind of item (e.g. `"image"`).                |
-| `filePath`      | `string`  | Local file path to the dropped or pasted content. |
-| `fileExtension` | `string?` | File extension (e.g. `"png"`, `"pdf"`).           |
-| `fileName`      | `string?` | Original file name.                               |
-
----
-
-### `AixInputWrapper`
-
-A wrapper for your `TextInput` that intercepts paste events, letting users paste images and files from their clipboard into the composer.
-
-On iOS, this uses a native view that overrides paste behavior to capture rich content. On other platforms, it renders its children without paste interception.
-
-#### Recipe
-
-Wrap your `TextInput` with `AixInputWrapper` to handle pasted images and files:
-
-```tsx
-import { useState } from 'react'
-import { TextInput } from 'react-native'
-import { AixInputWrapper, type AixInputWrapperOnPasteEvent } from 'aix'
-
-function Composer() {
-  const [attachments, setAttachments] = useState<AixInputWrapperOnPasteEvent[]>([])
-
-  return (
-    <AixInputWrapper
-      editMenuDefaultActions={['paste']}
-      onPaste={(events) => {
-        setAttachments((prev) => [...prev, ...events])
-      }}
-    >
-      <TextInput placeholder='Type a message...' multiline />
-    </AixInputWrapper>
-  )
-}
-```
-
-Each event in `onPaste` has the same [`AixInputWrapperOnPasteEvent`](#aixinputwrapperonpasteevent) shape described above.
-
-#### Props
-
-| Prop                     | Type                                              | Default | Description                                                                      |
-| ------------------------ | ------------------------------------------------- | ------- | -------------------------------------------------------------------------------- |
-| `onPaste`                | `(events: AixInputWrapperOnPasteEvent[]) => void` | -       | Called when the user pastes rich content (images, files) into the wrapped input. |
-| `pasteConfiguration`     | `string[]`                                        | -       | UTI types to accept for paste events.                                            |
-| `editMenuDefaultActions` | `string[]`                                        | -       | Which default edit menu actions to show (e.g. `['paste']`).                      |
-| `maxLines`               | `number`                                          | -       | Maximum number of visible lines for the wrapped input.                           |
-| `maxChars`               | `number`                                          | -       | Maximum character count for the wrapped input.                                   |
-| `children`               | `ReactNode`                                       | -       | Should contain your `TextInput`.                                                 |
-
-Also accepts all standard React Native `View` props.
-
----
-
-### `TextFadeInStaggeredIfStreaming`
-
-Animates text children with a staggered word-by-word fade-in effect. Each word fades in over 500ms, staggered 32ms apart. A pool system limits concurrent animations for smooth performance.
-
-The `disabled` state is captured on mount. If the component mounts with `disabled={true}`, animation stays off even if `disabled` later becomes `false`. This prevents completed messages from re-animating on re-render.
-
-#### Recipe
-
-```tsx
-import { Text } from 'react-native'
-import { TextFadeInStaggeredIfStreaming } from 'aix'
-
-function AssistantMessage({ content, isStreaming }) {
-  return (
-    <Text>
-      <TextFadeInStaggeredIfStreaming disabled={!isStreaming}>
-        {content}
-      </TextFadeInStaggeredIfStreaming>
-    </Text>
-  )
-}
-```
-
-#### Props
-
-| Prop       | Type        | Required | Description                                                                                                             |
-| ---------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `disabled` | `boolean`   | Yes      | Whether to disable the fade-in animation. Pass `true` for completed messages, `false` for currently-streaming messages. |
-| `children` | `ReactNode` | -        | Text content to animate. String children are split by word and each word fades in individually.                         |
 
 ---
 
@@ -327,91 +283,19 @@ function Chat({ messages }) {
 }
 ```
 
----
+### Rules
 
-### `useContentInsetHandler`
-
-A hook for receiving content inset updates from the native scroll view. Use this when you want to apply content insets yourself (e.g. via Reanimated shared values) instead of letting `Aix` apply them natively.
-
-#### Recipe
-
-Apply content insets with Reanimated for custom control:
-
-```tsx
-import { Aix, useContentInsetHandler } from 'aix'
-import { useSharedValue, useAnimatedProps } from 'react-native-reanimated'
-import Animated from 'react-native-reanimated'
-
-function Chat() {
-  const bottomInset = useSharedValue<number | null>(null)
-
-  const contentInsetHandler = useContentInsetHandler((insets) => {
-    'worklet'
-    bottomInset.set(insets.bottom ?? null)
-  })
-
-  const animatedScrollViewProps = useAnimatedProps(() => ({
-    contentInset: {
-      top: 0,
-      bottom: bottomInset.get() ?? 0,
-      left: 0,
-      right: 0,
-    },
-  }))
-
-  return (
-    <Aix
-      shouldStartAtEnd
-      shouldApplyContentInsets={false}
-      onWillApplyContentInsets={contentInsetHandler}
-    >
-      <Animated.ScrollView animatedProps={animatedScrollViewProps}>
-        {/* messages... */}
-      </Animated.ScrollView>
-    </Aix>
-  )
-}
-```
-
-#### Parameters
-
-| Parameter      | Type                                 | Description                                                              |
-| -------------- | ------------------------------------ | ------------------------------------------------------------------------ |
-| `handler`      | `(insets: AixContentInsets) => void` | Callback receiving computed content insets. Can be a Reanimated worklet. |
-| `dependencies` | `unknown[]`                          | Dependency array for the callback (default: `[]`).                       |
-
-**`AixContentInsets`**
-
-| Field    | Type      | Description           |
-| -------- | --------- | --------------------- |
-| `top`    | `number?` | Top content inset.    |
-| `left`   | `number?` | Left content inset.   |
-| `bottom` | `number?` | Bottom content inset. |
-| `right`  | `number?` | Right content inset.  |
+- Do **NOT** apply padding to `contentContainerStyle`. Instead, use padding on
+  children directly.
+- Do **NOT** apply padding to `AixFooter`. Instead, use padding on its children
 
 ---
 
-### Scroll to End Button
+## TODOs
 
-You can use `onScrolledNearEndChange` to show a "scroll to end" button when the user scrolls away from the bottom:
-
-```tsx
-import { Aix, useAixRef } from 'aix'
-import { useState } from 'react'
-
-function Chat() {
-  const aix = useAixRef()
-  const [isNearEnd, setIsNearEnd] = useState(false)
-
-  return (
-    <Aix ref={aix} scrollEndReachedThreshold={200} onScrolledNearEndChange={setIsNearEnd}>
-      {/* ScrollView and messages... */}
-
-      {!isNearEnd && <Button onPress={() => aix.current?.scrollToEnd(true)} />}
-    </Aix>
-  )
-}
-```
+- [ ] Android support
+- [ ] LegendList support
+- [ ] FlashList support
 
 ## Requirements
 
