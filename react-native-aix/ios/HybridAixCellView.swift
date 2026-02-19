@@ -154,6 +154,7 @@ class HybridAixCellView: HybridAixCellViewSpec {
     private func updateRegistration() {
         guard let ctx = getAixContext() else { return }
         ctx.registerCell(self)
+        updateBlankViewStatus()
     }
     
     /// Update blank view status (called when isLast changes)
