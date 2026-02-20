@@ -299,6 +299,7 @@ function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
         console.log('onDrop', events);
         addAttachments(events);
       }}
+      style={{ flex: 1 }}
     >
       {children}
     </AixDropzone>
