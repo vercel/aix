@@ -131,6 +131,12 @@ export interface AixProps extends HybridViewProps {
   onScrolledNearEndChange?: (isNearEnd: boolean) => void
 }
 
+export interface AixVisibleCellInfo {
+  cellIndex: number
+  offsetInCell: number
+  isNearEnd: boolean
+}
+
 export interface AixMethods extends HybridViewMethods {
   scrollToEnd(animated?: boolean): void
   scrollToIndexWhenBlankSizeReady(
@@ -138,6 +144,8 @@ export interface AixMethods extends HybridViewMethods {
     animated?: boolean,
     waitForKeyboardToEnd?: boolean,
   ): void
+  getFirstVisibleCellInfo(): AixVisibleCellInfo | undefined
+  scrollToCellOffset(cellIndex: number, offsetInCell: number, animated?: boolean): void
 }
 
 export type Aix = HybridView<AixProps, AixMethods, { ios: 'swift'; android: 'kotlin' }>

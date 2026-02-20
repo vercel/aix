@@ -77,6 +77,8 @@ namespace margelo::nitro::aix {
     // Methods
     void scrollToEnd(std::optional<bool> animated) override;
     void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) override;
+    std::optional<AixVisibleCellInfo> getFirstVisibleCellInfo() override;
+    void scrollToCellOffset(double cellIndex, double offsetInCell, std::optional<bool> animated) override;
 
   private:
     friend HybridBase;

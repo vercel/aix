@@ -132,6 +132,14 @@ abstract class HybridAixSpec: HybridView() {
   @DoNotStrip
   @Keep
   abstract fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun getFirstVisibleCellInfo(): AixVisibleCellInfo?
+  
+  @DoNotStrip
+  @Keep
+  abstract fun scrollToCellOffset(cellIndex: Double, offsetInCell: Double, animated: Boolean?): Unit
 
   private external fun initHybrid(): HybridData
 
