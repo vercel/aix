@@ -22,6 +22,9 @@ Pod::Spec.new do |s|
     "cpp/**/*.{hpp,cpp}",
   ]
 
+  # Force -ObjC linker flag in consuming apps to prevent +load method stripping in release builds
+  s.user_target_xcconfig = { 'OTHER_LDFLAGS' => '-ObjC' }
+
   load 'nitrogen/generated/ios/Aix+autolinking.rb'
   add_nitrogen_files(s)
 

@@ -115,7 +115,17 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var scrollOnComposerSizeUpdate: AixScrollOnFooterSizeUpdate?
 
-    var mainScrollViewID: String?
+    var mainScrollViewID: String? {
+        didSet {
+            guard mainScrollViewID != oldValue else { return }
+            removePanGestureObserver()
+            removeScrollViewObservers()
+            cachedScrollView = nil
+            didSetupPanGestureObserver = false
+            isNearEndCallbackReady = false
+            prevIsScrolledNearEnd = nil
+        }
+    }
     
     func scrollToEnd(animated: Bool?) {
         // Dispatch to main thread since this may be called from RN background thread
@@ -144,8 +154,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
-    private var didScrollToEndInitially = false
-    
+    /// Tracks which scrollViewID we've done the initial scroll for
+    private var didScrollToEndInitiallyForId: String? = nil
+
+    /// Returns true if we've already done the initial scroll for the current mainScrollViewID
+    private var didScrollToEndInitially: Bool {
+        return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
+    }
+
     // MARK: - Inner View
     
     /// Custom UIView that notifies owner when added to superview
@@ -211,6 +227,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     /// Previous "scrolled near end" state for change detection
     private var prevIsScrolledNearEnd: Bool? = nil
+
+    /// Flag to defer near-end callbacks until after initial mount layout settles
+    private var isNearEndCallbackReady = false
     
     /// KVO observation tokens for scroll view
     private var contentOffsetObservation: NSKeyValueObservation?
@@ -243,15 +262,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         var sv: UIScrollView? = nil
         if let scrollViewID = mainScrollViewID, !scrollViewID.isEmpty {
             sv = searchRoot.findScrollView(withIdentifier: scrollViewID)
-            if sv != nil {
-                print("[Aix] scrollView found by ID '\(scrollViewID)': \(String(describing: sv))")
-            }
         }
 
         // Fallback to default subview iteration if not found by ID
         if sv == nil {
             sv = searchRoot.findScrollView()
-            print("[Aix] scrollView found by iteration: \(String(describing: sv))")
         }
 
         cachedScrollView = sv
@@ -303,7 +318,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         didSetupPanGestureObserver = true
         
         scrollView.panGestureRecognizer.addTarget(self, action: #selector(handlePanGesture(_:)))
-        print("[Aix] Pan gesture observer set up")
     }
     
     /// Clean up pan gesture observer to avoid retain cycles
@@ -366,8 +380,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         isInInteractiveDismiss = true
         
         let scrollY = scrollView?.contentOffset.y ?? 0
-        
-        print("[Aix] Starting interactive keyboard dismiss from height=\(keyboardHeight), scrollY=\(scrollY)")
         
         // Calculate proper interpolation values (same as non-interactive close)
         let interpolation = getContentOffsetYWhenClosing(scrollY: scrollY)
@@ -448,7 +460,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             right: nil
         )
 
-        print("[aix] applyContentInset \(targetBottom)")
         onWillApplyContentInsets?(insets)
         
         // If shouldApplyContentInsets is explicitly false, call callback and return
@@ -480,7 +491,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Centralized function to check and fire onScrolledNearEndChange callback
     /// Called from KVO observers and after content inset changes
     private func updateScrolledNearEndState() {
-        guard scrollView != nil else { return }
+        guard isNearEndCallbackReady, scrollView != nil else { return }
         let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         guard isNearEnd != prevIsScrolledNearEnd else { return }
         prevIsScrolledNearEnd = isNearEnd
@@ -522,7 +533,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     private func scrollToEndInternal(animated: Bool?) {
         guard let scrollView else { return }
-        
+
         // Calculate the offset to show the bottom of content
         let bottomOffset = CGPoint(
             x: 0,
@@ -575,8 +586,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             // don't interpolate the keyboard if we're planning to scroll to end
             interpolateContentOffsetY = nil
         }
-        
-        print("[Aix] handleKeyboardWillMove: isOpening=\(isOpening), interpolate=\(String(describing: interpolateContentOffsetY))")
         
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
@@ -652,7 +661,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         self.view = inner
         super.init()
         inner.owner = self
-        print("[Aix] HybridAix initialized, attaching context to view")
         // Attach this context to our inner view
         view.aixContext = self
     }
@@ -667,7 +675,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Called when our view is added to or removed from the HybridAixComponent
     private func handleDidMoveToSuperview() {
         if let superview = view.superview {
-            print("[Aix] View added to superview: \(type(of: superview)), attaching context")
             // Attach context to the superview (HybridAixComponent) so children can find it
             superview.aixContext = self
 
@@ -730,9 +737,13 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 applyContentInset()
                 applyScrollIndicatorInsets()
                 scrollToEndInternal(animated: false)
-                updateScrolledNearEndState()
             }
-            didScrollToEndInitially = true
+            didScrollToEndInitiallyForId = mainScrollViewID ?? ""
+            // Fire initial callback so consumer knows the initial state
+            let isNearEnd = self.getIsScrolledNearEnd(distFromEnd: self.distFromEnd)
+            self.prevIsScrolledNearEnd = isNearEnd
+            self.isNearEndCallbackReady = true
+            self.onScrolledNearEndChange?(isNearEnd)
         } else {
             applyContentInset()
             applyScrollIndicatorInsets()
@@ -873,7 +884,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
 
         let targetHeight = keyboardFrame.height
-        print("[Aix] keyboardWillShow: targetHeight=\(targetHeight), duration=\(duration)")
 
         guard duration > 0 else { return }
 
@@ -916,8 +926,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
 
-        print("[Aix] keyboardWillHide: duration=\(duration)")
-
         // Don't interpolate scroll position when closing, the inset change will handle the visual transition
         startEvent = nil
 
@@ -936,11 +944,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     func keyboardDidShow(notification: NSNotification) {
-        print("[Aix] keyboardDidShow")
     }
 
     func keyboardDidHide(notification: NSNotification) {
-        print("[Aix] keyboardDidHide")
         keyboardHeightWhenOpen = 0
         composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: 0, animated: false)
     }
@@ -990,12 +996,33 @@ extension HybridAix {
     }
     
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
+        // If content doesn't overflow (scrollview can't scroll), return false
+        // because there's no "end" to be near - all content is visible
+        guard let scrollView = scrollView else { return false }
+        let maxScrollableDistance = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
+        if maxScrollableDistance <= 0 {
+            return false
+        }
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
     }
-    
+
+    /// Check if scrolled near end for keyboard shift purposes.
+    /// Unlike getIsScrolledNearEnd (used for callback), this returns true when content doesn't overflow
+    /// because we want to shift content up when viewing all content.
+    private func isScrolledNearEndForKeyboardShift() -> Bool {
+        guard let scrollView = scrollView else { return false }
+        let maxScrollableDistance = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
+        // If content doesn't overflow, consider it "at end" for keyboard shift purposes
+        if maxScrollableDistance <= 0 {
+            return true
+        }
+        return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
+    }
+
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        guard let scrollView else { return nil } 
-        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+        guard let scrollView else { return nil }
+
+        let isScrolledNearEnd = isScrolledNearEndForKeyboardShift()
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         // Use the target additionalContentInsetBottom when keyboard is fully open
@@ -1020,10 +1047,10 @@ extension HybridAix {
     }
     
     func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        guard let scrollView else { return nil }
         guard keyboardHeightWhenOpen > 0 else { return nil }
-        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
 
-        if !isScrolledNearEnd {
+        if !isScrolledNearEndForKeyboardShift() {
             return nil
         }
 
