@@ -1017,30 +1017,13 @@ extension HybridAix {
         // If content doesn't overflow (scrollview can't scroll), return false
         // because there's no "end" to be near - all content is visible
         guard let scrollView = scrollView else { return false }
-        let maxScrollableDistance = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
-        if maxScrollableDistance <= 0 {
-            return false
-        }
-        return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
-    }
-
-    /// Check if scrolled near end for keyboard shift purposes.
-    /// Unlike getIsScrolledNearEnd (used for callback), this returns true when content doesn't overflow
-    /// because we want to shift content up when viewing all content.
-    private func isScrolledNearEndForKeyboardShift() -> Bool {
-        guard let scrollView = scrollView else { return false }
-        let maxScrollableDistance = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
-        // If content doesn't overflow, consider it "at end" for keyboard shift purposes
-        if maxScrollableDistance <= 0 {
-            return true
-        }
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
     }
 
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard let scrollView else { return nil }
 
-        let isScrolledNearEnd = isScrolledNearEndForKeyboardShift()
+        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
         
         // Use the target additionalContentInsetBottom when keyboard is fully open
