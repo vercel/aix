@@ -79,6 +79,10 @@ class HybridAixCellView: HybridAixCellViewSpec {
     
     /// Cached reference to the AixContext (found on first access)
     private weak var cachedAixContext: AixContext?
+
+    /// Deduped logging state for context lookup.
+    private var didLogContextLookupSuccess = false
+    private var didLogContextLookupFailure = false
     
     /// Last reported size (to avoid reporting unchanged sizes)
     private var lastReportedSize: CGSize = .zero
@@ -94,15 +98,42 @@ class HybridAixCellView: HybridAixCellViewSpec {
     }
     
     // MARK: - Context Access
-    
+
+    private func findAixFromTree() -> (aix: HybridAix, depth: Int)? {
+        var node: UIView? = view
+        var depth = 0
+        while let current = node {
+            if let aix = HybridAixContextRegistry.resolve(for: current) {
+                return (aix, depth)
+            }
+            node = current.superview
+            depth += 1
+        }
+        return nil
+    }
+
     /// Get the AixContext, caching it for performance
     private func getAixContext() -> AixContext? {
         if let cached = cachedAixContext {
             return cached
         }
-        let ctx = view.useAixContext()
-        cachedAixContext = ctx
-        return ctx
+
+        if let result = findAixFromTree() {
+            cachedAixContext = result.aix
+            if !didLogContextLookupSuccess || didLogContextLookupFailure {
+                print("[Aix][Cell] Context lookup succeeded (index=\(Int(index)), isLast=\(isLast), depth=\(result.depth), view=\(type(of: view)))")
+            }
+            didLogContextLookupSuccess = true
+            didLogContextLookupFailure = false
+            return result.aix
+        }
+
+        if !didLogContextLookupFailure {
+            print("[Aix][Cell] Context lookup FAILED (index=\(Int(index)), isLast=\(isLast), chain=\(view.aixAncestorChainDescription()))")
+        }
+        didLogContextLookupFailure = true
+        didLogContextLookupSuccess = false
+        return nil
     }
     
     // MARK: - Lifecycle Handlers
@@ -119,6 +150,8 @@ class HybridAixCellView: HybridAixCellViewSpec {
         
         // Clear cached context since hierarchy changed
         cachedAixContext = nil
+        didLogContextLookupSuccess = false
+        didLogContextLookupFailure = false
         
         // Register with the new context
         if let ctx = getAixContext() {
@@ -133,6 +166,8 @@ class HybridAixCellView: HybridAixCellViewSpec {
             ctx.unregisterCell(self)
         }
         cachedAixContext = nil
+        didLogContextLookupSuccess = false
+        didLogContextLookupFailure = false
     }
     
     /// Called when layoutSubviews fires (size may have changed)

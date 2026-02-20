@@ -93,6 +93,10 @@ class HybridAixComposer: HybridAixComposerSpec {
     /// Cached reference to the AixContext (found on first access)
     private weak var cachedAixContext: AixContext?
 
+    /// Deduped logging state for context lookup.
+    private var didLogContextLookupSuccess = false
+    private var didLogContextLookupFailure = false
+
     /// Last reported height (to avoid reporting unchanged heights)
     private var lastReportedHeight: CGFloat = 0
 
@@ -113,14 +117,41 @@ class HybridAixComposer: HybridAixComposerSpec {
 
     // MARK: - Context Access
 
+    private func findAixFromTree() -> (aix: HybridAix, depth: Int)? {
+        var node: UIView? = view
+        var depth = 0
+        while let current = node {
+            if let aix = HybridAixContextRegistry.resolve(for: current) {
+                return (aix, depth)
+            }
+            node = current.superview
+            depth += 1
+        }
+        return nil
+    }
+
     /// Get the AixContext, caching it for performance
     private func getAixContext() -> AixContext? {
         if let cached = cachedAixContext {
             return cached
         }
-        let ctx = view.useAixContext()
-        cachedAixContext = ctx
-        return ctx
+
+        if let result = findAixFromTree() {
+            cachedAixContext = result.aix
+            if !didLogContextLookupSuccess || didLogContextLookupFailure {
+                print("[Aix][Composer] Context lookup succeeded (depth=\(result.depth), view=\(type(of: view)))")
+            }
+            didLogContextLookupSuccess = true
+            didLogContextLookupFailure = false
+            return result.aix
+        }
+
+        if !didLogContextLookupFailure {
+            print("[Aix][Composer] Context lookup FAILED (chain=\(view.aixAncestorChainDescription()))")
+        }
+        didLogContextLookupFailure = true
+        didLogContextLookupSuccess = false
+        return nil
     }
 
     // MARK: - Lifecycle Handlers
@@ -133,6 +164,8 @@ class HybridAixComposer: HybridAixComposerSpec {
 
         // Clear cached context since hierarchy changed
         cachedAixContext = nil
+        didLogContextLookupSuccess = false
+        didLogContextLookupFailure = false
 
         // Register with the new context
         if let ctx = getAixContext() {
@@ -152,6 +185,8 @@ class HybridAixComposer: HybridAixComposerSpec {
             ctx.unregisterComposerView(self)
         }
         cachedAixContext = nil
+        didLogContextLookupSuccess = false
+        didLogContextLookupFailure = false
     }
 
     /// Called when layoutSubviews fires (size may have changed)

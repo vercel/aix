@@ -7,9 +7,6 @@
 
 import Foundation
 import UIKit
-import ObjectiveC.runtime
-
-private var aixContextKey: UInt8 = 0
 
 /// Protocol that defines the Aix context interface for child views to communicate with
 protocol AixContext: AnyObject {
@@ -46,24 +43,50 @@ protocol AixContext: AnyObject {
     var keyboardHeightWhenOpen: CGFloat { get }
 }
 
-extension UIView {
-    /// Get/set the Aix context associated with this view
-    /// Uses OBJC_ASSOCIATION_ASSIGN to avoid retain cycles (weak reference behavior)
-    var aixContext: AixContext? {
-        get { objc_getAssociatedObject(self, &aixContextKey) as? AixContext }
-        set { objc_setAssociatedObject(self, &aixContextKey, newValue, .OBJC_ASSOCIATION_ASSIGN) }
+/// Weak context registry for locating HybridAix from ancestor views.
+final class HybridAixContextRegistry {
+    private static let map = NSMapTable<UIView, HybridAix>.weakToWeakObjects()
+
+    private static func contextID(_ aix: HybridAix) -> String {
+        String(describing: Unmanaged.passUnretained(aix).toOpaque())
     }
 
-    /// Walk up the view hierarchy to find the nearest AixContext
-    func useAixContext() -> AixContext? {
-        var node: UIView? = self
-        while let current = node {
-            if let ctx = current.aixContext {
-                return ctx
-            }
-            node = current.superview
+    static func register(_ aix: HybridAix, for view: UIView) {
+        map.setObject(aix, forKey: view)
+        print("[Aix][ContextRegistry] register context=\(contextID(aix)) on view=\(type(of: view))")
+    }
+
+    static func unregister(_ aix: HybridAix, for view: UIView) {
+        guard let existing = map.object(forKey: view), existing === aix else {
+            return
         }
-        return nil
+        map.removeObject(forKey: view)
+        print("[Aix][ContextRegistry] unregister context=\(contextID(aix)) from view=\(type(of: view))")
+    }
+
+    static func resolve(for view: UIView) -> HybridAix? {
+        map.object(forKey: view)
+    }
+}
+
+extension UIView {
+    /// Debug helper for context resolution logs.
+    func aixAncestorChainDescription(maxDepth: Int = 12) -> String {
+        var names: [String] = []
+        var node: UIView? = self
+        var depth = 0
+
+        while let current = node, depth < maxDepth {
+            names.append(String(describing: type(of: current)))
+            node = current.superview
+            depth += 1
+        }
+
+        if node != nil {
+            names.append("...")
+        }
+
+        return names.joined(separator: " -> ")
     }
 
     /// Recursively search subviews to find a UIScrollView by accessibilityIdentifier (nativeID)
@@ -173,8 +196,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     // MARK: - Inner View
     
-    /// Custom UIView that notifies owner when added to superview
-    /// so we can attach the context to the parent component
+    /// Custom UIView that notifies owner when added to superview.
     private final class InnerView: UIView {
         weak var owner: HybridAix?
         
@@ -241,6 +263,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var contentOffsetObservation: NSKeyValueObservation?
     private var contentSizeObservation: NSKeyValueObservation?
     private var boundsObservation: NSKeyValueObservation?
+
+    /// Current host view where this context is registered for lookup.
+    private weak var contextHostView: UIView?
     
     // MARK: - Context References (weak to avoid retain cycles)
     
@@ -692,24 +717,39 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         self.view = inner
         super.init()
         inner.owner = self
-        print("[Aix] HybridAix initialized, attaching context to view")
-        // Attach this context to our inner view
-        view.aixContext = self
+        HybridAixContextRegistry.register(self, for: view)
+        print("[Aix] HybridAix initialized")
     }
     
     deinit {
+        if let hostView = contextHostView {
+            HybridAixContextRegistry.unregister(self, for: hostView)
+        }
+        HybridAixContextRegistry.unregister(self, for: view)
         removePanGestureObserver()
         removeScrollViewObservers()
     }
     
     // MARK: - Lifecycle
 
+    private func updateContextHostRegistration(_ hostView: UIView?) {
+        if let previousHost = contextHostView, previousHost !== hostView {
+            print("[Aix] Context host changing from \(type(of: previousHost)) to \(hostView.map { String(describing: type(of: $0)) } ?? "nil")")
+            HybridAixContextRegistry.unregister(self, for: previousHost)
+        }
+
+        if let hostView {
+            HybridAixContextRegistry.register(self, for: hostView)
+        }
+
+        contextHostView = hostView
+    }
+
     /// Called when our view is added to or removed from the HybridAixComponent
     private func handleDidMoveToSuperview() {
         if let superview = view.superview {
-            print("[Aix] View added to superview: \(type(of: superview)), attaching context")
-            // Attach context to the superview (HybridAixComponent) so children can find it
-            superview.aixContext = self
+            updateContextHostRegistration(superview)
+            print("[Aix] View added to superview: \(type(of: superview))")
 
             // Enable keyboard notifications (unless app is in background)
             if !isAppInBackground {
@@ -730,6 +770,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 object: nil
             )
         } else {
+            updateContextHostRegistration(nil)
             // View removed from superview - disable keyboard notifications
             keyboardNotifications.isEnabled = false
 
