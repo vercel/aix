@@ -135,7 +135,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             removeScrollViewObservers()
             cachedScrollView = nil
             didSetupPanGestureObserver = false
-            isNearEndCallbackReady = false
             prevIsScrolledNearEnd = nil
         }
     }
@@ -239,9 +238,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Previous "scrolled near end" state for change detection
     private var prevIsScrolledNearEnd: Bool? = nil
 
-    /// Flag to defer near-end callbacks until after initial mount layout settles
-    private var isNearEndCallbackReady = false
-    
     /// KVO observation tokens for scroll view
     private var contentOffsetObservation: NSKeyValueObservation?
     private var contentSizeObservation: NSKeyValueObservation?
@@ -517,7 +513,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Centralized function to check and fire onScrolledNearEndChange callback
     /// Called from KVO observers and after content inset changes
     private func updateScrolledNearEndState() {
-        guard isNearEndCallbackReady, scrollView != nil else { return }
+        guard (didScrollToEndInitially != nil || !shouldStartAtEnd), scrollView != nil else { return }
         let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         guard isNearEnd != prevIsScrolledNearEnd else { return }
         prevIsScrolledNearEnd = isNearEnd
@@ -765,11 +761,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 scrollToEndInternal(animated: false)
             }
             didScrollToEndInitiallyForId = mainScrollViewID ?? ""
-            // Fire initial callback so consumer knows the initial state
-            let isNearEnd = self.getIsScrolledNearEnd(distFromEnd: self.distFromEnd)
-            self.prevIsScrolledNearEnd = isNearEnd
-            self.isNearEndCallbackReady = true
-            self.onScrolledNearEndChange?(isNearEnd)
+            updateScrolledNearEndState()
         } else {
             applyContentInset()
             applyScrollIndicatorInsets()
