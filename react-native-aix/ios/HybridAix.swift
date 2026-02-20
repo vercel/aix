@@ -169,6 +169,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var didScrollToEndInitiallyForId: String? = nil
 
     private var didScrollToEndInitially: Bool {
+        guard shouldStartAtEnd else { return true }
         return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
     }
     
@@ -513,7 +514,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Centralized function to check and fire onScrolledNearEndChange callback
     /// Called from KVO observers and after content inset changes
     private func updateScrolledNearEndState() {
-        guard (didScrollToEndInitially || !shouldStartAtEnd), scrollView != nil else { return }
+        guard didScrollToEndInitially, scrollView != nil else { return }
         let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         guard isNearEnd != prevIsScrolledNearEnd else { return }
         prevIsScrolledNearEnd = isNearEnd
