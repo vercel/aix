@@ -1050,8 +1050,9 @@ extension HybridAix {
     func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
         guard let scrollView else { return nil }
         guard keyboardHeightWhenOpen > 0 else { return nil }
+        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
 
-        if !isScrolledNearEndForKeyboardShift() {
+        if !isScrolledNearEnd {
             return nil
         }
 
