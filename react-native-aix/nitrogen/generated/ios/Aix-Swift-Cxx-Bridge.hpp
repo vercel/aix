@@ -26,6 +26,8 @@ namespace margelo::nitro::aix { struct AixScrollOnFooterSizeUpdate; }
 namespace margelo::nitro::aix { struct AixStickToKeyboardOffset; }
 // Forward declaration of `AixStickToKeyboard` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixStickToKeyboard; }
+// Forward declaration of `AixVisibleCellInfo` to properly resolve imports.
+namespace margelo::nitro::aix { struct AixVisibleCellInfo; }
 // Forward declaration of `HybridAixCellViewSpec` to properly resolve imports.
 namespace margelo::nitro::aix { class HybridAixCellViewSpec; }
 // Forward declaration of `HybridAixComposerSpec` to properly resolve imports.
@@ -59,6 +61,7 @@ namespace Aix { class HybridAixSpec_cxx; }
 #include "AixScrollOnFooterSizeUpdate.hpp"
 #include "AixStickToKeyboard.hpp"
 #include "AixStickToKeyboardOffset.hpp"
+#include "AixVisibleCellInfo.hpp"
 #include "HybridAixCellViewSpec.hpp"
 #include "HybridAixComposerSpec.hpp"
 #include "HybridAixDropzoneSpec.hpp"
@@ -272,6 +275,21 @@ namespace margelo::nitro::aix::bridge::swift {
     return *optional;
   }
   
+  // pragma MARK: std::optional<AixVisibleCellInfo>
+  /**
+   * Specialized version of `std::optional<AixVisibleCellInfo>`.
+   */
+  using std__optional_AixVisibleCellInfo_ = std::optional<AixVisibleCellInfo>;
+  inline std::optional<AixVisibleCellInfo> create_std__optional_AixVisibleCellInfo_(const AixVisibleCellInfo& value) noexcept {
+    return std::optional<AixVisibleCellInfo>(value);
+  }
+  inline bool has_value_std__optional_AixVisibleCellInfo_(const std::optional<AixVisibleCellInfo>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline AixVisibleCellInfo get_std__optional_AixVisibleCellInfo_(const std::optional<AixVisibleCellInfo>& optional) noexcept {
+    return *optional;
+  }
+  
   // pragma MARK: std::shared_ptr<HybridAixSpec>
   /**
    * Specialized version of `std::shared_ptr<HybridAixSpec>`.
@@ -291,6 +309,15 @@ namespace margelo::nitro::aix::bridge::swift {
   }
   inline Result_void_ create_Result_void_(const std::exception_ptr& error) noexcept {
     return Result<void>::withError(error);
+  }
+  
+  // pragma MARK: Result<std::optional<AixVisibleCellInfo>>
+  using Result_std__optional_AixVisibleCellInfo__ = Result<std::optional<AixVisibleCellInfo>>;
+  inline Result_std__optional_AixVisibleCellInfo__ create_Result_std__optional_AixVisibleCellInfo__(const std::optional<AixVisibleCellInfo>& value) noexcept {
+    return Result<std::optional<AixVisibleCellInfo>>::withValue(value);
+  }
+  inline Result_std__optional_AixVisibleCellInfo__ create_Result_std__optional_AixVisibleCellInfo__(const std::exception_ptr& error) noexcept {
+    return Result<std::optional<AixVisibleCellInfo>>::withError(error);
   }
   
   // pragma MARK: std::shared_ptr<HybridAixCellViewSpec>

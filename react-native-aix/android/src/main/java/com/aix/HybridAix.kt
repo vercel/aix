@@ -34,4 +34,13 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec() {
     override fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?) {
         // TODO: Implement for Android
     }
+
+    override fun getFirstVisibleCellInfo(): AixVisibleCellInfo? {
+        // TODO: Implement for Android
+        return null
+    }
+
+    override fun scrollToCellOffset(cellIndex: Double, offsetInCell: Double, animated: Boolean?) {
+        // TODO: Implement for Android
+    }
 }
