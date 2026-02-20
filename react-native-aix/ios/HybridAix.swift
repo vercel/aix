@@ -91,6 +91,19 @@ extension UIView {
         }
         return nil
     }
+
+    /// Recursively search subviews to find the first UITextField or UITextView
+    func findTextInput() -> UIView? {
+        if self is UITextField || self is UITextView {
+            return self
+        }
+        for subview in subviews {
+            if let input = subview.findTextInput() {
+                return input
+            }
+        }
+        return nil
+    }
 }
 
 // MARK: - HybridAix (Root Context)
@@ -154,14 +167,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
-    /// Tracks which scrollViewID we've done the initial scroll for
     private var didScrollToEndInitiallyForId: String? = nil
 
-    /// Returns true if we've already done the initial scroll for the current mainScrollViewID
     private var didScrollToEndInitially: Bool {
         return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
     }
-
+    
     // MARK: - Inner View
     
     /// Custom UIView that notifies owner when added to superview
@@ -419,14 +430,29 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
         
-        let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
-        let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
+        let startIndex: Int
+        let endIndex = Int(blankView.index) - 1
+        if let penultimateCellIndex {
+            startIndex = Int(penultimateCellIndex)
+        } else {
+            startIndex = endIndex
+        }
+        
+        var cellsBeforeBlankViewHeight: CGFloat = 0
+        if startIndex <= endIndex {
+            for i in startIndex...endIndex {
+                if let cell = getCell(index: i) {
+                    cellsBeforeBlankViewHeight += cell.view.frame.height
+                }
+            }
+        }
+        
         let blankViewHeight = blankView.view.frame.height
         
         // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
         // The blank size fills the remaining space so the last message can scroll to the top
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - cellBeforeBlankViewHeight
+        let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         return max(0, inset)
     }
     

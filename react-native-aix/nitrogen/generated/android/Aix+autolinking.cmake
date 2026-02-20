@@ -39,6 +39,10 @@ target_sources(
   ../nitrogen/generated/shared/c++/views/HybridAixCellViewComponent.cpp
   ../nitrogen/generated/shared/c++/HybridAixComposerSpec.cpp
   ../nitrogen/generated/shared/c++/views/HybridAixComposerComponent.cpp
+  ../nitrogen/generated/shared/c++/HybridAixInputWrapperSpec.cpp
+  ../nitrogen/generated/shared/c++/views/HybridAixInputWrapperComponent.cpp
+  ../nitrogen/generated/shared/c++/HybridAixDropzoneSpec.cpp
+  ../nitrogen/generated/shared/c++/views/HybridAixDropzoneComponent.cpp
   # Android-specific Nitrogen C++ sources
   ../nitrogen/generated/android/c++/JHybridAixSpec.cpp
   ../nitrogen/generated/android/c++/views/JHybridAixStateUpdater.cpp
@@ -46,6 +50,10 @@ target_sources(
   ../nitrogen/generated/android/c++/views/JHybridAixCellViewStateUpdater.cpp
   ../nitrogen/generated/android/c++/JHybridAixComposerSpec.cpp
   ../nitrogen/generated/android/c++/views/JHybridAixComposerStateUpdater.cpp
+  ../nitrogen/generated/android/c++/JHybridAixInputWrapperSpec.cpp
+  ../nitrogen/generated/android/c++/views/JHybridAixInputWrapperStateUpdater.cpp
+  ../nitrogen/generated/android/c++/JHybridAixDropzoneSpec.cpp
+  ../nitrogen/generated/android/c++/views/JHybridAixDropzoneStateUpdater.cpp
 )
 
 # From node_modules/react-native/ReactAndroid/cmake-utils/folly-flags.cmake

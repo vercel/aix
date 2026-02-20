@@ -1,8 +1,4 @@
-import type {
-  HybridView,
-  HybridViewProps,
-  HybridViewMethods,
-} from 'react-native-nitro-modules'
+import type { HybridView, HybridViewProps, HybridViewMethods } from 'react-native-nitro-modules'
 
 export interface AixAdditionalContentInsets {
   whenKeyboardOpen: number
@@ -122,7 +118,7 @@ export interface AixProps extends HybridViewProps {
   shouldApplyContentInsets?: boolean
   /**
    * Optional delay in milliseconds before applying content insets to the scroll view.
-   * 
+   *
    * This can help work around race conditions where insets are applied before
    * React commits layout changes.
    */
@@ -140,26 +136,18 @@ export interface AixMethods extends HybridViewMethods {
   scrollToIndexWhenBlankSizeReady(
     index: number,
     animated?: boolean,
-    waitForKeyboardToEnd?: boolean
+    waitForKeyboardToEnd?: boolean,
   ): void
 }
 
-export type Aix = HybridView<
-  AixProps,
-  AixMethods,
-  { ios: 'swift'; android: 'kotlin' }
->
+export type Aix = HybridView<AixProps, AixMethods, { ios: 'swift'; android: 'kotlin' }>
 
 export interface AixCellViewProps extends HybridViewProps {
   isLast: boolean
   index: number
 }
 
-export type AixCellView = HybridView<
-  AixCellViewProps,
-  {},
-  { ios: 'swift'; android: 'kotlin' }
->
+export type AixCellView = HybridView<AixCellViewProps, {}, { ios: 'swift'; android: 'kotlin' }>
 
 export interface AixStickToKeyboardOffset {
   whenKeyboardOpen: number
@@ -173,10 +161,36 @@ export interface AixStickToKeyboard {
 
 export interface AixComposerProps extends HybridViewProps {
   stickToKeyboard?: AixStickToKeyboard
+  fixInput?: boolean
 }
 
-export type AixComposer = HybridView<
-  AixComposerProps,
+export type AixComposer = HybridView<AixComposerProps, {}, { ios: 'swift'; android: 'kotlin' }>
+
+// MARK: - AixInputWrapper
+export interface AixInputWrapperOnPasteEvent {
+  type: string
+  filePath: string
+  fileExtension?: string
+  fileName?: string
+}
+
+export interface AixInputWrapperProps extends HybridViewProps {
+  pasteConfiguration?: string[]
+  editMenuDefaultActions?: string[]
+  maxLines?: number
+  maxChars?: number
+  onPaste?: (events: AixInputWrapperOnPasteEvent[]) => void
+}
+
+export type AixInputWrapper = HybridView<
+  AixInputWrapperProps,
   {},
   { ios: 'swift'; android: 'kotlin' }
 >
+
+// MARK: - AixDropzone
+export interface AixDropzoneProps extends HybridViewProps {
+  onDrop?: (events: AixInputWrapperOnPasteEvent[]) => void
+}
+
+export type AixDropzone = HybridView<AixDropzoneProps, {}, { ios: 'swift'; android: 'kotlin' }>
