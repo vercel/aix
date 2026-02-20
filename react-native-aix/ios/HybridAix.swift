@@ -480,21 +480,30 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// entirely and no blank padding is applied.
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
-
-        // Negative penultimateCellIndex = opt out of blank padding
-        if let idx = penultimateCellIndex, idx < 0 {
-            return 0
+        
+        let startIndex: Int
+        let endIndex = Int(blankView.index) - 1
+        if let penultimateCellIndex {
+            startIndex = Int(penultimateCellIndex)
+        } else {
+            startIndex = endIndex
         }
-
-        // Default to the cell immediately before the blank view
-        let penultimateIndex = penultimateCellIndex.map { Int($0) } ?? (Int(blankView.index) - 1)
-        let penultimateCellHeight = getCell(index: penultimateIndex)?.view.frame.height ?? 0
+        
+        var cellsBeforeBlankViewHeight: CGFloat = 0
+        if startIndex <= endIndex {
+            for i in startIndex...endIndex {
+                if let cell = getCell(index: i) {
+                    cellsBeforeBlankViewHeight += cell.view.frame.height
+                }
+            }
+        }
+        
         let blankViewHeight = blankView.view.frame.height
 
         // Visible area above all bottom chrome (keyboard, composer, additional insets).
         // The blank size fills the remaining space so the last message can scroll to the top.
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - penultimateCellHeight
+        let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         return max(0, inset)
     }
     
