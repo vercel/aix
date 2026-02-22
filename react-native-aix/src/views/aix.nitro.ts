@@ -26,7 +26,7 @@ export interface AixScrollOnFooterSizeUpdate {
    *
    * Default: true
    */
-  enabled: boolean
+  enabled?: boolean
   /**
    * The number of pixels from the bottom of the scroll view to the end of the content that is considered "scrolled near the end".
    *

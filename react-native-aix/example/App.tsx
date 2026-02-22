@@ -123,7 +123,7 @@ function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
 
   const { messages, setMessages } = useMessages();
-  const [isNearEnd, setIsNearEnd] = useState(false);
+  const [isNearEnd, setIsNearEnd] = useState(true);
   const { send } = useAppleChat({ setMessages, messages });
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
