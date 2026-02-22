@@ -780,79 +780,46 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 }
 
 // MARK: - Scroll Position Helpers
-
 extension HybridAix {
     /// Distance from current scroll position to the maximum scroll position (end)
     var distFromEnd: CGFloat {
-        guard let scrollView = scrollView else { return 0 }
-        let maxScrollY = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
-        return maxScrollY - scrollView.contentOffset.y
+        guard let scrollView else { return 0 }
+        return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y
     }
     
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
-        // If content doesn't overflow (scrollview can't scroll), return false
-        // because there's no "end" to be near - all content is visible
-        guard let scrollView = scrollView else { return false }
+        guard scrollView != nil else { return false }
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
     }
 
     func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        guard let scrollView else { return nil }
-
-        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
-        let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
-        
-        // Use the target additionalContentInsetBottom when keyboard is fully open
-        let targetAdditionalInset = CGFloat(self.additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
-        
-        // Calculate the max scroll position when keyboard is open
-        // This is where we want to scroll to: contentSize - bounds + contentInset
-        // When blankSize is 0: contentInset = keyboard + composer + additionalInset
-        let shiftContentUpToY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight + targetAdditionalInset
-        
-        if shouldShiftContentUp {
-            return (scrollY, shiftContentUpToY)    
+        guard let scrollView, getIsScrolledNearEnd(distFromEnd: distFromEnd), blankSize <= keyboardHeightWhenOpen else {
+            return nil
         }
-
-        let hasBlankSizeLessThanOpenKeyboardHeight = blankSize > 0 && blankSize <= keyboardHeightWhenOpen
-
-        if hasBlankSizeLessThanOpenKeyboardHeight && isScrolledNearEnd {
-            return (scrollY, shiftContentUpToY)    
-        }
-
-        return nil
+        
+        let targetAdditionalInset = CGFloat(additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
+        let targetY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight + targetAdditionalInset
+        
+        return (scrollY, targetY)
     }
     
     func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        guard let scrollView else { return nil }
-        guard keyboardHeightWhenOpen > 0 else { return nil }
-        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
-
-        if !isScrolledNearEnd {
+        guard scrollView != nil, keyboardHeightWhenOpen > 0, getIsScrolledNearEnd(distFromEnd: distFromEnd) else {
             return nil
         }
 
-        let additionalContentInsetBottomWithKeyboard = CGFloat(self.additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
-        let additionalContentInsetBottomWithoutKeyboard = CGFloat(self.additionalContentInsets?.bottom?.whenKeyboardClosed ?? 0)
+        let additionalInsetOpen = CGFloat(additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
+        let additionalInsetClosed = CGFloat(additionalContentInsets?.bottom?.whenKeyboardClosed ?? 0)
         
-        // Calculate how much content inset will decrease when keyboard closes
-        let blankSizeWithKeyboard = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen, additionalContentInsetBottom: additionalContentInsetBottomWithKeyboard)
-        let blankSizeWithoutKeyboard = calculateBlankSize(keyboardHeight: 0, additionalContentInsetBottom: additionalContentInsetBottomWithoutKeyboard)
+        let blankSizeOpen = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen, additionalContentInsetBottom: additionalInsetOpen)
+        let blankSizeClosed = calculateBlankSize(keyboardHeight: 0, additionalContentInsetBottom: additionalInsetClosed)
         
-        // Calculate actual content insets (including composer)
-        let insetWithKeyboard = calculateContentInsetBottom(keyboardHeight: keyboardHeightWhenOpen, blankSize: blankSizeWithKeyboard, additionalContentInsetBottom: additionalContentInsetBottomWithKeyboard)
-        let insetWithoutKeyboard = calculateContentInsetBottom(keyboardHeight: 0, blankSize: blankSizeWithoutKeyboard,
-           additionalContentInsetBottom: additionalContentInsetBottomWithoutKeyboard
-        )
-        let insetDecrease = insetWithKeyboard - insetWithoutKeyboard
+        let insetOpen = calculateContentInsetBottom(keyboardHeight: keyboardHeightWhenOpen, blankSize: blankSizeOpen, additionalContentInsetBottom: additionalInsetOpen)
+        let insetClosed = calculateContentInsetBottom(keyboardHeight: 0, blankSize: blankSizeClosed, additionalContentInsetBottom: additionalInsetClosed)
         
-        // To keep the visual content position stable, we need to decrease scrollY 
-        // by the same amount the inset decreases
-        let targetScrollY = max(0, scrollY - insetDecrease)
+        let targetScrollY = max(0, scrollY - (insetOpen - insetClosed))
         
-        // Only interpolate if there's actually movement needed
         guard abs(scrollY - targetScrollY) > 1 else { return nil }
-        
         return (scrollY, targetScrollY)
     }
 }
