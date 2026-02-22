@@ -33,12 +33,12 @@ namespace margelo::nitro::aix {
     [[nodiscard]]
     AixStickToKeyboard toCpp() const {
       static const auto clazz = javaClassStatic();
-      static const auto fieldEnabled = clazz->getField<jboolean>("enabled");
-      jboolean enabled = this->getFieldValue(fieldEnabled);
+      static const auto fieldEnabled = clazz->getField<jni::JBoolean>("enabled");
+      jni::local_ref<jni::JBoolean> enabled = this->getFieldValue(fieldEnabled);
       static const auto fieldOffset = clazz->getField<JAixStickToKeyboardOffset>("offset");
       jni::local_ref<JAixStickToKeyboardOffset> offset = this->getFieldValue(fieldOffset);
       return AixStickToKeyboard(
-        static_cast<bool>(enabled),
+        enabled != nullptr ? std::make_optional(static_cast<bool>(enabled->value())) : std::nullopt,
         offset != nullptr ? std::make_optional(offset->toCpp()) : std::nullopt
       );
     }
@@ -49,12 +49,12 @@ namespace margelo::nitro::aix {
      */
     [[maybe_unused]]
     static jni::local_ref<JAixStickToKeyboard::javaobject> fromCpp(const AixStickToKeyboard& value) {
-      using JSignature = JAixStickToKeyboard(jboolean, jni::alias_ref<JAixStickToKeyboardOffset>);
+      using JSignature = JAixStickToKeyboard(jni::alias_ref<jni::JBoolean>, jni::alias_ref<JAixStickToKeyboardOffset>);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
         clazz,
-        value.enabled,
+        value.enabled.has_value() ? jni::JBoolean::valueOf(value.enabled.value()) : nullptr,
         value.offset.has_value() ? JAixStickToKeyboardOffset::fromCpp(value.offset.value()) : nullptr
       );
     }

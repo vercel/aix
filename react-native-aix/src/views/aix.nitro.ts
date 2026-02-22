@@ -155,7 +155,7 @@ export interface AixStickToKeyboardOffset {
 }
 
 export interface AixStickToKeyboard {
-  enabled: boolean
+  enabled?: boolean
   offset?: AixStickToKeyboardOffset
 }
 
