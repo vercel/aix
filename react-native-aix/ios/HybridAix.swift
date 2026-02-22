@@ -126,11 +126,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     var mainScrollViewID: String? {
         didSet {
             guard mainScrollViewID != oldValue else { return }
-            // Reset scroll view state when ID changes
+            // Reset all scroll view and cell state when ID changes
             removeScrollViewObservers()
             cachedScrollView = nil
             didScrollToEndInitially = false
             prevIsScrolledNearEnd = nil
+            blankView = nil
+            cells.removeAllObjects()
+            lastReportedBlankViewSize = (size: .zero, index: 0)
         }
     }
     
@@ -335,7 +338,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         var cellsBeforeBlankViewHeight: CGFloat = 0
         if startIndex <= endIndex {
             for i in startIndex...endIndex {
-                if let cell = getCell(index: i) {
+            if let cell = getCell(index: i) {
                     cellsBeforeBlankViewHeight += cell.view.frame.height
                 }
             }
@@ -367,7 +370,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     /// Apply the current content inset to the scroll view
     func applyContentInset(contentInsetBottom overrideContentInsetBottom: CGFloat? = nil) {
-        guard let scrollView else { return }
+        guard let _ = scrollView else { return }
 
         let targetTop = additionalContentInsetTop
         let targetBottom = overrideContentInsetBottom ?? self.contentInsetBottom
@@ -630,6 +633,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         // If this cell is marked as last, update our blank view reference
         if cell.isLast {
             blankView = cell
+
+            // Trigger initial setup - handleLayoutChange may have already fired before
+            // the cell was in window, so we need to report here to ensure setup happens
+            let currentSize = cell.view.bounds.size
+            reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
         }
     }
     
