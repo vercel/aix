@@ -230,11 +230,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var boundsObservation: NSKeyValueObservation?
     
     // MARK: - Context References (weak to avoid retain cycles)
-    weak var blankView: HybridAixCellView? = nil {
-        didSet {
-            // Could add observers or callbacks here when blank view changes
-        }
-    }
+    weak var blankView: HybridAixCellView? = nil
     
     weak var composerView: HybridAixComposer? = nil
     
@@ -596,9 +592,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     func reportBlankViewSizeChange(size: CGSize, index: Int) {
         let didAlreadyUpdate = size.height == lastReportedBlankViewSize.size.height && size.width == lastReportedBlankViewSize.size.width && index == lastReportedBlankViewSize.index
-        if didAlreadyUpdate {
-            return
-        }
+        if didAlreadyUpdate { return }
 
         lastReportedBlankViewSize = (size: size, index: index)
 
@@ -630,14 +624,16 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     func registerCell(_ cell: HybridAixCellView) {
         cells.setObject(cell, forKey: NSNumber(value: cell.index))
         
-        // If this cell is marked as last, update our blank view reference
         if cell.isLast {
             blankView = cell
 
-            // Trigger initial setup - handleLayoutChange may have already fired before
-            // the cell was in window, so we need to report here to ensure setup happens
+            // Trigger initial setup 
             let currentSize = cell.view.bounds.size
             reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
+        } else if didScrollToEndInitially {
+            // A content cell registered after initial setup - recalculate insets
+            // since this cell's height affects the blank size calculation
+            applyAllInsets()
         }
     }
     
@@ -647,7 +643,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         // If this was our blank view, clear it
         if blankView === cell {
             blankView = nil
-        }
+                    }
     }
     
     func registerComposerView(_ composerView: HybridAixComposer) {
