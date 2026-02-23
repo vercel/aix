@@ -323,29 +323,46 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
         
+        let blankViewIndex = Int(blankView.index)
+        let endIndex = blankViewIndex - 1
         let startIndex: Int
-        let endIndex = Int(blankView.index) - 1
+        
         if let penultimateCellIndex {
-            startIndex = Int(penultimateCellIndex)
+            let penultimate = Int(penultimateCellIndex)
+            // Ensure penultimateCellIndex is valid (not beyond current cells)
+            // If penultimateCellIndex >= blankViewIndex, it means props are out of sync with cells
+            if penultimate >= blankViewIndex {
+                // Props are ahead of cells - use previous behavior (last cell before blank)
+                startIndex = endIndex
+            } else {
+                startIndex = penultimate
+            }
         } else {
             startIndex = endIndex
         }
         
         var cellsBeforeBlankViewHeight: CGFloat = 0
-        if startIndex <= endIndex {
+        var hasMissingCells = false
+        if startIndex >= 0 && startIndex <= endIndex {
             for i in startIndex...endIndex {
-            if let cell = getCell(index: i) {
+                if let cell = getCell(index: i) {
                     cellsBeforeBlankViewHeight += cell.view.frame.height
+                } else {
+                    hasMissingCells = true
                 }
             }
         }
         
-        let blankViewHeight = blankView.view.frame.height
+        // If any required cells are missing, return 0 (no extra padding)
+        // This keeps content at the bottom. When all cells register, we'll calculate correctly.
+        if hasMissingCells {
+            return 0
+        }
         
-        // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
-        // The blank size fills the remaining space so the last message can scroll to the top
+        let blankViewHeight = blankView.view.frame.height
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
         let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
+        
         return max(0, inset)
     }
     
