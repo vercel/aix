@@ -134,6 +134,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             blankView = nil
             cells.removeAllObjects()
             lastReportedBlankViewSize = (size: .zero, index: 0)
+            lastCalculatedBlankSize = 0
         }
     }
     
@@ -320,8 +321,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return 0
     }
 
+    /// Cache the last successfully calculated blank size to avoid jumps when cells are temporarily missing
+    private var lastCalculatedBlankSize: CGFloat = 0
+
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
-        guard let scrollView, let blankView else { return 0 }
+        guard let scrollView, let blankView else { return lastCalculatedBlankSize }
         
         let blankViewIndex = Int(blankView.index)
         let endIndex = blankViewIndex - 1
@@ -353,16 +357,21 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             }
         }
         
-        // If any required cells are missing, return 0 (no extra padding)
-        // This keeps content at the bottom. When all cells register, we'll calculate correctly.
+        // If any required cells are missing, return the last known good value to avoid jumps
+        // When all cells register, we'll calculate correctly
         if hasMissingCells {
-            return 0
+            return lastCalculatedBlankSize
         }
         
         let blankViewHeight = blankView.view.frame.height
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
         let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         
+        // Cache this value for when cells are temporarily missing
+        lastCalculatedBlankSize = inset
+        
+        // Return raw inset value (can be negative when cells are taller than visible area)
+        // The clamping happens in contentInsetBottom to ensure total inset is never negative
         return inset
     }
     
