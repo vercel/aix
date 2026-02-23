@@ -363,7 +363,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
         let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         
-        return max(0, inset)
+        return inset
     }
     
     /// Calculate the blank size - the space needed to push content up
@@ -375,7 +375,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// The content inset for the bottom of the scroll view
     
     private func calculateContentInsetBottom(keyboardHeight: CGFloat, blankSize: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
-        return blankSize + keyboardHeight + composerHeight + additionalContentInsetBottom
+        // Clamp to 0 here instead of in calculateBlankSize to preserve correct math
+        // when keyboard is open and blankSize goes negative
+        return max(0, blankSize + keyboardHeight + composerHeight + additionalContentInsetBottom)
     }
     var contentInsetBottom: CGFloat {
         return calculateContentInsetBottom(keyboardHeight: self.keyboardHeight, blankSize: self.blankSize, additionalContentInsetBottom: self.additionalContentInsetBottom)
