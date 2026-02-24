@@ -90,7 +90,7 @@ class HybridAixCellView: HybridAixCellViewSpec {
         self.view = inner
         super.init()
         inner.owner = self
-        getAixContext()?.registerCell(self)
+        // Registration happens in didMoveToWindow() when view hierarchy is connected
     }
     
     // MARK: - Context Access
