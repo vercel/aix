@@ -129,15 +129,36 @@ export interface AixProps extends HybridViewProps {
    * Uses `scrollEndReachedThreshold` to determine the threshold.
    */
   onScrolledNearEndChange?: (isNearEnd: boolean) => void
+
+  /**
+   * When set, the scroll to this blank view index will be animated.
+   * After the animated scroll completes, onDidScrollToIndex is called.
+   * Set to undefined after receiving onDidScrollToIndex callback.
+   *
+   * Usage:
+   * ```tsx
+   * const [scrollToIndex, setScrollToIndex] = useState<number | undefined>(undefined)
+   * <Aix
+   *   scrollToIndex={scrollToIndex}
+   *   onDidScrollToIndex={() => setScrollToIndex(undefined)}
+   * >
+   *   <Footer onSubmit={() => {
+   *     setScrollToIndex(messages.length + 1)
+   *     sendMessage(message)
+   *   }} />
+   * </Aix>
+   * ```
+   */
+  scrollToIndex?: number
+  /**
+   * Called when the animated scroll to `scrollToIndex` completes.
+   * Use this to clear the `scrollToIndex` prop.
+   */
+  onDidScrollToIndex?: () => void
 }
 
 export interface AixMethods extends HybridViewMethods {
   scrollToEnd(animated?: boolean): void
-  scrollToIndexWhenBlankSizeReady(
-    index: number,
-    animated?: boolean,
-    waitForKeyboardToEnd?: boolean,
-  ): void
 }
 
 export type Aix = HybridView<AixProps, AixMethods, { ios: 'swift'; android: 'kotlin' }>

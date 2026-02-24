@@ -125,9 +125,9 @@ function Chat({ children }: { children: React.ReactNode }) {
   const { messages, setMessages } = useMessages();
   const [isNearEnd, setIsNearEnd] = useState(true);
   const { send } = useAppleChat({ setMessages, messages });
-  const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
-    null,
-  );
+  const [animateMessageIndex, setAnimateMessageIndex] = useState<
+    number | undefined
+  >(undefined);
 
   // JS-controlled content insets via Reanimated
   const bottomInset = useSharedValue<number | null>(null);
@@ -256,6 +256,11 @@ function Chat({ children }: { children: React.ReactNode }) {
             shouldApplyContentInsets: false,
             onWillApplyContentInsets: contentInsetHandler,
           })}
+          scrollToIndex={animateMessageIndex ?? undefined}
+          onDidScrollToIndex={() => {
+            setAnimateMessageIndex(undefined);
+            console.log('onDidScrollToIndex');
+          }}
         >
           {children}
           {examples.scrollview()}
@@ -275,11 +280,6 @@ function Chat({ children }: { children: React.ReactNode }) {
               isNearEnd={isNearEnd}
               onSubmit={message => {
                 const nextAssistantMessageIndex = messages.length + 1;
-                aix.current?.scrollToIndexWhenBlankSizeReady(
-                  nextAssistantMessageIndex,
-                  true,
-                  false,
-                );
                 setAnimateMessageIndex(nextAssistantMessageIndex);
                 send(message);
               }}

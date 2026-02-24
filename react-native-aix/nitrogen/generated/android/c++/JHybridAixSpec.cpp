@@ -38,6 +38,7 @@ namespace margelo::nitro::aix { struct AixContentInsets; }
 #include <NitroModules/JNICallable.hpp>
 #include "JAixContentInsets.hpp"
 #include "JFunc_void_bool.hpp"
+#include "JFunc_void.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -183,15 +184,37 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_bool::javaobject> /* onScrolledNearEndChange */)>("setOnScrolledNearEndChange_cxx");
     method(_javaPart, onScrolledNearEndChange.has_value() ? JFunc_void_bool_cxx::fromCpp(onScrolledNearEndChange.value()) : nullptr);
   }
+  std::optional<double> JHybridAixSpec::getScrollToIndex() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JDouble>()>("getScrollToIndex");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->value()) : std::nullopt;
+  }
+  void JHybridAixSpec::setScrollToIndex(std::optional<double> scrollToIndex) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* scrollToIndex */)>("setScrollToIndex");
+    method(_javaPart, scrollToIndex.has_value() ? jni::JDouble::valueOf(scrollToIndex.value()) : nullptr);
+  }
+  std::optional<std::function<void()>> JHybridAixSpec::getOnDidScrollToIndex() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<JFunc_void::javaobject>()>("getOnDidScrollToIndex_cxx");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional([&]() -> std::function<void()> {
+      if (__result->isInstanceOf(JFunc_void_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void, void()>(std::move(__resultRef));
+      }
+    }()) : std::nullopt;
+  }
+  void JHybridAixSpec::setOnDidScrollToIndex(const std::optional<std::function<void()>>& onDidScrollToIndex) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void::javaobject> /* onDidScrollToIndex */)>("setOnDidScrollToIndex_cxx");
+    method(_javaPart, onDidScrollToIndex.has_value() ? JFunc_void_cxx::fromCpp(onDidScrollToIndex.value()) : nullptr);
+  }
 
   // Methods
   void JHybridAixSpec::scrollToEnd(std::optional<bool> animated) {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToEnd");
     method(_javaPart, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
-  }
-  void JHybridAixSpec::scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) {
-    static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */, jni::alias_ref<jni::JBoolean> /* waitForKeyboardToEnd */)>("scrollToIndexWhenBlankSizeReady");
-    method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr, waitForKeyboardToEnd.has_value() ? jni::JBoolean::valueOf(waitForKeyboardToEnd.value()) : nullptr);
   }
 
 } // namespace margelo::nitro::aix

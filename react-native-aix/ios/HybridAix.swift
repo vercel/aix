@@ -114,6 +114,18 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
     var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? = nil
 
+    /// When set to a valid index (>= 0), the scroll to this blank view index will be animated.
+    /// After the animated scroll completes, onDidScrollToIndex is called.
+    /// -1 is the sentinel value meaning "no scroll target" (sent from React to avoid null).
+    var scrollToIndex: Double? = nil
+    var onDidScrollToIndex: (() -> Void)? = nil
+
+    /// Returns the valid scrollToIndex target, or nil if unset / sentinel (-1).
+    private var scrollToIndexTarget: Int? {
+        guard let scrollToIndex, Int(scrollToIndex) >= 0 else { return nil }
+        return Int(scrollToIndex)
+    }
+
     var additionalContentInsets: AixAdditionalContentInsetsProp?
 
     var additionalScrollIndicatorInsets: AixScrollIndicatorInsets? {
@@ -145,24 +157,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
     
-    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
-        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
-
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-
-            // Clear any in-progress keyboard scroll interpolation since we're taking over scrolling
-            if let event = self.startEvent {
-                self.startEvent = KeyboardStartEvent(
-                    scrollY: event.scrollY,
-                    isOpening: event.isOpening,
-                    interpolateContentOffsetY: nil
-                )
-            }
-
-            self.flushQueuedScrollToEnd()
-        }
-    }
 
     private var didScrollToEndInitially: Bool = false
     
@@ -203,17 +197,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return 0
     }
 
-    // MARK: - Private Types
-    
-    struct QueuedScrollToEnd {
-        var index: Int
-        var animated: Bool
-        var waitForKeyboardToEnd: Bool
-    }
-
     // MARK: - Private State
-    /// Queued scroll operation waiting for blank view to update
-    private var queuedScrollToEnd: QueuedScrollToEnd? = nil
 
     /// Registered cells - using NSMapTable for weak references to avoid retain cycles
     /// Key: cell index, Value: weak reference to cell
@@ -521,18 +505,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         
         let scrollY = scrollView?.contentOffset.y ?? 0
         
-        var interpolateContentOffsetY: (CGFloat, CGFloat)? = {
+        let interpolateContentOffsetY: (CGFloat, CGFloat)? = {
             if isOpening {
                 return self.getContentOffsetYWhenOpening(scrollY: scrollY)
             } else {
                 return self.getContentOffsetYWhenClosing(scrollY: scrollY)
             }
         }()
-        
-        if queuedScrollToEnd != nil {
-            interpolateContentOffsetY = nil
-        }
-        
+
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
             isOpening: isOpening,
@@ -550,10 +530,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         applyAllInsets()
 
         startEvent = nil
-        
-        if queuedScrollToEnd?.waitForKeyboardToEnd == true {
-            flushQueuedScrollToEnd(force: true)
-        }
     }
     
     // MARK: - Initialization
@@ -650,11 +626,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
         applyAllInsets()
 
-        // If there's a queued scroll waiting, let it handle the scroll with animation
-        if let queued = queuedScrollToEnd, index == queued.index {
-            flushQueuedScrollToEnd()
+        // Animated scroll requested via scrollToIndex prop matching this blank view index
+        if scrollToIndexTarget == index {
+            scrollToEndInternal(animated: true)
+            onDidScrollToIndex?()
+        // Maintain scroll position at end when content changes
         } else if wasNearEnd {
-            // Otherwise, if we were scrolled near end, re-scroll to maintain position
             scrollToEndInternal(animated: false)
         }
     }
@@ -673,8 +650,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             // A content cell registered after initial setup - recalculate insets
             applyAllInsets()
 
-            // If we were scrolled near end and no queued scroll, re-scroll to maintain position
-            if wasNearEnd && queuedScrollToEnd == nil {
+            // If we were scrolled near end and no animated scroll pending, re-scroll to maintain position
+            // If scrollToIndex has a target, let the blank view registration handle the animated scroll
+            if wasNearEnd && scrollToIndexTarget == nil {
                 scrollToEndInternal(animated: false)
             }
         }
@@ -734,24 +712,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return cells.object(forKey: NSNumber(value: index))
     }
 
-    
-    // MARK: - Scrolling
-    func getIsQueuedScrollToEndReady(queuedScrollToEnd: QueuedScrollToEnd) -> Bool {
-        guard let blankView else { return false }
-        if queuedScrollToEnd.waitForKeyboardToEnd == true && startEvent != nil {
-            return false
-        }
-        return blankView.isLast && queuedScrollToEnd.index == Int(blankView.index)
-    }
-    
 
-    func flushQueuedScrollToEnd(force: Bool = false) {
-        if let queuedScrollToEnd, (force || getIsQueuedScrollToEndReady(queuedScrollToEnd: queuedScrollToEnd)) {
-            scrollToEndInternal(animated: queuedScrollToEnd.animated)
-            self.queuedScrollToEnd = nil
-        }
-    }
-    
     // MARK: - Keyboard Notification Handlers
     func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
