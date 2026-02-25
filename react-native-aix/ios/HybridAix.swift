@@ -615,23 +615,20 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 // Set initial state based on actual scroll position after layout
                 prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
             }
-            
+
             // Enable callbacks only after all setup is complete
             didScrollToEndInitially = true
             return
         }
-        
+
         // Check if we were near end BEFORE applying new insets
         let wasNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
 
         applyAllInsets()
 
-        // Animated scroll requested via scrollToIndex prop matching this blank view index
-        if scrollToIndexTarget == index {
-            scrollToEndInternal(animated: true)
-            onDidScrollToIndex?()
-        // Maintain scroll position at end when content changes
-        } else if wasNearEnd {
+        // If scrollToIndexTarget matches, defer — the content cell may not have
+        // registered yet, so blankSize would be stale. registerCell will flush it.
+        if wasNearEnd && scrollToIndexTarget != index {
             scrollToEndInternal(animated: false)
         }
     }
@@ -644,27 +641,28 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             let currentSize = cell.view.bounds.size
             reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
         } else if didScrollToEndInitially {
-            // Check if we were near end BEFORE applying new insets
             let wasNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
 
-            // A content cell registered after initial setup - recalculate insets
             applyAllInsets()
 
-            // If we were scrolled near end and no animated scroll pending, re-scroll to maintain position
-            // If scrollToIndex has a target, let the blank view registration handle the animated scroll
-            if wasNearEnd && scrollToIndexTarget == nil {
+            // Flush deferred animated scroll — the content cell is now registered
+            // so blankSize is accurate
+            if let target = scrollToIndexTarget, let blankView, target == Int(blankView.index) {
+                scrollToEndInternal(animated: true)
+                onDidScrollToIndex?()
+            } else if wasNearEnd && scrollToIndexTarget == nil {
                 scrollToEndInternal(animated: false)
             }
         }
     }
-    
+
     func unregisterCell(_ cell: HybridAixCellView) {
         cells.removeObject(forKey: NSNumber(value: cell.index))
-        
+
         // If this was our blank view, clear it
         if blankView === cell {
             blankView = nil
-                    }
+        }
     }
     
     func registerComposerView(_ composerView: HybridAixComposer) {
