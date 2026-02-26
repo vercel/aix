@@ -96,11 +96,11 @@ class ChatInputBar: UIView {
         textViewHeightConstraint.priority = .defaultLow
 
         NSLayoutConstraint.activate([
-            // Plus button — left side, 1:1 aspect, matches text container height
+            // Plus button — left side, fixed size, pinned to bottom
             plusButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            plusButton.centerYAnchor.constraint(equalTo: textContainerView.centerYAnchor),
-            plusButton.heightAnchor.constraint(equalTo: textContainerView.heightAnchor),
-            plusButton.widthAnchor.constraint(equalTo: plusButton.heightAnchor),
+            plusButton.bottomAnchor.constraint(equalTo: textContainerView.bottomAnchor),
+            plusButton.widthAnchor.constraint(equalToConstant: 44),
+            plusButton.heightAnchor.constraint(equalToConstant: 44),
 
             // Text container — right of plus button
             textContainerView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
@@ -118,7 +118,7 @@ class ChatInputBar: UIView {
 
             // Mic button — inside container, right side
             micButton.trailingAnchor.constraint(equalTo: textContainerView.trailingAnchor, constant: -12),
-            micButton.centerYAnchor.constraint(equalTo: textContainerView.centerYAnchor),
+            micButton.bottomAnchor.constraint(equalTo: textContainerView.bottomAnchor, constant: -10),
             micButton.widthAnchor.constraint(equalToConstant: 24),
             micButton.heightAnchor.constraint(equalToConstant: 24),
 

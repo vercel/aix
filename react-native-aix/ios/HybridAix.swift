@@ -117,6 +117,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }()
     
     var view: UIView {
+        // Fix thread warning
         navigationController.view
     }
 

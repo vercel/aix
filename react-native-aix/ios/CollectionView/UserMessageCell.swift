@@ -14,16 +14,14 @@ class UserMessageCell: UICollectionViewCell {
     
     private let messageTextView: UITextView = {
         let tv = UITextView()
-        tv.backgroundColor = .clear
         tv.textColor = .white
         tv.font = .systemFont(ofSize: 16)
+        tv.backgroundColor = .clear
         tv.isEditable = false
         tv.isScrollEnabled = false
         tv.isSelectable = true
         tv.textContainerInset = .zero
         tv.textContainer.lineFragmentPadding = 0
-        tv.textContainer.lineBreakMode = .byWordWrapping
-        tv.textAlignment = .natural
         tv.translatesAutoresizingMaskIntoConstraints = false
         return tv
     }()

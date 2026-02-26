@@ -7,19 +7,7 @@ class AssistantMessageCell: UICollectionViewCell {
     static let reuseIdentifier = "AssistantMessageCell"
 
     static let parser = MarkdownParser()
-
-    private static let darkTheme: MarkdownTheme = {
-        var theme = MarkdownTheme()
-        theme.colors.body = .white
-        theme.colors.codeBackground = UIColor(white: 0.15, alpha: 1)
-        return theme
-    }()
-
-    private static let sizingMarkdownView: MarkdownTextView = {
-        let view = MarkdownTextView()
-        view.theme = darkTheme
-        return view
-    }()
+    private static let sizingMarkdownView = MarkdownTextView()
 
     private let markdownTextView: MarkdownTextView = {
         let view = MarkdownTextView()
@@ -37,7 +25,6 @@ class AssistantMessageCell: UICollectionViewCell {
     }
 
     private func setupViews() {
-        markdownTextView.theme = Self.darkTheme
         contentView.addSubview(markdownTextView)
 
         NSLayoutConstraint.activate([
@@ -50,14 +37,14 @@ class AssistantMessageCell: UICollectionViewCell {
 
     func configure(with message: ChatMessage) {
         let result = Self.parser.parse(message.text)
-        let content = MarkdownTextView.PreprocessedContent(parserResult: result, theme: Self.darkTheme)
+        let content = MarkdownTextView.PreprocessedContent(parserResult: result, theme: .default)
         markdownTextView.setMarkdown(content)
     }
 
     static func height(for message: ChatMessage, constrainedToWidth width: CGFloat) -> CGFloat {
         let availableWidth = width - 32
         let result = parser.parse(message.text)
-        let content = MarkdownTextView.PreprocessedContent(parserResult: result, theme: darkTheme)
+        let content = MarkdownTextView.PreprocessedContent(parserResult: result, theme: .default)
         sizingMarkdownView.setMarkdownManually(content)
         let textSize = sizingMarkdownView.boundingSize(for: availableWidth)
         return 4 + textSize.height + 4

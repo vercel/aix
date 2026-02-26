@@ -13,11 +13,11 @@ final class ChatService {
 
     init() {
         if #available(iOS 26.0, *) {
-//            let model = SystemLanguageModel.default
-            let model = OpenAILanguageModel(apiKey: Self.openAIapiKey, model: "gpt-5-nano-2025-08-07")
+//            let model = SystemLanguageModel.default // Apple Intelligence model
+            let model = OpenAILanguageModel(apiKey: Self.openAIapiKey, model: "gpt-5.2-2025-12-11")
             session = LanguageModelSession(model: model)
         } else {
-            let model = OpenAILanguageModel(apiKey: Self.openAIapiKey, model: "gpt-5-nano-2025-08-07")
+            let model = OpenAILanguageModel(apiKey: Self.openAIapiKey, model: "gpt-5.2-2025-12-11")
             session = LanguageModelSession(model: model)
         }
     }

@@ -3,6 +3,7 @@ import Foundation
 enum MessageRole {
     case user
     case assistant
+    case loadingIndicator
 }
 
 enum MessageStatus {

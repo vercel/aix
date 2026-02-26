@@ -37,6 +37,7 @@ class ChatViewController: UIViewController {
         cv.alwaysBounceVertical = true
         cv.register(UserMessageCell.self, forCellWithReuseIdentifier: UserMessageCell.reuseIdentifier)
         cv.register(AssistantMessageCell.self, forCellWithReuseIdentifier: AssistantMessageCell.reuseIdentifier)
+        cv.register(LoadingIndicatorCell.self, forCellWithReuseIdentifier: LoadingIndicatorCell.reuseIdentifier)
         return cv
     }()
     
@@ -52,6 +53,12 @@ class ChatViewController: UIViewController {
             case .assistant:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AssistantMessageCell.reuseIdentifier, for: indexPath) as! AssistantMessageCell
                 cell.configure(with: current)
+                return cell
+            case .loadingIndicator:
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: LoadingIndicatorCell.reuseIdentifier, for: indexPath
+                ) as! LoadingIndicatorCell
+                cell.startAnimating()
                 return cell
             }
         }
@@ -129,7 +136,10 @@ class ChatViewController: UIViewController {
         view.addSubview(inputBar)
         inputBar.delegate = self
         inputBar.translatesAutoresizingMaskIntoConstraints = false
-        inputBar.textView.becomeFirstResponder()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.inputBar.textView.becomeFirstResponder()
+        }
         
         if #available(iOS 26.0, *) {
             let edgeInteraction = UIScrollEdgeElementContainerInteraction()
@@ -201,15 +211,23 @@ class ChatViewController: UIViewController {
         let userMessage = ChatMessage(role: .user, text: text)
         let userIndex = messages.count
         messages.append(userMessage)
-        
+
         view.endEditing(true)
+        
+        let layout = collectionView.collectionViewLayout as! ChatCollectionViewLayout
+        
+        // Pre scroll if user message is sent and content offset isn't bottom
+        let estimatedTargetY = estimatedContentOffsetY(beforeItemAt: userIndex, in: collectionView, layout: layout)
+        preScrollIfNeeded(toward: estimatedTargetY, in: collectionView)
         
         var snapshot = NSDiffableDataSourceSnapshot<Int, ChatMessage>()
         snapshot.appendSections([0])
         snapshot.appendItems(messages)
-        
+
         let userIndexPath = IndexPath(item: userIndex, section: 0)
-        
+        let startTime = CACurrentMediaTime()
+        let animationDuration = springDuration
+
         UIView.animate(
             withDuration: springDuration,
             delay: 0,
@@ -221,9 +239,40 @@ class ChatViewController: UIViewController {
             // animate to the index path of the user message
             self.collectionView.scrollToItem(at: userIndexPath, at: .top, animated: false)
         } completion: { [weak self] _ in
-            self?.streamAIResponse(text: text)
+            guard let self else { return }
+            let elapsed = CACurrentMediaTime() - startTime
+            let remaining = max(0, animationDuration - elapsed)
+            // Weird timing issue with first mesage
+            if remaining > 0.05 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
+                    self.streamAIResponse(text: text)
+                }
+            } else {
+                self.streamAIResponse(text: text)
+            }
         }
     }
+    
+    private func estimatedContentOffsetY(beforeItemAt index: Int, in collectionView: UICollectionView, layout: ChatCollectionViewLayout) -> CGFloat {
+        guard index > 0 else { return 0 }
+        var y: CGFloat = 0
+        let width = collectionView.bounds.width
+        for i in 0..<index {
+            let ip = IndexPath(item: i, section: 0)
+            let h = self.chatLayout(layout, heightForItemAt: ip, constrainedToWidth: width)
+            y += h + layout.interItemSpacing
+        }
+        return y
+    }
+    
+    private func preScrollIfNeeded(toward targetY: CGFloat, in collectionView: UICollectionView) {
+        let scrollDistance = abs(targetY - collectionView.contentOffset.y)
+        guard scrollDistance > collectionView.bounds.height else { return }
+        let preScrollY = max(0, targetY - collectionView.bounds.height * 0.8)
+        collectionView.contentOffset = CGPoint(x: 0, y: preScrollY)
+        collectionView.layoutIfNeeded()
+    }
+    
     
     // MARK: - Stream AI Response
     
@@ -232,18 +281,28 @@ class ChatViewController: UIViewController {
         
         Task { @MainActor in
             do {
-                let assistantMessage = ChatMessage(role: .assistant, text: "", status: .streaming)
-                messages.append(assistantMessage)
+                // Show typing indicator
+                let typingMessage = ChatMessage(role: .loadingIndicator, text: "")
+                messages.append(typingMessage)
                 applySnapshot(animated: false)
-                
-                let assistantIndex = messages.count - 1
-                
+
                 let stream = chatService.streamResponse(to: text)
+                var firstChunk = true
                 for try await fullText in stream {
-                    messages[assistantIndex].text = fullText
-                    reconfigureLastMessage()
+                    if firstChunk {
+                        // Replace typing indicator with assistant message
+                        let typingIndex = messages.count - 1
+                        messages[typingIndex] = ChatMessage(role: .assistant, text: fullText, status: .streaming)
+                        applySnapshot(animated: false)
+                        firstChunk = false
+                    } else {
+                        let assistantIndex = messages.count - 1
+                        messages[assistantIndex].text = fullText
+                        reconfigureLastMessage()
+                    }
                 }
                 
+                let assistantIndex = messages.count - 1
                 messages[assistantIndex].status = .complete
                 reconfigureLastMessage()
                 log.info("streamAIResponse: complete, length=\(self.messages[assistantIndex].text.count)")
@@ -251,7 +310,15 @@ class ChatViewController: UIViewController {
             } catch {
                 log.error("streamAIResponse: error: \(error.localizedDescription)")
                 
-                if let last = messages.last, last.role == .assistant {
+                if let last = messages.last, last.role == .loadingIndicator {
+                    // Replace typing indicator with error message
+                    let idx = messages.count - 1
+                    messages[idx] = ChatMessage(
+                        role: .assistant,
+                        text: "Sorry, something went wrong: \(error.localizedDescription)",
+                        status: .complete
+                    )
+                } else if let last = messages.last, last.role == .assistant {
                     let idx = messages.count - 1
                     messages[idx].status = .complete
                     if messages[idx].text.isEmpty {
@@ -300,6 +367,8 @@ extension ChatViewController: ChatLayoutDataProvider {
             ).height
         case .assistant:
             height = AssistantMessageCell.height(for: message, constrainedToWidth: width)
+        case .loadingIndicator:
+            height = 33 // 8pt top + 17pt label + 8pt bottom
         }
         
         heightCache[message.id] = (textHash: textHash, width: width, height: height)
