@@ -764,6 +764,13 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private func applyAllInsetsWithAnchoredOffset() {
         guard let scrollView else { return }
 
+        // When scrollToIndex is active, the animated scroll handles positioning.
+        // Don't restore offset - let the animation complete naturally.
+        if scrollToIndexTarget != nil {
+            applyAllInsets()
+            return
+        }
+
         // Use anchored offset if available, otherwise save current
         let targetOffset = anchoredScrollOffset ?? scrollView.contentOffset
 
