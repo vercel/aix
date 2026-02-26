@@ -22,6 +22,9 @@ protocol AixContext: AnyObject {
     /// Called when the blank view's size changes
     func reportBlankViewSizeChange(size: CGSize, index: Int)
 
+    /// Called when any cell's height changes (for scroll position compensation)
+    func reportCellHeightChange(index: Int, height: CGFloat)
+
     /// Register a cell with the context
     func registerCell(_ cell: HybridAixCellView)
 
@@ -147,6 +150,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             cells.removeAllObjects()
             lastReportedBlankViewSize = (size: .zero, index: 0)
             lastCalculatedBlankSize = 0
+            anchoredScrollOffset = nil
+            pendingAnimatedScroll = false
         }
     }
     
@@ -308,6 +313,14 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// Cache the last successfully calculated blank size to avoid jumps when cells are temporarily missing
     private var lastCalculatedBlankSize: CGFloat = 0
 
+    /// The anchored scroll offset after an animated scrollToIndex completes.
+    /// When set, all cell height changes will restore to this offset to maintain position stability.
+    private var anchoredScrollOffset: CGPoint? = nil
+
+    /// When true, an animated scroll is pending and will be executed after keyboard animation completes.
+    /// This prevents conflicts between keyboard closing animation and our scroll animation.
+    private var pendingAnimatedScroll: Bool = false
+
     /// Get the penultimate cell index (the one that should stay at top when scrolled to end)
     private func getPenultimateCellIndex() -> Int {
         if let penultimateCellIndex {
@@ -318,7 +331,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
-        guard let scrollView, let blankView else {
+        guard let scrollView, let blankView else { 
             return lastCalculatedBlankSize
         }
 
@@ -330,10 +343,13 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         // This includes the penultimate cell AND any cells after it (e.g., AI responses)
         var cellsHeight: CGFloat = 0
         var hasMissingCells = false
+        var cellHeights: [(Int, CGFloat)] = []
         if startIndex >= 0 && startIndex <= endIndex {
             for i in startIndex...endIndex {
                 if let cell = getCell(index: i) {
-                    cellsHeight += cell.view.frame.height
+                    let h = cell.view.frame.height
+                    cellsHeight += h
+                    cellHeights.append((i, h))
                 } else {
                     hasMissingCells = true
                 }
@@ -381,7 +397,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
         let targetTop = additionalContentInsetTop
         let targetBottom = overrideContentInsetBottom ?? self.contentInsetBottom
-        
+
         // Create insets struct for callback
         let insets = AixContentInsets(
             top: Double(targetTop),
@@ -391,11 +407,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         )
 
         onWillApplyContentInsets?(insets)
-        
+
         if shouldApplyContentInsets == false {
             return
         }
-        
+
         // Helper to actually apply the insets
         let applyInsets = { [weak self] in
             guard let self, let scrollView = self.scrollView else { return }
@@ -465,8 +481,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         applyScrollIndicatorInsets()
     }
 
-    private func scrollToEndInternal(animated: Bool?) {
-        guard let scrollView else { return }
+    @discardableResult
+    private func scrollToEndInternal(animated: Bool?) -> CGPoint? {
+        guard let scrollView else { return nil }
 
         // Ensure layout is complete before calculating scroll position
         scrollView.layoutIfNeeded()
@@ -474,10 +491,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         let contentHeight = scrollView.contentSize.height
         let boundsHeight = scrollView.bounds.height
         let appliedInset = scrollView.contentInset.bottom
+
         let targetY = max(0, contentHeight - boundsHeight + appliedInset)
 
         let bottomOffset = CGPoint(x: 0, y: targetY)
         scrollView.setContentOffset(bottomOffset, animated: animated ?? true)
+        return bottomOffset
     }
 
     
@@ -530,6 +549,16 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         applyAllInsets()
 
         startEvent = nil
+
+        // Execute pending animated scroll now that keyboard animation is complete
+        if pendingAnimatedScroll {
+            pendingAnimatedScroll = false
+            print("[Aix] handleKeyboardDidMove - executing pending animated scroll")
+
+            if let targetOffset = scrollToEndInternal(animated: true) {
+                anchoredScrollOffset = targetOffset
+            }
+        }
     }
     
     // MARK: - Initialization
@@ -603,56 +632,146 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
         lastReportedBlankViewSize = (size: size, index: index)
 
-        // Initial mount setup (tied to mainScrollViewID)
+        // Initial mount setup - wait for all cells to be registered
         if !didScrollToEndInitially {
-            UIView.performWithoutAnimation {
-                applyAllInsets()
-
-                if shouldStartAtEnd {
-                    scrollToEndInternal(animated: false)
-                }
-
-                // Set initial state based on actual scroll position after layout
-                prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
-            }
-
-            // Enable callbacks only after all setup is complete
-            didScrollToEndInitially = true
+            print("[Aix] reportBlankViewSizeChange - calling tryCompleteInitialLayout")
+            tryCompleteInitialLayout()
             return
         }
 
-        // Check if we were near end BEFORE applying new insets
-        let wasNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
-
-        applyAllInsets()
-
-        // If scrollToIndexTarget matches, defer — the content cell may not have
-        // registered yet, so blankSize would be stale. registerCell will flush it.
-        if wasNearEnd && scrollToIndexTarget != index {
-            scrollToEndInternal(animated: false)
-        }
+        // After initial layout, only apply insets without scrolling.
+        // The blankSize adjustment will compensate for any cell height changes,
+        // keeping the content offset stable.
+        print("[Aix] reportBlankViewSizeChange - applying insets (post-initial)")
+        applyAllInsetsWithAnchoredOffset()
     }
-    
+
+    /// Check if all cells are registered and complete initial layout if so
+    private func tryCompleteInitialLayout() {
+        guard !didScrollToEndInitially else {
+            print("[Aix] tryCompleteInitialLayout - already completed")
+            return
+        }
+        guard let blankView else {
+            print("[Aix] tryCompleteInitialLayout - no blankView yet")
+            return
+        }
+
+        let blankViewIndex = Int(blankView.index)
+
+        // Make sure the blank view itself is registered (not just set via updateBlankViewStatus)
+        if getCell(index: blankViewIndex) == nil {
+            print("[Aix] tryCompleteInitialLayout - blankView is not registered yet")
+            return
+        }
+
+        // Check if all cells from 0 to blankView.index-1 are registered
+        let expectedCount = blankViewIndex
+        var registeredCells: [Int] = []
+        var missingCells: [Int] = []
+
+        for i in 0..<expectedCount {
+            if getCell(index: i) != nil {
+                registeredCells.append(i)
+            } else {
+                missingCells.append(i)
+            }
+        }
+
+        if !missingCells.isEmpty {
+            print("[Aix] tryCompleteInitialLayout - waiting for cells")
+            return
+        }
+
+        print("[Aix] tryCompleteInitialLayout - all cells registered, completing initial layout")
+
+        // All cells are registered, complete initial layout
+        UIView.performWithoutAnimation {
+            applyAllInsets()
+            print("[Aix] tryCompleteInitialLayout - insets applied")
+
+            if shouldStartAtEnd {
+                print("[Aix] tryCompleteInitialLayout - scrolling to end")
+                scrollToEndInternal(animated: false)
+            }
+
+            prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+        }
+
+        didScrollToEndInitially = true
+        print("[Aix] tryCompleteInitialLayout - COMPLETED, didScrollToEndInitially = true")
+    }
+
+    func reportCellHeightChange(index: Int, height: CGFloat) {
+        print("[Aix] reportCellHeightChange")
+
+        // Only process after initial layout is complete
+        guard didScrollToEndInitially else {
+            print("[Aix] reportCellHeightChange - skipping, initial layout not complete")
+            return
+        }
+
+        // Preserve scroll position while applying insets.
+        // When cells grow, blankSize shrinks and contentInset.bottom decreases,
+        // but we want to keep the visible content stable.
+        applyAllInsetsWithAnchoredOffset()
+    }
+
     func registerCell(_ cell: HybridAixCellView) {
         cells.setObject(cell, forKey: NSNumber(value: cell.index))
 
         if cell.isLast {
+            print("[Aix] registerCell - this is blankView, setting and reporting size")
             blankView = cell
             let currentSize = cell.view.bounds.size
             reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
-        } else if didScrollToEndInitially {
-            let wasNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+        } else if !didScrollToEndInitially {
+            // During initial mount, check if all cells are now registered
+            print("[Aix] registerCell - during initial mount, checking completion")
+            tryCompleteInitialLayout()
+        } else {
+            // After initial layout, apply insets for blankSize compensation
+            print("[Aix] registerCell - post-initial, applying insets")
 
-            applyAllInsets()
-
-            // Flush deferred animated scroll — the content cell is now registered
-            // so blankSize is accurate
+            // Only perform animated scroll when scrollToIndex is explicitly set.
+            // This happens when a new user message is added (becomes penultimate cell).
             if let target = scrollToIndexTarget, let blankView, target == Int(blankView.index) {
-                scrollToEndInternal(animated: true)
+                let isKeyboardTransitioning = startEvent != nil
+                print("[Aix] registerCell - scrollToIndex target matches")
+
+                applyAllInsets()
+
+                if isKeyboardTransitioning {
+                    // Keyboard is animating - defer our scroll to avoid conflicts
+                    // handleKeyboardDidMove will execute the scroll when keyboard animation ends
+                    print("[Aix] registerCell - deferring animated scroll until keyboard animation completes")
+                    pendingAnimatedScroll = true
+                } else {
+                    // No keyboard animation - scroll immediately
+                    if let targetOffset = scrollToEndInternal(animated: true) {
+                        anchoredScrollOffset = targetOffset
+                    }
+                }
+
                 onDidScrollToIndex?()
-            } else if wasNearEnd && scrollToIndexTarget == nil {
-                scrollToEndInternal(animated: false)
+            } else {
+                applyAllInsetsWithAnchoredOffset()
             }
+        }
+    }
+
+    /// Apply insets while maintaining the anchored scroll offset
+    private func applyAllInsetsWithAnchoredOffset() {
+        guard let scrollView else { return }
+
+        // Use anchored offset if available, otherwise save current
+        let targetOffset = anchoredScrollOffset ?? scrollView.contentOffset
+
+        applyAllInsets()
+
+        // Restore to anchored/saved position
+        if scrollView.contentOffset != targetOffset {
+            scrollView.contentOffset = targetOffset
         }
     }
 
