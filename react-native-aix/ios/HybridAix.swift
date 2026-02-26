@@ -107,6 +107,18 @@ extension UIView {
 
 // MARK: - HybridAix (Root Context)
 class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
+    
+    private let chatViewController = ChatViewController()
+    
+    // so annoying RN doesn't give us a navigation controller at when creating the root view controller
+    private lazy var navigationController: UINavigationController = {
+        let nav = UINavigationController(rootViewController: chatViewController)
+        return nav
+    }()
+    
+    var view: UIView {
+        navigationController.view
+    }
 
     var penultimateCellIndex: Double?
     var shouldApplyContentInsets: Bool? = nil
@@ -179,7 +191,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
     
     /// The root UIView that this context is attached to
-    let view: UIView
+//    let view: UIView
     
     /// Current keyboard height (will be updated by keyboard events)
     var keyboardHeight: CGFloat = 0
@@ -534,12 +546,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     // MARK: - Initialization
     override init() {
-        let inner = InnerView()
-        self.view = inner
+//        let inner = InnerView()
+//        self.view = inner
         super.init()
-        inner.owner = self
+//        inner.owner = self
         // Attach this context to our inner view
-        view.aixContext = self
+//        view.aixContext = self
     }
     
     deinit {

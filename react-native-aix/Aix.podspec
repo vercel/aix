@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => min_ios_version_supported, :visionos => 1.0 }
+  s.platforms    = { :ios => '18.0' }
   s.source       = { :git => "https://github.com/vercel/aix.git", :tag => "#{s.version}" }
 
   s.source_files = [
@@ -21,6 +21,24 @@ Pod::Spec.new do |s|
     # Implementation (C++ objects)
     "cpp/**/*.{hpp,cpp}",
   ]
+  
+  spm_dependency(s,
+    url: "https://github.com/HumanInterfaceDesign/MarkdownView",
+    requirement: {kind: "branch", branch: "main"},
+    products: ["MarkdownView"]
+  )
+
+  spm_dependency(s,
+    url: "https://github.com/mattt/AnyLanguageModel",
+    requirement: {kind: "branch", branch: "main"},
+    products: ["AnyLanguageModel"]
+  )
+
+  spm_dependency(s,
+    url: "https://github.com/devxoul/UITextView-Placeholder.git",
+    requirement: {kind: "branch", branch: "main"},
+    products: ["UITextView-Placeholder"]
+  )
 
   # Force -ObjC linker flag in consuming apps to prevent +load method stripping in release builds
   s.user_target_xcconfig = { 'OTHER_LDFLAGS' => '-ObjC' }

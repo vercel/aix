@@ -67,6 +67,9 @@ PODS:
   - hermes-engine (0.82.1):
     - hermes-engine/Pre-built (= 0.82.1)
   - hermes-engine/Pre-built (0.82.1)
+  - LookinServer/Core (1.2.8)
+  - LookinServer/Swift (1.2.8):
+    - LookinServer/Core
   - NitroModules (0.31.10):
     - boost
     - DoubleConversion
@@ -1870,7 +1873,7 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - SocketRocket
-  - react-native-keyboard-controller (1.20.7):
+  - react-native-keyboard-controller (1.20.6):
     - boost
     - DoubleConversion
     - fast_float
@@ -1888,7 +1891,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.20.7)
+    - react-native-keyboard-controller/common (= 1.20.6)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1899,7 +1902,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller/common (1.20.7):
+  - react-native-keyboard-controller/common (1.20.6):
     - boost
     - DoubleConversion
     - fast_float
@@ -2553,7 +2556,7 @@ PODS:
     - React-perflogger (= 0.82.1)
     - React-utils (= 0.82.1)
     - SocketRocket
-  - RNReanimated (4.2.2):
+  - RNReanimated (4.2.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2580,11 +2583,11 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 4.2.2)
+    - RNReanimated/reanimated (= 4.2.1)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/reanimated (4.2.2):
+  - RNReanimated/reanimated (4.2.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2611,11 +2614,11 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 4.2.2)
+    - RNReanimated/reanimated/apple (= 4.2.1)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/reanimated/apple (4.2.2):
+  - RNReanimated/reanimated/apple (4.2.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2645,7 +2648,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNWorklets (0.7.4):
+  - RNWorklets (0.7.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2672,10 +2675,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets (= 0.7.4)
+    - RNWorklets/worklets (= 0.7.2)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets (0.7.4):
+  - RNWorklets/worklets (0.7.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2702,10 +2705,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets/apple (= 0.7.4)
+    - RNWorklets/worklets/apple (= 0.7.2)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets/apple (0.7.4):
+  - RNWorklets/worklets/apple (0.7.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2747,6 +2750,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - LookinServer/Swift
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -2823,6 +2827,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - LookinServer
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2989,7 +2994,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Aix: faa12125d6c01a6d515ffce0b1e7135071108e70
+  Aix: 9fd9cf46a28762152f9b00644d7330aef79a8d5f
   AppleLLM: 5eef16469f548b46362e09eebb9d08fabbefba8f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -2998,6 +3003,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 273e30e7fb618279934b0b95ffab60ecedb7acf5
+  LookinServer: 1b2b61c6402ae29fa22182d48f5cd067b4e99e80
   NitroModules: 5bc319d441f4983894ea66b1d392c519536e6d23
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: f17e2ebc07876ca9ab8eb6e4b0a4e4647497ae3a
@@ -3032,7 +3038,7 @@ SPEC CHECKSUMS:
   React-logger: 500f2fa5697d224e63c33d913c8a4765319e19bf
   React-Mapbuffer: 06d59c448da7e34eb05b3fb2189e12f6a30fec57
   React-microtasksnativemodule: d1ee999dc9052e23f6488b730fa2d383a4ea40e5
-  react-native-keyboard-controller: dbf568b5d029cdc5b26667a7c2323b160c25dc00
+  react-native-keyboard-controller: f2ed31d12d9d8cb8ad2f9110c18fa5df499b66a3
   react-native-safe-area-context: c00143b4823773bba23f2f19f85663ae89ceb460
   React-NativeModulesApple: 46690a0fe94ec28fc6fc686ec797b911d251ded0
   React-oscompat: 95875e81f5d4b3c7b2c888d5bd2c9d83450d8bdb
@@ -3066,11 +3072,11 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: a45ef34bb22dc1c9b2ac1f74167d9a28af961176
   ReactCodegen: 878add6c7d8ff8cea87697c44d29c03b79b6f2d9
   ReactCommon: 804dc80944fa90b86800b43c871742ec005ca424
-  RNReanimated: 82eb1bec252ace055fa63f47a7171771bf4a2c70
-  RNWorklets: 15ae83e146222e29e0a9ee0cf3a2896dc4e8696d
+  RNReanimated: 7d59df16c018cf3ed5d5b45964cedea4fc5c26ef
+  RNWorklets: cb0d3cc3c613ac60a3b7620f394980d997a86d8d
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 689c8e04277f3ad631e60fe2a08e41d411daf8eb
 
-PODFILE CHECKSUM: fbbe7c8166e1f92adfc6df812870e43274d8388a
+PODFILE CHECKSUM: 02f7c54facfce3e12eb65d7929dab1e9c6a631d5
 
 COCOAPODS: 1.16.2

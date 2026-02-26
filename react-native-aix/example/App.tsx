@@ -262,7 +262,7 @@ function Chat({ children }: { children: React.ReactNode }) {
             console.log('onDidScrollToIndex');
           }}
         >
-          {children}
+          {/* {children}
           {examples.scrollview()}
           <AixFooter
             style={styles.footer}
@@ -284,7 +284,7 @@ function Chat({ children }: { children: React.ReactNode }) {
                 send(message);
               }}
             />
-          </AixFooter>
+          </AixFooter> */}
         </Aix>
       </DropzoneWithAttachments>
     </AttachmentsProvider>
