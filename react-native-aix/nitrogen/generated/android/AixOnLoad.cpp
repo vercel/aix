@@ -18,6 +18,7 @@
 #include "JHybridAixSpec.hpp"
 #include "JFunc_void_AixContentInsets.hpp"
 #include "JFunc_void_bool.hpp"
+#include "JFunc_void.hpp"
 #include "views/JHybridAixStateUpdater.hpp"
 #include "JHybridAixCellViewSpec.hpp"
 #include "views/JHybridAixCellViewStateUpdater.hpp"
@@ -42,6 +43,7 @@ int initialize(JavaVM* vm) {
     margelo::nitro::aix::JHybridAixSpec::registerNatives();
     margelo::nitro::aix::JFunc_void_AixContentInsets_cxx::registerNatives();
     margelo::nitro::aix::JFunc_void_bool_cxx::registerNatives();
+    margelo::nitro::aix::JFunc_void_cxx::registerNatives();
     margelo::nitro::aix::views::JHybridAixStateUpdater::registerNatives();
     margelo::nitro::aix::JHybridAixCellViewSpec::registerNatives();
     margelo::nitro::aix::views::JHybridAixCellViewStateUpdater::registerNatives();

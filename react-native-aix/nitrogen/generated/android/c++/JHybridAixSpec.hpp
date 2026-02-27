@@ -72,11 +72,14 @@ namespace margelo::nitro::aix {
     void setOnWillApplyContentInsets(const std::optional<std::function<void(const AixContentInsets& /* insets */)>>& onWillApplyContentInsets) override;
     std::optional<std::function<void(bool /* isNearEnd */)>> getOnScrolledNearEndChange() override;
     void setOnScrolledNearEndChange(const std::optional<std::function<void(bool /* isNearEnd */)>>& onScrolledNearEndChange) override;
+    std::optional<double> getScrollToIndex() override;
+    void setScrollToIndex(std::optional<double> scrollToIndex) override;
+    std::optional<std::function<void()>> getOnDidScrollToIndex() override;
+    void setOnDidScrollToIndex(const std::optional<std::function<void()>>& onDidScrollToIndex) override;
 
   public:
     // Methods
     void scrollToEnd(std::optional<bool> animated) override;
-    void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) override;
 
   private:
     friend HybridBase;

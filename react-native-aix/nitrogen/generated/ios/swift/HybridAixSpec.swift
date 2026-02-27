@@ -22,10 +22,11 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var applyContentInsetDelay: Double? { get set }
   var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? { get set }
   var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? { get set }
+  var scrollToIndex: Double? { get set }
+  var onDidScrollToIndex: (() -> Void)? { get set }
 
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void
-  func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws -> Void
 }
 
 public extension HybridAixSpec_protocol {

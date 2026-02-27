@@ -90,7 +90,7 @@ class HybridAixCellView: HybridAixCellViewSpec {
         self.view = inner
         super.init()
         inner.owner = self
-        getAixContext()?.registerCell(self)
+        // Registration happens in didMoveToWindow() when view hierarchy is connected
     }
     
     // MARK: - Context Access
@@ -137,14 +137,21 @@ class HybridAixCellView: HybridAixCellViewSpec {
     
     /// Called when layoutSubviews fires (size may have changed)
     private func handleLayoutChange() {
-        // Only report size changes for the last cell (blank view)
-        // and only if the size actually changed
         let currentSize = view.bounds.size
-        if isLast && currentSize != lastReportedSize {
-            lastReportedSize = currentSize
-            if let ctx = getAixContext() {
-                ctx.reportBlankViewSizeChange(size: currentSize, index: Int(index))
-            }
+        guard currentSize != lastReportedSize else { return }
+
+        let oldHeight = lastReportedSize.height
+        lastReportedSize = currentSize
+
+        guard let ctx = getAixContext() else { return }
+
+        if isLast {
+            // Report blank view size change (handles initial layout and blank size)
+            ctx.reportBlankViewSizeChange(size: currentSize, index: Int(index))
+        } else if oldHeight > 0 {
+            // Report height change for non-blank cells (for scroll position compensation)
+            // Only report after initial layout (oldHeight > 0) to avoid spurious updates
+            ctx.reportCellHeightChange(index: Int(index), height: currentSize.height)
         }
     }
     

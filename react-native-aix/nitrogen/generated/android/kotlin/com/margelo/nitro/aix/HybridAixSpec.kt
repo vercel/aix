@@ -123,15 +123,31 @@ abstract class HybridAixSpec: HybridView() {
     set(value) {
       onScrolledNearEndChange = value?.let { it }
     }
+  
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var scrollToIndex: Double?
+  
+  abstract var onDidScrollToIndex: (() -> Unit)?
+  
+  private var onDidScrollToIndex_cxx: Func_void?
+    @Keep
+    @DoNotStrip
+    get() {
+      return onDidScrollToIndex?.let { Func_void_java(it) }
+    }
+    @Keep
+    @DoNotStrip
+    set(value) {
+      onDidScrollToIndex = value?.let { it }
+    }
 
   // Methods
   @DoNotStrip
   @Keep
   abstract fun scrollToEnd(animated: Boolean?): Unit
-  
-  @DoNotStrip
-  @Keep
-  abstract fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?): Unit
 
   private external fun initHybrid(): HybridData
 

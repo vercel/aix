@@ -219,7 +219,7 @@ class HybridAixComposer: HybridAixComposerSpec {
             return
         }
 
-        guard let settings = stickToKeyboard, settings.enabled else {
+        guard let settings = stickToKeyboard, settings.enabled == true else {
             targetView.transform = .identity
             return
         }

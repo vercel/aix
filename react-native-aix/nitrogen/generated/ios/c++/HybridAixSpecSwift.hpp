@@ -151,17 +151,25 @@ namespace margelo::nitro::aix {
     inline void setOnScrolledNearEndChange(const std::optional<std::function<void(bool /* isNearEnd */)>>& onScrolledNearEndChange) noexcept override {
       _swiftPart.setOnScrolledNearEndChange(onScrolledNearEndChange);
     }
+    inline std::optional<double> getScrollToIndex() noexcept override {
+      auto __result = _swiftPart.getScrollToIndex();
+      return __result;
+    }
+    inline void setScrollToIndex(std::optional<double> scrollToIndex) noexcept override {
+      _swiftPart.setScrollToIndex(scrollToIndex);
+    }
+    inline std::optional<std::function<void()>> getOnDidScrollToIndex() noexcept override {
+      auto __result = _swiftPart.getOnDidScrollToIndex();
+      return __result;
+    }
+    inline void setOnDidScrollToIndex(const std::optional<std::function<void()>>& onDidScrollToIndex) noexcept override {
+      _swiftPart.setOnDidScrollToIndex(onDidScrollToIndex);
+    }
 
   public:
     // Methods
     inline void scrollToEnd(std::optional<bool> animated) override {
       auto __result = _swiftPart.scrollToEnd(animated);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-    }
-    inline void scrollToIndexWhenBlankSizeReady(double index, std::optional<bool> animated, std::optional<bool> waitForKeyboardToEnd) override {
-      auto __result = _swiftPart.scrollToIndexWhenBlankSizeReady(std::forward<decltype(index)>(index), animated, waitForKeyboardToEnd);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

@@ -22,6 +22,9 @@ protocol AixContext: AnyObject {
     /// Called when the blank view's size changes
     func reportBlankViewSizeChange(size: CGSize, index: Int)
 
+    /// Called when any cell's height changes (for scroll position compensation)
+    func reportCellHeightChange(index: Int, height: CGFloat)
+
     /// Register a cell with the context
     func registerCell(_ cell: HybridAixCellView)
 
@@ -38,7 +41,6 @@ protocol AixContext: AnyObject {
     func reportComposerHeightChange(height: CGFloat)
 
     // MARK: - Keyboard State (for composer sticky behavior)
-
     /// Current keyboard height
     var keyboardHeight: CGFloat { get }
 
@@ -107,15 +109,25 @@ extension UIView {
 }
 
 // MARK: - HybridAix (Root Context)
-
 class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var penultimateCellIndex: Double?
-    
     var shouldApplyContentInsets: Bool? = nil
     var applyContentInsetDelay: Double? = nil
     var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
     var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? = nil
+
+    /// When set to a valid index (>= 0), the scroll to this blank view index will be animated.
+    /// After the animated scroll completes, onDidScrollToIndex is called.
+    /// -1 is the sentinel value meaning "no scroll target" (sent from React to avoid null).
+    var scrollToIndex: Double? = nil
+    var onDidScrollToIndex: (() -> Void)? = nil
+
+    /// Returns the valid scrollToIndex target, or nil if unset / sentinel (-1).
+    private var scrollToIndexTarget: Int? {
+        guard let scrollToIndex, Int(scrollToIndex) >= 0 else { return nil }
+        return Int(scrollToIndex)
+    }
 
     var additionalContentInsets: AixAdditionalContentInsetsProp?
 
@@ -126,15 +138,19 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
-    var scrollOnComposerSizeUpdate: AixScrollOnFooterSizeUpdate?
-
     var mainScrollViewID: String? {
         didSet {
             guard mainScrollViewID != oldValue else { return }
-            removePanGestureObserver()
+            // Reset all scroll view and cell state when ID changes
             removeScrollViewObservers()
             cachedScrollView = nil
-            didSetupPanGestureObserver = false
+            didScrollToEndInitially = false
+            prevIsScrolledNearEnd = nil
+            blankView = nil
+            cells.removeAllObjects()
+            lastReportedBlankViewSize = (size: .zero, index: 0)
+            lastCalculatedBlankSize = 0
+            pendingAnimatedScroll = false
         }
     }
     
@@ -145,31 +161,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
     
-    func scrollToIndexWhenBlankSizeReady(index: Double, animated: Bool?, waitForKeyboardToEnd: Bool?) throws {
-        queuedScrollToEnd = QueuedScrollToEnd(index: Int(index), animated: animated ?? true, waitForKeyboardToEnd: waitForKeyboardToEnd ?? false)
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            
-            // Clear any in-progress keyboard scroll interpolation since we're taking over scrolling
-            if let event = self.startEvent {
-                self.startEvent = KeyboardStartEvent(
-                    scrollY: event.scrollY,
-                    isOpening: event.isOpening,
-                    isInteractive: event.isInteractive,
-                    interpolateContentOffsetY: nil
-                )
-            }
-            
-            self.flushQueuedScrollToEnd()
-        }
-    }
 
-    private var didScrollToEndInitiallyForId: String? = nil
-
-    private var didScrollToEndInitially: Bool {
-        return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
-    }
+    private var didScrollToEndInitially: Bool = false
     
     // MARK: - Inner View
     
@@ -208,52 +201,29 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return 0
     }
 
-    // MARK: - Private Types
-    
-    struct QueuedScrollToEnd {
-        var index: Int
-        var animated: Bool
-        var waitForKeyboardToEnd: Bool
-    }
-
     // MARK: - Private State
-    
-    /// Queued scroll operation waiting for blank view to update
-    private var queuedScrollToEnd: QueuedScrollToEnd? = nil
-    
+
     /// Registered cells - using NSMapTable for weak references to avoid retain cycles
     /// Key: cell index, Value: weak reference to cell
     private var cells = NSMapTable<NSNumber, HybridAixCellView>.weakToWeakObjects()
-    
+
     /// Cached scroll view reference (weak to avoid retain cycles)
     private weak var cachedScrollView: UIScrollView?
     
-    /// Flag to track if we've set up the pan gesture observer
-    private var didSetupPanGestureObserver = false
-    
-    /// Flag to track if we're currently in an interactive keyboard dismiss
-    private var isInInteractiveDismiss = false
-    
     /// Previous "scrolled near end" state for change detection
     private var prevIsScrolledNearEnd: Bool? = nil
-    
+
     /// KVO observation tokens for scroll view
     private var contentOffsetObservation: NSKeyValueObservation?
     private var contentSizeObservation: NSKeyValueObservation?
     private var boundsObservation: NSKeyValueObservation?
     
     // MARK: - Context References (weak to avoid retain cycles)
-    
-    weak var blankView: HybridAixCellView? = nil {
-        didSet {
-            // Could add observers or callbacks here when blank view changes
-        }
-    }
+    weak var blankView: HybridAixCellView? = nil
     
     weak var composerView: HybridAixComposer? = nil
     
     // MARK: - Computed Properties
-    
     /// Find the scroll view within our view hierarchy
     /// We search from the superview (HybridAixComponent) since the scroll view
     /// is a sibling of our inner view, not a child
@@ -268,25 +238,18 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         var sv: UIScrollView? = nil
         if let scrollViewID = mainScrollViewID, !scrollViewID.isEmpty {
             sv = searchRoot.findScrollView(withIdentifier: scrollViewID)
-            if sv != nil {
-                print("[Aix] scrollView found by ID '\(scrollViewID)': \(String(describing: sv))")
-            }
         }
 
         // Fallback to default subview iteration if not found by ID
         if sv == nil {
             sv = searchRoot.findScrollView()
-            print("[Aix] scrollView found by iteration: \(String(describing: sv))")
         }
 
         cachedScrollView = sv
 
-        // Set up pan gesture observer when we find the scroll view
-        if let scrollView = sv, !didSetupPanGestureObserver {
-            // Disable automatic scroll indicator inset adjustment so we can control it manually
+        // Set up observers when we find the scroll view
+        if let scrollView = sv {
             scrollView.automaticallyAdjustsScrollIndicatorInsets = false
-
-            setupPanGestureObserver()
             setupScrollViewObservers(scrollView)
             applyScrollIndicatorInsets()
         }
@@ -322,89 +285,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         boundsObservation = nil
     }
     
-    /// Set up observer on scroll view's pan gesture to detect interactive keyboard dismiss
-    private func setupPanGestureObserver() {
-        guard let scrollView = cachedScrollView else { return }
-        didSetupPanGestureObserver = true
-        
-        scrollView.panGestureRecognizer.addTarget(self, action: #selector(handlePanGesture(_:)))
-        print("[Aix] Pan gesture observer set up")
-    }
-    
-    /// Clean up pan gesture observer to avoid retain cycles
-    private func removePanGestureObserver() {
-        guard didSetupPanGestureObserver, let scrollView = cachedScrollView else { return }
-        scrollView.panGestureRecognizer.removeTarget(self, action: #selector(handlePanGesture(_:)))
-        didSetupPanGestureObserver = false
-    }
-    
-    /// Handle pan gesture state changes to detect interactive keyboard dismiss
-    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
-        guard let scrollView = cachedScrollView,
-              scrollView.keyboardDismissMode == .interactive,
-              keyboardHeight > 0 else { return }
-
-        switch gesture.state {
-        case .began, .changed:
-            // Check if finger has reached the top of composer (or keyboard if no composer)
-            if !isInInteractiveDismiss && isFingerAtComposerTop(gesture: gesture) {
-                startInteractiveKeyboardDismiss()
-            }
-
-        case .ended, .cancelled, .failed:
-            if isInInteractiveDismiss {
-                // The keyboard manager will handle the end via notifications
-            }
-
-        default:
-            break
-        }
-    }
-
-    /// Check if the finger position has reached the top of the composer view
-    private func isFingerAtComposerTop(gesture: UIPanGestureRecognizer) -> Bool {
-        guard let window = view.window else { return false }
-
-        // Get finger location in window coordinates
-        let fingerLocationInWindow = gesture.location(in: window)
-
-        // Get the threshold Y position (top of composer, or top of keyboard if no composer)
-        let thresholdY: CGFloat
-        if let composerView = composerView?.view, let composerWindow = composerView.window {
-            // Convert composer's frame to window coordinates
-            let composerFrameInWindow = composerView.convert(composerView.bounds, to: composerWindow)
-            thresholdY = composerFrameInWindow.minY
-        } else {
-            // Fallback: use keyboard top position
-            let screenHeight = UIScreen.main.bounds.height
-            thresholdY = screenHeight - keyboardHeight
-        }
-
-        // Finger has reached the composer top when its Y >= threshold
-        return fingerLocationInWindow.y >= thresholdY
-    }
-    
-    /// Start tracking an interactive keyboard dismiss
-    private func startInteractiveKeyboardDismiss() {
-        return // this is totally broken rn, full of false positives
-        guard !isInInteractiveDismiss else { return }
-        isInInteractiveDismiss = true
-        
-        let scrollY = scrollView?.contentOffset.y ?? 0
-        
-        print("[Aix] Starting interactive keyboard dismiss from height=\(keyboardHeight), scrollY=\(scrollY)")
-        
-        // Calculate proper interpolation values (same as non-interactive close)
-        let interpolation = getContentOffsetYWhenClosing(scrollY: scrollY)
-        
-        startEvent = KeyboardStartEvent(
-            scrollY: scrollY,
-            isOpening: false,
-            isInteractive: true,
-            interpolateContentOffsetY: interpolation, 
-        )
-    }
-    
     /// Height of the composer view
     private var composerHeight: CGFloat {
         let h = composerView?.view.bounds.height ?? 0
@@ -429,33 +309,63 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         return 0
     }
 
-    private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
-        guard let scrollView, let blankView else { return 0 }
-        
-        let startIndex: Int
-        let endIndex = Int(blankView.index) - 1
+    /// Cache the last successfully calculated blank size to avoid jumps when cells are temporarily missing
+    private var lastCalculatedBlankSize: CGFloat = 0
+
+    /// When true, an animated scroll is pending and will be executed after keyboard animation completes.
+    /// This prevents conflicts between keyboard closing animation and our scroll animation.
+    private var pendingAnimatedScroll: Bool = false
+
+    /// Get the penultimate cell index (the one that should stay at top when scrolled to end)
+    private func getPenultimateCellIndex() -> Int {
         if let penultimateCellIndex {
-            startIndex = Int(penultimateCellIndex)
-        } else {
-            startIndex = endIndex
+            return Int(penultimateCellIndex)
         }
-        
-        var cellsBeforeBlankViewHeight: CGFloat = 0
-        if startIndex <= endIndex {
+        guard let blankView else { return -1 }
+        return Int(blankView.index) - 1
+    }
+
+    private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
+        guard let scrollView, let blankView else { 
+            return lastCalculatedBlankSize
+        }
+
+        let blankViewIndex = Int(blankView.index)
+        let endIndex = blankViewIndex - 1
+        let startIndex = min(getPenultimateCellIndex(), endIndex)
+
+        // Sum heights of all cells from penultimate to the one before blank view
+        // This includes the penultimate cell AND any cells after it (e.g., AI responses)
+        var cellsHeight: CGFloat = 0
+        var hasMissingCells = false
+        var cellHeights: [(Int, CGFloat)] = []
+        if startIndex >= 0 && startIndex <= endIndex {
             for i in startIndex...endIndex {
                 if let cell = getCell(index: i) {
-                    cellsBeforeBlankViewHeight += cell.view.frame.height
+                    let h = cell.view.frame.height
+                    cellsHeight += h
+                    cellHeights.append((i, h))
+                } else {
+                    hasMissingCells = true
                 }
             }
         }
-        
+
+        // If any required cells are missing, return the last known good value to avoid jumps
+        if hasMissingCells {
+            return lastCalculatedBlankSize
+        }
+
         let blankViewHeight = blankView.view.frame.height
-        
-        // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
-        // The blank size fills the remaining space so the last message can scroll to the top
-        let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
-        return max(0, inset)
+
+        // Visible area above keyboard/composer
+        let visibleArea = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
+
+        // Space needed to push penultimate cell to top
+        let blankSize = visibleArea - cellsHeight - blankViewHeight
+
+        lastCalculatedBlankSize = blankSize
+        return blankSize
     }
     
     /// Calculate the blank size - the space needed to push content up
@@ -467,7 +377,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     /// The content inset for the bottom of the scroll view
     
     private func calculateContentInsetBottom(keyboardHeight: CGFloat, blankSize: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
-        return blankSize + keyboardHeight + composerHeight + additionalContentInsetBottom
+        // blankSize can be negative when cells are taller than visible area
+        // But we always need inset for keyboard + composer + additional (safe area etc)
+        // Only clamp blankSize contribution, not the entire inset
+        return max(0, blankSize) + keyboardHeight + composerHeight + additionalContentInsetBottom
     }
     var contentInsetBottom: CGFloat {
         return calculateContentInsetBottom(keyboardHeight: self.keyboardHeight, blankSize: self.blankSize, additionalContentInsetBottom: self.additionalContentInsetBottom)
@@ -475,12 +388,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     
     /// Apply the current content inset to the scroll view
     func applyContentInset(contentInsetBottom overrideContentInsetBottom: CGFloat? = nil) {
-        guard let scrollView else { return }
+        guard let _ = scrollView else { return }
 
         let targetTop = additionalContentInsetTop
         let targetBottom = overrideContentInsetBottom ?? self.contentInsetBottom
-        
-        // Create insets struct for callback (fields are optional in the interface)
+
+        // Create insets struct for callback
         let insets = AixContentInsets(
             top: Double(targetTop),
             left: nil,
@@ -488,14 +401,12 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             right: nil
         )
 
-        print("[aix] applyContentInset \(targetBottom)")
         onWillApplyContentInsets?(insets)
-        
-        // If shouldApplyContentInsets is explicitly false, call callback and return
+
         if shouldApplyContentInsets == false {
             return
         }
-        
+
         // Helper to actually apply the insets
         let applyInsets = { [weak self] in
             guard let self, let scrollView = self.scrollView else { return }
@@ -518,7 +429,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     /// Centralized function to check and fire onScrolledNearEndChange callback
-    /// Called from KVO observers and after content inset changes
     private func updateScrolledNearEndState() {
         guard didScrollToEndInitially, scrollView != nil else { return }
         let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
@@ -560,20 +470,44 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
-    private func scrollToEndInternal(animated: Bool?) {
-        guard let scrollView else { return }
-        
-        // Calculate the offset to show the bottom of content
-        let bottomOffset = CGPoint(
-            x: 0,
-            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + self.contentInsetBottom)
-        )
-        scrollView.setContentOffset(bottomOffset, animated: animated ?? true)
+    /// Apply both content insets and scroll indicator insets
+    private func applyAllInsets() {
+        applyContentInset()
+        applyScrollIndicatorInsets()
+    }
+
+    @discardableResult
+    private func scrollToEndInternal(animated: Bool?, completion: (() -> Void)? = nil) -> CGPoint? {
+        guard let scrollView else { return nil }
+
+        print("[Aix] scrollToEndInternal")
+
+        // Ensure layout is complete before calculating scroll position
+        scrollView.layoutIfNeeded()
+
+        let contentHeight = scrollView.contentSize.height
+        let boundsHeight = scrollView.bounds.height
+        let appliedInset = scrollView.contentInset.bottom
+
+        let targetY = max(0, contentHeight - boundsHeight + appliedInset)
+
+        let bottomOffset = CGPoint(x: 0, y: targetY)
+
+        if animated == true && completion != nil {
+            CATransaction.begin()
+            CATransaction.setCompletionBlock(completion)
+            scrollView.setContentOffset(bottomOffset, animated: true)
+            CATransaction.commit()
+        } else {
+            scrollView.setContentOffset(bottomOffset, animated: animated ?? true)
+            completion?()
+        }
+
+        return bottomOffset
     }
 
     
-    // MARK: - Keyboard Observer (notification-based)
-
+    // MARK: - Keyboard Management
     private lazy var keyboardNotifications: KeyboardNotifications = {
         return KeyboardNotifications(notifications: [.willShow, .willHide, .didShow, .didHide, .willChangeFrame], delegate: self)
     }()
@@ -582,7 +516,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private struct KeyboardStartEvent {
         let scrollY: CGFloat
         let isOpening: Bool
-        var isInteractive: Bool
         let interpolateContentOffsetY: (CGFloat, CGFloat)?
     }
     
@@ -596,118 +529,63 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             keyboardHeightWhenOpen = targetHeight
         }
         
-        // If we're already in an interactive dismiss, don't overwrite
-        if isInInteractiveDismiss {
-            return
-        }
-        
         let scrollY = scrollView?.contentOffset.y ?? 0
         
-        var interpolateContentOffsetY: (CGFloat, CGFloat)? = {
+        let interpolateContentOffsetY: (CGFloat, CGFloat)? = {
             if isOpening {
                 return self.getContentOffsetYWhenOpening(scrollY: scrollY)
             } else {
                 return self.getContentOffsetYWhenClosing(scrollY: scrollY)
             }
         }()
-        
-        if queuedScrollToEnd != nil {
-            // don't interpolate the keyboard if we're planning to scroll to end
-            interpolateContentOffsetY = nil
-        }
-        
-        print("[Aix] handleKeyboardWillMove: isOpening=\(isOpening), interpolate=\(String(describing: interpolateContentOffsetY))")
-        
+
         startEvent = KeyboardStartEvent(
             scrollY: scrollY,
             isOpening: isOpening,
-            isInteractive: false,
             interpolateContentOffsetY: interpolateContentOffsetY
         )
     }
     
-    /// Handle keyboard frame updates during animation
-    private func handleKeyboardMove(height: CGFloat, progress: CGFloat) {
-        if keyboardHeightWhenOpen > 0 {
-            keyboardProgress = height / keyboardHeightWhenOpen
-        }
-        keyboardHeight = height
-        
-        guard let startEvent else { return }
-
-        applyContentInset()
-        applyScrollIndicatorInsets()
-
-        if let (startY, endY) = startEvent.interpolateContentOffsetY {
-            // Normalize progress to always go from 0 to 1 (start to end)
-            // For opening: progress goes 0→1, so use as-is
-            // For closing: progress goes 1→0, so invert it
-            let normalizedProgress = startEvent.isOpening ? progress : (1 - progress)
-            let newScrollY = startY + (endY - startY) * normalizedProgress
-            scrollView?.setContentOffset(CGPoint(x: 0, y: newScrollY), animated: false)
-        }
-    }
-    
     /// Handle keyboard animation end
     private func handleKeyboardDidMove(height: CGFloat, progress: CGFloat) {
-        // Ensure final height is applied
         keyboardHeight = height
         if keyboardHeightWhenOpen > 0 {
             keyboardProgress = height / keyboardHeightWhenOpen
         }
 
-        applyContentInset()
-        applyScrollIndicatorInsets()
+        applyAllInsets()
 
         startEvent = nil
-        isInInteractiveDismiss = false
-        
-        if queuedScrollToEnd?.waitForKeyboardToEnd == true {
-            flushQueuedScrollToEnd(force: true)
-        }
-    }
-    
-    /// Handle interactive keyboard dismissal
-    private func handleKeyboardMoveInteractive(height: CGFloat, progress: CGFloat) {
-        // Mark that we're in an interactive dismiss if not already
-        if !isInInteractiveDismiss && startEvent != nil {
-            isInInteractiveDismiss = true
-            if var event = startEvent {
-                event.isInteractive = true
-                startEvent = event
+
+        // Execute pending animated scroll now that keyboard animation is complete
+        if pendingAnimatedScroll {
+            pendingAnimatedScroll = false
+            print("[Aix] handleKeyboardDidMove - executing pending animated scroll")
+
+            scrollToEndInternal(animated: true) { [weak self] in
+                self?.onDidScrollToIndex?()
             }
         }
-
-        // Update keyboard state
-        handleKeyboardMove(height: height, progress: progress)
-
-        // Update composer transform
-        composerView?.applyKeyboardTransform(height: height, heightWhenOpen: keyboardHeightWhenOpen, animated: false)
     }
     
     // MARK: - Initialization
-    
     override init() {
         let inner = InnerView()
         self.view = inner
         super.init()
         inner.owner = self
-        print("[Aix] HybridAix initialized, attaching context to view")
         // Attach this context to our inner view
         view.aixContext = self
     }
     
     deinit {
-        removePanGestureObserver()
         removeScrollViewObservers()
     }
     
     // MARK: - Lifecycle
-
     /// Called when our view is added to or removed from the HybridAixComponent
     private func handleDidMoveToSuperview() {
         if let superview = view.superview {
-            print("[Aix] View added to superview: \(type(of: superview)), attaching context")
             // Attach context to the superview (HybridAixComponent) so children can find it
             superview.aixContext = self
 
@@ -753,48 +631,159 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     // MARK: - AixContext Protocol
-
     private var lastReportedBlankViewSize = (size: CGSize.zero, index: 0)
     
     func reportBlankViewSizeChange(size: CGSize, index: Int) {
         let didAlreadyUpdate = size.height == lastReportedBlankViewSize.size.height && size.width == lastReportedBlankViewSize.size.width && index == lastReportedBlankViewSize.index
-        if didAlreadyUpdate {
-            return
-        }
+        if didAlreadyUpdate { return }
 
         lastReportedBlankViewSize = (size: size, index: index)
 
-        // Check if we have a queued scroll waiting for this index
+        // Initial mount setup - wait for all cells to be registered
         if !didScrollToEndInitially {
-            UIView.performWithoutAnimation {
-                applyContentInset()
-                applyScrollIndicatorInsets()
-                scrollToEndInternal(animated: false)
-                prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
-            }
-            didScrollToEndInitiallyForId = mainScrollViewID ?? ""
-        } else {
-            applyContentInset()
-            applyScrollIndicatorInsets()
+            print("[Aix] reportBlankViewSizeChange - calling tryCompleteInitialLayout")
+            tryCompleteInitialLayout()
+            return
+        }
 
-            if let queued = queuedScrollToEnd, index == queued.index {
-                flushQueuedScrollToEnd()
+        // Skip when animated scroll is in progress to avoid interfering
+        if scrollToIndexTarget != nil {
+            print("[Aix] reportBlankViewSizeChange - skipping, scrollToIndex active")
+            return
+        }
+
+        // After initial layout, only apply insets without scrolling.
+        // The blankSize adjustment will compensate for any cell height changes,
+        // keeping the content offset stable.
+        print("[Aix] reportBlankViewSizeChange - applying insets (post-initial)")
+        applyAllInsets()
+    }
+
+    /// Check if all cells are registered and complete initial layout if so
+    private func tryCompleteInitialLayout() {
+        guard !didScrollToEndInitially else {
+            print("[Aix] tryCompleteInitialLayout - already completed")
+            return
+        }
+        guard let blankView else {
+            print("[Aix] tryCompleteInitialLayout - no blankView yet")
+            return
+        }
+
+        let blankViewIndex = Int(blankView.index)
+
+        // Make sure the blank view itself is registered (not just set via updateBlankViewStatus)
+        if getCell(index: blankViewIndex) == nil {
+            print("[Aix] tryCompleteInitialLayout - blankView is not registered yet")
+            return
+        }
+
+        // Check if all cells from 0 to blankView.index-1 are registered
+        let expectedCount = blankViewIndex
+        var registeredCells: [Int] = []
+        var missingCells: [Int] = []
+
+        for i in 0..<expectedCount {
+            if getCell(index: i) != nil {
+                registeredCells.append(i)
+            } else {
+                missingCells.append(i)
             }
         }
+
+        if !missingCells.isEmpty {
+            print("[Aix] tryCompleteInitialLayout - waiting for cells")
+            return
+        }
+
+        print("[Aix] tryCompleteInitialLayout - all cells registered, completing initial layout")
+
+        // All cells are registered, complete initial layout
+        UIView.performWithoutAnimation {
+            applyAllInsets()
+            print("[Aix] tryCompleteInitialLayout - insets applied")
+
+            if shouldStartAtEnd {
+                print("[Aix] tryCompleteInitialLayout - scrolling to end")
+                scrollToEndInternal(animated: false)
+            }
+
+            prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
+        }
+
+        didScrollToEndInitially = true
+        print("[Aix] tryCompleteInitialLayout - COMPLETED, didScrollToEndInitially = true")
     }
-    
+
+    func reportCellHeightChange(index: Int, height: CGFloat) {
+        print("[Aix] reportCellHeightChange")
+
+        // Only process after initial layout is complete
+        guard didScrollToEndInitially else {
+            print("[Aix] reportCellHeightChange - skipping, initial layout not complete")
+            return
+        }
+
+        // Skip when animated scroll is in progress to avoid interfering
+        if scrollToIndexTarget != nil {
+            print("[Aix] reportCellHeightChange - skipping, scrollToIndex active")
+            return
+        }
+
+        // Preserve scroll position while applying insets.
+        // When cells grow, blankSize shrinks and contentInset.bottom decreases,
+        // but we want to keep the visible content stable.
+        applyAllInsets()
+    }
+
     func registerCell(_ cell: HybridAixCellView) {
         cells.setObject(cell, forKey: NSNumber(value: cell.index))
-        
-        // If this cell is marked as last, update our blank view reference
+
         if cell.isLast {
+            print("[Aix] registerCell - this is blankView, setting and reporting size")
             blankView = cell
+            let currentSize = cell.view.bounds.size
+            reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
+        } else if !didScrollToEndInitially {
+            // During initial mount, check if all cells are now registered
+            print("[Aix] registerCell - during initial mount, checking completion")
+            tryCompleteInitialLayout()
+        } else {
+            // After initial layout, apply insets for blankSize compensation
+            print("[Aix] registerCell - post-initial, applying insets")
+
+            // Only perform animated scroll when scrollToIndex is explicitly set.
+            // This happens when a new user message is added (becomes penultimate cell).
+            if let target = scrollToIndexTarget, let blankView, target == Int(blankView.index) {
+                let isKeyboardTransitioning = startEvent != nil
+                print("[Aix] registerCell - scrollToIndex target matches")
+
+                applyAllInsets()
+
+                if isKeyboardTransitioning {
+                    // Keyboard is animating - defer our scroll to avoid conflicts
+                    // handleKeyboardDidMove will execute the scroll when keyboard animation ends
+                    print("[Aix] registerCell - deferring animated scroll until keyboard animation completes")
+                    pendingAnimatedScroll = true
+                    // onDidScrollToIndex will be called when keyboard animation completes
+                } else {
+                    // No keyboard animation - scroll immediately
+                    // Call onDidScrollToIndex after animation completes so scrollToIndexTarget
+                    // stays set during animation (used by skip logic in reportCellHeightChange)
+                    scrollToEndInternal(animated: true) { [weak self] in
+                        self?.onDidScrollToIndex?()
+                    }
+                }
+            } else if scrollToIndexTarget == nil {
+                // Only apply insets when no animated scroll is active
+                applyAllInsets()
+            }
         }
     }
-    
+
     func unregisterCell(_ cell: HybridAixCellView) {
         cells.removeObject(forKey: NSNumber(value: cell.index))
-        
+
         // If this was our blank view, clear it
         if blankView === cell {
             blankView = nil
@@ -814,98 +803,40 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var lastReportedComposerHeight: CGFloat = 0
 
     func reportComposerHeightChange(height: CGFloat) {
-        if height == lastReportedComposerHeight {
-            return
-        }
-
-        let previousHeight = lastReportedComposerHeight
-        let isShrinking = height < previousHeight
-
+        guard height != lastReportedComposerHeight else { return }
         lastReportedComposerHeight = height
-
-        if !didScrollToEndInitially {
-            return
-        }
-
+        
+        guard didScrollToEndInitially else { return }
+        
         let shouldScroll = shouldScrollOnFooterSizeUpdate()
-        let animated = scrollOnFooterSizeUpdate?.animated ?? false
-
-        if shouldScroll && animated && isShrinking {
-            guard let scrollView else {
-                applyContentInset()
-                applyScrollIndicatorInsets()
-                return
-            }
-
-            let newContentInsetBottom = self.contentInsetBottom
-            let bottomOffset = CGPoint(
-                x: 0,
-                y: max(0, scrollView.contentSize.height - scrollView.bounds.height + newContentInsetBottom)
-            )
-
-            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut]) {
-                scrollView.contentInset.bottom = newContentInsetBottom
-                scrollView.contentOffset = bottomOffset
-            }
-            applyScrollIndicatorInsets()
-        } else {
-            applyContentInset()
-            applyScrollIndicatorInsets()
-
-            if shouldScroll {
-                scrollToEndInternal(animated: animated)
-            }
+        applyAllInsets()
+        
+        if shouldScroll {
+            let animated = scrollOnFooterSizeUpdate?.animated ?? false
+            scrollToEndInternal(animated: animated)
         }
     }
 
     private func shouldScrollOnFooterSizeUpdate() -> Bool {
-        guard let settings = scrollOnFooterSizeUpdate, settings.enabled else {
+        guard let settings = scrollOnFooterSizeUpdate, settings.enabled ?? true else {
             return false
         }
-        guard let scrollView else {
+        guard scrollView != nil else {
             return false
         }
 
-        let contentHeight = scrollView.contentSize.height
-        let scrollViewHeight = scrollView.bounds.height
-        let currentOffsetY = scrollView.contentOffset.y
-        let bottomInset = scrollView.contentInset.bottom
-
-        let maxOffsetY = max(0, contentHeight - scrollViewHeight + bottomInset)
-        let distanceFromEnd = maxOffsetY - currentOffsetY
-
-        let threshold = settings.scrolledToEndThreshold ?? 0
-        return distanceFromEnd <= CGFloat(threshold)
+        let threshold = settings.scrolledToEndThreshold ?? 100
+        return distFromEnd <= CGFloat(threshold)
     }
 
     // MARK: - Cell Access
-    
     /// Get a cell by its index
     func getCell(index: Int) -> HybridAixCellView? {
         return cells.object(forKey: NSNumber(value: index))
     }
 
-    
-    // MARK: - Scrolling
 
-    func getIsQueuedScrollToEndReady(queuedScrollToEnd: QueuedScrollToEnd) -> Bool {
-        guard let blankView else { return false }
-        if queuedScrollToEnd.waitForKeyboardToEnd == true && startEvent != nil {
-            return false
-        }
-        return blankView.isLast && queuedScrollToEnd.index == Int(blankView.index)
-    }
-    
-
-    func flushQueuedScrollToEnd(force: Bool = false) {
-        if let queuedScrollToEnd, (force || getIsQueuedScrollToEndReady(queuedScrollToEnd: queuedScrollToEnd)) {
-            scrollToEndInternal(animated: queuedScrollToEnd.animated)
-            self.queuedScrollToEnd = nil
-        }
-    }
-    
     // MARK: - Keyboard Notification Handlers
-
     func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
@@ -913,7 +844,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
 
         let targetHeight = keyboardFrame.height
-        print("[Aix] keyboardWillShow: targetHeight=\(targetHeight), duration=\(duration)")
 
         guard duration > 0 else { return }
 
@@ -924,8 +854,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         if !didScrollToEndInitially {
             keyboardHeight = targetHeight
             keyboardProgress = 1.0
-            applyContentInset()
-            applyScrollIndicatorInsets()
+            applyAllInsets()
             composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: keyboardHeightWhenOpen, animated: false)
             return
         }
@@ -934,17 +863,16 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
         let options = UIView.AnimationOptions(rawValue: curveValue << 16)
         UIView.animate(withDuration: duration, delay: 0, options: options, animations: { [weak self] in
-            guard let self = self else { return }
-            self.keyboardHeight = targetHeight
-            if self.keyboardHeightWhenOpen > 0 {
-                self.keyboardProgress = targetHeight / self.keyboardHeightWhenOpen
+            guard let self else { return }
+            keyboardHeight = targetHeight
+            if keyboardHeightWhenOpen > 0 {
+                keyboardProgress = targetHeight / keyboardHeightWhenOpen
             }
-            self.applyContentInset()
-            self.applyScrollIndicatorInsets()
-            self.composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: self.keyboardHeightWhenOpen, animated: false)
+            applyAllInsets()
+            composerView?.applyKeyboardTransform(height: targetHeight, heightWhenOpen: keyboardHeightWhenOpen, animated: false)
 
-            if let (startY, endY) = self.startEvent?.interpolateContentOffsetY {
-                self.scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
+            if let (_, endY) = startEvent?.interpolateContentOffsetY {
+                scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
             }
         }, completion: { [weak self] _ in
             self?.handleKeyboardDidMove(height: targetHeight, progress: 1.0)
@@ -956,249 +884,96 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
               let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
 
-        print("[Aix] keyboardWillHide: duration=\(duration)")
-
-        // Don't interpolate scroll position when closing, the inset change will handle the visual transition
-        startEvent = nil
+        handleKeyboardWillMove(targetHeight: 0, isOpening: false)
 
         let options = UIView.AnimationOptions(rawValue: curveValue << 16)
         UIView.animate(withDuration: duration, delay: 0, options: options, animations: { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
+            keyboardHeight = 0
+            keyboardProgress = 0
+            applyAllInsets()
+            composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: keyboardHeightWhenOpen, animated: false)
 
-            self.keyboardHeight = 0
-            self.keyboardProgress = 0
-            self.applyContentInset()
-            self.applyScrollIndicatorInsets()
-            self.composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: self.keyboardHeightWhenOpen, animated: false)
+            if let (_, endY) = startEvent?.interpolateContentOffsetY {
+                scrollView?.setContentOffset(CGPoint(x: 0, y: endY), animated: false)
+            }
         }, completion: { [weak self] _ in
             self?.handleKeyboardDidMove(height: 0, progress: 0)
         })
     }
 
     func keyboardDidShow(notification: NSNotification) {
-        print("[Aix] keyboardDidShow")
     }
 
     func keyboardDidHide(notification: NSNotification) {
-        print("[Aix] keyboardDidHide")
         keyboardHeightWhenOpen = 0
         composerView?.applyKeyboardTransform(height: 0, heightWhenOpen: 0, animated: false)
     }
 
     func keyboardWillChangeFrame(notification: NSNotification) {
-        guard let userInfo = notification.userInfo,
-              let keyboardFrameEnd = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+    }
 
-        let screenHeight = UIScreen.main.bounds.height
-        let keyboardTop = keyboardFrameEnd.origin.y
-        let newHeight = max(0, screenHeight - keyboardTop)
-
-        if startEvent != nil && !isInInteractiveDismiss {
-            return
-        }
-
-        if isInInteractiveDismiss && newHeight != keyboardHeight {
-            let progress = keyboardHeightWhenOpen > 0 ? newHeight / keyboardHeightWhenOpen : 0
-            handleKeyboardMoveInteractive(height: newHeight, progress: progress)
-        }
+    func keyboardNotificationsDidEnable() {
+        // Only reset transient state - don't try to guess keyboard visibility.
+        // If keyboard state is stale, it will correct on next keyboard show/hide.
+        startEvent = nil
+        pendingAnimatedScroll = false
     }
 }
 
 // MARK: - Scroll Position Helpers
-
 extension HybridAix {
-    /// Check if an interactive keyboard dismiss is in progress by examining scroll view state
-    private func isInteractiveDismissInProgress() -> Bool {
-        guard let scrollView = scrollView else { return false }
-        
-        // Check if scroll view has interactive keyboard dismiss mode
-        guard scrollView.keyboardDismissMode == .interactive else { return false }
-        
-        // Check if pan gesture is active (user is scrolling)
-        let panGesture = scrollView.panGestureRecognizer
-        let gestureState = panGesture.state
-        
-        // Pan gesture states: .began = 1, .changed = 2
-        return gestureState == .began || gestureState == .changed
-    }
-
     /// Distance from current scroll position to the maximum scroll position (end)
     var distFromEnd: CGFloat {
-        guard let scrollView = scrollView else { return 0 }
-        let maxScrollY = scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom
-        return maxScrollY - scrollView.contentOffset.y
+        guard let scrollView else { return 0 }
+        return scrollView.contentSize.height - scrollView.bounds.height + contentInsetBottom - scrollView.contentOffset.y
     }
     
     func getIsScrolledNearEnd(distFromEnd: CGFloat) -> Bool {
+        guard scrollView != nil else { return false }
         return distFromEnd <= (scrollEndReachedThreshold ?? max(200, blankSize))
     }
-    
-    func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        guard let scrollView else { return nil } 
-        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
-        let shouldShiftContentUp = blankSize == 0 && isScrolledNearEnd
-        
-        // Use the target additionalContentInsetBottom when keyboard is fully open
-        let targetAdditionalInset = CGFloat(self.additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
-        
-        // Calculate the max scroll position when keyboard is open
-        // This is where we want to scroll to: contentSize - bounds + contentInset
-        // When blankSize is 0: contentInset = keyboard + composer + additionalInset
-        let shiftContentUpToY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight + targetAdditionalInset
-        
-        if shouldShiftContentUp {
-            return (scrollY, shiftContentUpToY)    
+
+    /// Should content push up when keyboard opens?
+    /// Yes if: user is near end AND blankSize < keyboard height
+    private func shouldPushUpContent() -> Bool {
+        guard getIsScrolledNearEnd(distFromEnd: distFromEnd) else {
+            return false
         }
-
-        let hasBlankSizeLessThanOpenKeyboardHeight = blankSize > 0 && blankSize <= keyboardHeightWhenOpen
-
-        if hasBlankSizeLessThanOpenKeyboardHeight && isScrolledNearEnd {
-            return (scrollY, shiftContentUpToY)    
-        }
-
-        return nil
+        // Push up when blank space isn't enough to absorb keyboard
+        return blankSize <= keyboardHeightWhenOpen
     }
-    
-    func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
-        guard keyboardHeightWhenOpen > 0 else { return nil }
-        let isScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
 
-        if !isScrolledNearEnd {
+    func getContentOffsetYWhenOpening(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        guard shouldPushUpContent(), let scrollView else {
             return nil
         }
 
-        let additionalContentInsetBottomWithKeyboard = CGFloat(self.additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
-        let additionalContentInsetBottomWithoutKeyboard = CGFloat(self.additionalContentInsets?.bottom?.whenKeyboardClosed ?? 0)
-        
-        // Calculate how much content inset will decrease when keyboard closes
-        let blankSizeWithKeyboard = calculateBlankSize(keyboardHeight: keyboardHeightWhenOpen, additionalContentInsetBottom: additionalContentInsetBottomWithKeyboard)
-        let blankSizeWithoutKeyboard = calculateBlankSize(keyboardHeight: 0, additionalContentInsetBottom: additionalContentInsetBottomWithoutKeyboard)
-        
-        // Calculate actual content insets (including composer)
-        let insetWithKeyboard = calculateContentInsetBottom(keyboardHeight: keyboardHeightWhenOpen, blankSize: blankSizeWithKeyboard, additionalContentInsetBottom: additionalContentInsetBottomWithKeyboard)
-        let insetWithoutKeyboard = calculateContentInsetBottom(keyboardHeight: 0, blankSize: blankSizeWithoutKeyboard,
-           additionalContentInsetBottom: additionalContentInsetBottomWithoutKeyboard
-        )
-        let insetDecrease = insetWithKeyboard - insetWithoutKeyboard
-        
-        // To keep the visual content position stable, we need to decrease scrollY 
-        // by the same amount the inset decreases
-        let targetScrollY = max(0, scrollY - insetDecrease)
-        
-        // Only interpolate if there's actually movement needed
-        guard abs(scrollY - targetScrollY) > 1 else { return nil }
-        
+        let targetInset = CGFloat(additionalContentInsets?.bottom?.whenKeyboardOpen ?? 0)
+        let targetY = scrollView.contentSize.height - scrollView.bounds.height + keyboardHeightWhenOpen + composerHeight + targetInset
+
+        return (scrollY, targetY)
+    }
+    
+    func getContentOffsetYWhenClosing(scrollY: CGFloat) -> (CGFloat, CGFloat)? {
+        guard let scrollView, keyboardHeightWhenOpen > 0 else {
+            return nil
+        }
+
+        // Calculate max scroll position when keyboard is closed
+        // This is what the scroll position should be clamped to
+        let additionalInsetClosed = CGFloat(additionalContentInsets?.bottom?.whenKeyboardClosed ?? 0)
+        let blankSizeClosed = calculateBlankSize(keyboardHeight: 0, additionalContentInsetBottom: additionalInsetClosed)
+        let insetClosed = calculateContentInsetBottom(keyboardHeight: 0, blankSize: blankSizeClosed, additionalContentInsetBottom: additionalInsetClosed)
+
+        let maxScrollYClosed = scrollView.contentSize.height - scrollView.bounds.height + insetClosed
+
+        // If current scroll exceeds what will be valid when keyboard closes, adjust
+        let targetScrollY = min(scrollY, max(0, maxScrollYClosed))
+
+        guard abs(scrollY - targetScrollY) > 1 else {
+            return nil
+        }
         return (scrollY, targetScrollY)
-    }
-}
-
-// Source - https://stackoverflow.com/a
-// Posted by Vasily  Bodnarchuk, modified by community. See post 'Timeline' for change history
-// Retrieved 2026-01-07, License - CC BY-SA 4.0
-
-protocol KeyboardNotificationsDelegate: AnyObject {
-    func keyboardWillShow(notification: NSNotification)
-    func keyboardWillHide(notification: NSNotification)
-    func keyboardDidShow(notification: NSNotification)
-    func keyboardDidHide(notification: NSNotification)
-    func keyboardWillChangeFrame(notification: NSNotification)
-}
-
-extension KeyboardNotificationsDelegate {
-    func keyboardWillShow(notification: NSNotification) {}
-    func keyboardWillHide(notification: NSNotification) {}
-    func keyboardDidShow(notification: NSNotification) {}
-    func keyboardDidHide(notification: NSNotification) {}
-    func keyboardWillChangeFrame(notification: NSNotification) {}
-}
-
-class KeyboardNotifications {
-    fileprivate var _isEnabled: Bool
-    fileprivate var notifications: [KeyboardNotificationsType]
-    fileprivate weak var delegate: KeyboardNotificationsDelegate?
-
-    init(notifications: [KeyboardNotificationsType], delegate: KeyboardNotificationsDelegate) {
-        _isEnabled = false
-        self.notifications = notifications
-        self.delegate = delegate
-    }
-
-    deinit { if isEnabled { isEnabled = false } }
-}
-
-// MARK: - enums
-
-extension KeyboardNotifications {
-
-    enum KeyboardNotificationsType {
-        case willShow, willHide, didShow, didHide, willChangeFrame
-
-        var selector: Selector {
-            switch self {
-                case .willShow: return #selector(keyboardWillShow(notification:))
-                case .willHide: return #selector(keyboardWillHide(notification:))
-                case .didShow: return #selector(keyboardDidShow(notification:))
-                case .didHide: return #selector(keyboardDidHide(notification:))
-                case .willChangeFrame: return #selector(keyboardWillChangeFrame(notification:))
-            }
-        }
-
-        var notificationName: NSNotification.Name {
-            switch self {
-                case .willShow: return UIResponder.keyboardWillShowNotification
-                case .willHide: return UIResponder.keyboardWillHideNotification
-                case .didShow: return UIResponder.keyboardDidShowNotification
-                case .didHide: return UIResponder.keyboardDidHideNotification
-                case .willChangeFrame: return UIResponder.keyboardWillChangeFrameNotification
-            }
-        }
-    }
-}
-
-// MARK: - isEnabled
-
-extension KeyboardNotifications {
-
-    private func addObserver(type: KeyboardNotificationsType) {
-        NotificationCenter.default.addObserver(self, selector: type.selector, name: type.notificationName, object: nil)
-    }
-
-    var isEnabled: Bool {
-        set {
-            if newValue {
-                for notificaton in notifications { addObserver(type: notificaton) }
-            } else {
-                NotificationCenter.default.removeObserver(self)
-            }
-            _isEnabled = newValue
-        }
-
-        get { return _isEnabled }
-    }
-
-}
-
-// MARK: - Notification functions
-
-extension KeyboardNotifications {
-
-    @objc func keyboardWillShow(notification: NSNotification) {
-        delegate?.keyboardWillShow(notification: notification)
-    }
-
-    @objc func keyboardWillHide(notification: NSNotification) {
-        delegate?.keyboardWillHide(notification: notification)
-    }
-
-    @objc func keyboardDidShow(notification: NSNotification) {
-        delegate?.keyboardDidShow(notification: notification)
-    }
-
-    @objc func keyboardDidHide(notification: NSNotification) {
-        delegate?.keyboardDidHide(notification: notification)
-    }
-
-    @objc func keyboardWillChangeFrame(notification: NSNotification) {
-        delegate?.keyboardWillChangeFrame(notification: notification)
     }
 }
