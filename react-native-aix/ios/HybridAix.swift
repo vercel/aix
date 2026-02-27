@@ -150,7 +150,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             cells.removeAllObjects()
             lastReportedBlankViewSize = (size: .zero, index: 0)
             lastCalculatedBlankSize = 0
-            anchoredScrollOffset = nil
             pendingAnimatedScroll = false
         }
     }
@@ -312,10 +311,6 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     /// Cache the last successfully calculated blank size to avoid jumps when cells are temporarily missing
     private var lastCalculatedBlankSize: CGFloat = 0
-
-    /// The anchored scroll offset after an animated scrollToIndex completes.
-    /// When set, all cell height changes will restore to this offset to maintain position stability.
-    private var anchoredScrollOffset: CGPoint? = nil
 
     /// When true, an animated scroll is pending and will be executed after keyboard animation completes.
     /// This prevents conflicts between keyboard closing animation and our scroll animation.
@@ -482,8 +477,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     @discardableResult
-    private func scrollToEndInternal(animated: Bool?) -> CGPoint? {
+    private func scrollToEndInternal(animated: Bool?, completion: (() -> Void)? = nil) -> CGPoint? {
         guard let scrollView else { return nil }
+
+        print("[Aix] scrollToEndInternal")
 
         // Ensure layout is complete before calculating scroll position
         scrollView.layoutIfNeeded()
@@ -495,7 +492,17 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         let targetY = max(0, contentHeight - boundsHeight + appliedInset)
 
         let bottomOffset = CGPoint(x: 0, y: targetY)
-        scrollView.setContentOffset(bottomOffset, animated: animated ?? true)
+
+        if animated == true && completion != nil {
+            CATransaction.begin()
+            CATransaction.setCompletionBlock(completion)
+            scrollView.setContentOffset(bottomOffset, animated: true)
+            CATransaction.commit()
+        } else {
+            scrollView.setContentOffset(bottomOffset, animated: animated ?? true)
+            completion?()
+        }
+
         return bottomOffset
     }
 
@@ -555,8 +562,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             pendingAnimatedScroll = false
             print("[Aix] handleKeyboardDidMove - executing pending animated scroll")
 
-            if let targetOffset = scrollToEndInternal(animated: true) {
-                anchoredScrollOffset = targetOffset
+            scrollToEndInternal(animated: true) { [weak self] in
+                self?.onDidScrollToIndex?()
             }
         }
     }
@@ -639,11 +646,17 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             return
         }
 
+        // Skip when animated scroll is in progress to avoid interfering
+        if scrollToIndexTarget != nil {
+            print("[Aix] reportBlankViewSizeChange - skipping, scrollToIndex active")
+            return
+        }
+
         // After initial layout, only apply insets without scrolling.
         // The blankSize adjustment will compensate for any cell height changes,
         // keeping the content offset stable.
         print("[Aix] reportBlankViewSizeChange - applying insets (post-initial)")
-        applyAllInsetsWithAnchoredOffset()
+        applyAllInsets()
     }
 
     /// Check if all cells are registered and complete initial layout if so
@@ -711,10 +724,16 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             return
         }
 
+        // Skip when animated scroll is in progress to avoid interfering
+        if scrollToIndexTarget != nil {
+            print("[Aix] reportCellHeightChange - skipping, scrollToIndex active")
+            return
+        }
+
         // Preserve scroll position while applying insets.
         // When cells grow, blankSize shrinks and contentInset.bottom decreases,
         // but we want to keep the visible content stable.
-        applyAllInsetsWithAnchoredOffset()
+        applyAllInsets()
     }
 
     func registerCell(_ cell: HybridAixCellView) {
@@ -746,39 +765,19 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                     // handleKeyboardDidMove will execute the scroll when keyboard animation ends
                     print("[Aix] registerCell - deferring animated scroll until keyboard animation completes")
                     pendingAnimatedScroll = true
+                    // onDidScrollToIndex will be called when keyboard animation completes
                 } else {
                     // No keyboard animation - scroll immediately
-                    if let targetOffset = scrollToEndInternal(animated: true) {
-                        anchoredScrollOffset = targetOffset
+                    // Call onDidScrollToIndex after animation completes so scrollToIndexTarget
+                    // stays set during animation (used by skip logic in reportCellHeightChange)
+                    scrollToEndInternal(animated: true) { [weak self] in
+                        self?.onDidScrollToIndex?()
                     }
                 }
-
-                onDidScrollToIndex?()
-            } else {
-                applyAllInsetsWithAnchoredOffset()
+            } else if scrollToIndexTarget == nil {
+                // Only apply insets when no animated scroll is active
+                applyAllInsets()
             }
-        }
-    }
-
-    /// Apply insets while maintaining the anchored scroll offset
-    private func applyAllInsetsWithAnchoredOffset() {
-        guard let scrollView else { return }
-
-        // When scrollToIndex is active, the animated scroll handles positioning.
-        // Don't restore offset - let the animation complete naturally.
-        if scrollToIndexTarget != nil {
-            applyAllInsets()
-            return
-        }
-
-        // Use anchored offset if available, otherwise save current
-        let targetOffset = anchoredScrollOffset ?? scrollView.contentOffset
-
-        applyAllInsets()
-
-        // Restore to anchored/saved position
-        if scrollView.contentOffset != targetOffset {
-            scrollView.contentOffset = targetOffset
         }
     }
 
@@ -912,6 +911,13 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     func keyboardWillChangeFrame(notification: NSNotification) {
+    }
+
+    func keyboardNotificationsDidEnable() {
+        // Only reset transient state - don't try to guess keyboard visibility.
+        // If keyboard state is stale, it will correct on next keyboard show/hide.
+        startEvent = nil
+        pendingAnimatedScroll = false
     }
 }
 

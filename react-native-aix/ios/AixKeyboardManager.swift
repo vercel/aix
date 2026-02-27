@@ -18,6 +18,7 @@ protocol KeyboardNotificationsDelegate: AnyObject {
     func keyboardDidShow(notification: NSNotification)
     func keyboardDidHide(notification: NSNotification)
     func keyboardWillChangeFrame(notification: NSNotification)
+    func keyboardNotificationsDidEnable()
 }
 
 extension KeyboardNotificationsDelegate {
@@ -26,6 +27,7 @@ extension KeyboardNotificationsDelegate {
     func keyboardDidShow(notification: NSNotification) {}
     func keyboardDidHide(notification: NSNotification) {}
     func keyboardWillChangeFrame(notification: NSNotification) {}
+    func keyboardNotificationsDidEnable() {}
 }
 
 class KeyboardNotifications: NSObject {
@@ -82,6 +84,7 @@ extension KeyboardNotifications {
         set {
             if newValue {
                 for notificaton in notifications { addObserver(type: notificaton) }
+                delegate?.keyboardNotificationsDidEnable()
             } else {
                 NotificationCenter.default.removeObserver(self)
             }
