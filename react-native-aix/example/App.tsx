@@ -295,6 +295,7 @@ function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
   const { addAttachments } = useAttachments();
   return (
     <AixDropzone
+      style={{ flex: 1 }}
       onDrop={events => {
         console.log('onDrop', events);
         addAttachments(events);
