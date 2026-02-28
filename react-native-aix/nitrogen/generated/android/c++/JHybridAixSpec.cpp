@@ -140,6 +140,15 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* shouldApplyContentInsets */)>("setShouldApplyContentInsets");
     method(_javaPart, shouldApplyContentInsets.has_value() ? jni::JBoolean::valueOf(shouldApplyContentInsets.value()) : nullptr);
   }
+  std::optional<double> JHybridAixSpec::getApplyContentInsetDelay() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JDouble>()>("getApplyContentInsetDelay");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->value()) : std::nullopt;
+  }
+  void JHybridAixSpec::setApplyContentInsetDelay(std::optional<double> applyContentInsetDelay) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* applyContentInsetDelay */)>("setApplyContentInsetDelay");
+    method(_javaPart, applyContentInsetDelay.has_value() ? jni::JDouble::valueOf(applyContentInsetDelay.value()) : nullptr);
+  }
   std::optional<std::function<void(const AixContentInsets& /* insets */)>> JHybridAixSpec::getOnWillApplyContentInsets() {
     static const auto method = javaClassStatic()->getMethod<jni::local_ref<JFunc_void_AixContentInsets::javaobject>()>("getOnWillApplyContentInsets_cxx");
     auto __result = method(_javaPart);

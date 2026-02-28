@@ -1,0 +1,10 @@
+{
+  "uiViewClassName": "AixDropzone",
+  "supportsRawText": false,
+  "bubblingEventTypes": {},
+  "directEventTypes": {},
+  "validAttributes": {
+    "onDrop": true,
+    "hybridRef": true
+  }
+}

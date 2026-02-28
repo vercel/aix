@@ -30,6 +30,8 @@ namespace margelo::nitro::aix {
       prototype.registerHybridSetter("penultimateCellIndex", &HybridAixSpec::setPenultimateCellIndex);
       prototype.registerHybridGetter("shouldApplyContentInsets", &HybridAixSpec::getShouldApplyContentInsets);
       prototype.registerHybridSetter("shouldApplyContentInsets", &HybridAixSpec::setShouldApplyContentInsets);
+      prototype.registerHybridGetter("applyContentInsetDelay", &HybridAixSpec::getApplyContentInsetDelay);
+      prototype.registerHybridSetter("applyContentInsetDelay", &HybridAixSpec::setApplyContentInsetDelay);
       prototype.registerHybridGetter("onWillApplyContentInsets", &HybridAixSpec::getOnWillApplyContentInsets);
       prototype.registerHybridSetter("onWillApplyContentInsets", &HybridAixSpec::setOnWillApplyContentInsets);
       prototype.registerHybridGetter("onScrolledNearEndChange", &HybridAixSpec::getOnScrolledNearEndChange);

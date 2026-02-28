@@ -55,6 +55,7 @@ namespace margelo::nitro::aix::views {
     CachedProp<std::optional<std::string>> mainScrollViewID;
     CachedProp<std::optional<double>> penultimateCellIndex;
     CachedProp<std::optional<bool>> shouldApplyContentInsets;
+    CachedProp<std::optional<double>> applyContentInsetDelay;
     CachedProp<std::optional<std::function<void(const AixContentInsets& /* insets */)>>> onWillApplyContentInsets;
     CachedProp<std::optional<std::function<void(bool /* isNearEnd */)>>> onScrolledNearEndChange;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> hybridRef;

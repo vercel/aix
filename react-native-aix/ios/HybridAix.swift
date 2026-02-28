@@ -91,6 +91,19 @@ extension UIView {
         }
         return nil
     }
+
+    /// Recursively search subviews to find the first UITextField or UITextView
+    func findTextInput() -> UIView? {
+        if self is UITextField || self is UITextView {
+            return self
+        }
+        for subview in subviews {
+            if let input = subview.findTextInput() {
+                return input
+            }
+        }
+        return nil
+    }
 }
 
 // MARK: - HybridAix (Root Context)
@@ -100,6 +113,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     var penultimateCellIndex: Double?
     
     var shouldApplyContentInsets: Bool? = nil
+    var applyContentInsetDelay: Double? = nil
     var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
     var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? = nil
 
@@ -114,7 +128,15 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
 
     var scrollOnComposerSizeUpdate: AixScrollOnFooterSizeUpdate?
 
-    var mainScrollViewID: String?
+    var mainScrollViewID: String? {
+        didSet {
+            guard mainScrollViewID != oldValue else { return }
+            removePanGestureObserver()
+            removeScrollViewObservers()
+            cachedScrollView = nil
+            didSetupPanGestureObserver = false
+        }
+    }
     
     func scrollToEnd(animated: Bool?) {
         // Dispatch to main thread since this may be called from RN background thread
@@ -143,7 +165,11 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         }
     }
 
-    private var didScrollToEndInitially = false
+    private var didScrollToEndInitiallyForId: String? = nil
+
+    private var didScrollToEndInitially: Bool {
+        return didScrollToEndInitiallyForId == (mainScrollViewID ?? "")
+    }
     
     // MARK: - Inner View
     
@@ -406,14 +432,29 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
         guard let scrollView, let blankView else { return 0 }
         
-        let cellBeforeBlankView = getCell(index: Int(blankView.index) - 1)
-        let cellBeforeBlankViewHeight = cellBeforeBlankView?.view.frame.height ?? 0
+        let startIndex: Int
+        let endIndex = Int(blankView.index) - 1
+        if let penultimateCellIndex {
+            startIndex = Int(penultimateCellIndex)
+        } else {
+            startIndex = endIndex
+        }
+        
+        var cellsBeforeBlankViewHeight: CGFloat = 0
+        if startIndex <= endIndex {
+            for i in startIndex...endIndex {
+                if let cell = getCell(index: i) {
+                    cellsBeforeBlankViewHeight += cell.view.frame.height
+                }
+            }
+        }
+        
         let blankViewHeight = blankView.view.frame.height
         
         // Calculate visible area above all bottom chrome (keyboard, composer, additional insets)
         // The blank size fills the remaining space so the last message can scroll to the top
         let visibleAreaHeight = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
-        let inset = visibleAreaHeight - blankViewHeight - cellBeforeBlankViewHeight
+        let inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         return max(0, inset)
     }
     
@@ -448,29 +489,38 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         )
 
         print("[aix] applyContentInset \(targetBottom)")
+        onWillApplyContentInsets?(insets)
         
         // If shouldApplyContentInsets is explicitly false, call callback and return
         if shouldApplyContentInsets == false {
-            onWillApplyContentInsets?(insets)
             return
         }
         
-        // Default behavior: apply insets directly
-        if scrollView.contentInset.top != targetTop {
-            scrollView.contentInset.top = targetTop
-        }
-        if scrollView.contentInset.bottom != targetBottom {
-            scrollView.contentInset.bottom = targetBottom
+        // Helper to actually apply the insets
+        let applyInsets = { [weak self] in
+            guard let self, let scrollView = self.scrollView else { return }
+            if scrollView.contentInset.top != targetTop {
+                scrollView.contentInset.top = targetTop
+            }
+            if scrollView.contentInset.bottom != targetBottom {
+                scrollView.contentInset.bottom = targetBottom
+            }
+            // Update scrolled near end state after insets change
+            self.updateScrolledNearEndState()
         }
         
-        // Update scrolled near end state after insets change
-        updateScrolledNearEndState()
+        // Apply with optional delay
+        if let delay = applyContentInsetDelay, delay > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay / 1000.0, execute: applyInsets)
+        } else {
+            applyInsets()
+        }
     }
 
     /// Centralized function to check and fire onScrolledNearEndChange callback
     /// Called from KVO observers and after content inset changes
     private func updateScrolledNearEndState() {
-        guard scrollView != nil else { return }
+        guard didScrollToEndInitially, scrollView != nil else { return }
         let isNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
         guard isNearEnd != prevIsScrolledNearEnd else { return }
         prevIsScrolledNearEnd = isNearEnd
@@ -720,9 +770,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
                 applyContentInset()
                 applyScrollIndicatorInsets()
                 scrollToEndInternal(animated: false)
-                updateScrolledNearEndState()
+                prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)
             }
-            didScrollToEndInitially = true
+            didScrollToEndInitiallyForId = mainScrollViewID ?? ""
         } else {
             applyContentInset()
             applyScrollIndicatorInsets()
