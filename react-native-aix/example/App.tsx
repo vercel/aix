@@ -16,6 +16,7 @@ import {
   Keyboard,
   Pressable,
   PlatformColor,
+  Platform,
   useColorScheme,
   Image,
 } from 'react-native';
@@ -413,7 +414,7 @@ function Composer({
             style={{ flex: 1 }}
           >
             <TextInput
-              placeholderTextColor={PlatformColor('placeholderText')}
+              placeholderTextColor={colors.placeholderText}
               placeholder="Type something..."
               onChangeText={setInputValue}
               style={styles.input}
@@ -430,12 +431,12 @@ function Composer({
             styles.button,
             inputValue.length === 0
               ? {
-                  backgroundColor: PlatformColor('systemGray6'),
-                  borderColor: PlatformColor('systemGray5'),
+                  backgroundColor: colors.systemGray6,
+                  borderColor: colors.systemGray5,
                 }
               : {
-                  backgroundColor: PlatformColor('systemGray3'),
-                  borderColor: PlatformColor('separator'),
+                  backgroundColor: colors.systemGray3,
+                  borderColor: colors.separator,
                 },
           ]}
           onPress={async () => {
@@ -493,12 +494,12 @@ function Button({
         styles.button,
         disabled
           ? {
-              backgroundColor: PlatformColor('systemGray6'),
-              borderColor: PlatformColor('systemGray5'),
+              backgroundColor: colors.systemGray6,
+              borderColor: colors.systemGray5,
             }
           : {
-              backgroundColor: PlatformColor('systemGray3'),
-              borderColor: PlatformColor('separator'),
+              backgroundColor: colors.systemGray3,
+              borderColor: colors.separator,
             },
       ]}
     >
@@ -538,9 +539,24 @@ function AssistantMessage({
   );
 }
 
-function gap(size: number) {
-  return size * 4;
-}
+const gap = (size: number) => size * 4;
+
+const getPlatformColor = (iosColor: string, fallback: string) => {
+  return Platform.OS === 'ios' ? PlatformColor(iosColor) : fallback;
+};
+
+const colors = {
+  placeholderText: getPlatformColor('placeholderText', '#999'),
+  systemGray8: getPlatformColor('systemGray8', '#f2f2f7'),
+  systemGray6: getPlatformColor('systemGray6', '#f2f2f7'),
+  systemGray5: getPlatformColor('systemGray5', '#e5e5ea'),
+  systemGray3: getPlatformColor('systemGray3', '#c7c7cc'),
+  separator: getPlatformColor('separator', '#c6c6c8'),
+  label: getPlatformColor('label', '#000'),
+  secondaryLabel: getPlatformColor('secondaryLabel', '#3c3c4399'),
+  systemBackground: getPlatformColor('systemBackground', '#fff'),
+  secondarySystemBackground: getPlatformColor('secondarySystemBackground', '#f2f2f7'),
+};
 
 const fontSize = 17;
 const lineHeight = (fontSize: number) => fontSize * 1.4;
@@ -560,7 +576,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize,
     lineHeight: lineHeight(fontSize),
-    color: PlatformColor('label'),
+    color: colors.label,
   },
   footerRow: {
     alignItems: 'flex-end',
@@ -569,9 +585,9 @@ const styles = StyleSheet.create({
     gap: gap(3),
   },
   inputContainer: {
-    backgroundColor: PlatformColor('systemBackground'),
+    backgroundColor: colors.systemBackground,
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
+    borderColor: colors.separator,
     borderRadius: 24,
     borderCurve: 'continuous',
     minHeight: 44,
@@ -580,13 +596,13 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize,
-    color: PlatformColor('label'),
+    color: colors.label,
     paddingVertical: (44 - lineHeight(fontSize)) / 2,
     paddingHorizontal: gap(4),
     minHeight: 44,
   },
   userMessage: {
-    backgroundColor: PlatformColor('secondarySystemBackground'),
+    backgroundColor: colors.secondarySystemBackground,
     paddingHorizontal: gap(4),
     paddingVertical: gap(2),
     borderRadius: 20,
@@ -609,12 +625,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 24,
-    backgroundColor: PlatformColor('systemGray8'),
+    backgroundColor: colors.systemGray8,
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
+    borderColor: colors.separator,
   },
   buttonText: {
-    color: PlatformColor('label'),
+    color: colors.label,
     fontSize: 20,
     fontWeight: '500',
   },
@@ -630,24 +646,24 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: PlatformColor('systemBackground'),
+    backgroundColor: colors.systemBackground,
     borderBottomWidth: 1,
-    borderBottomColor: PlatformColor('separator'),
+    borderBottomColor: colors.separator,
   },
   headerText: {
     fontSize: 18,
     fontWeight: '600',
-    color: PlatformColor('label'),
+    color: colors.label,
   },
   attachment: {
-    backgroundColor: PlatformColor('systemGray3'),
+    backgroundColor: colors.systemGray3,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
     height: 80,
     width: 80,
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
+    borderColor: colors.separator,
     borderCurve: 'continuous',
   },
   attachmentsContainer: {
@@ -659,7 +675,7 @@ const styles = StyleSheet.create({
   },
   attachmentText: {
     fontSize: 14,
-    color: PlatformColor('secondaryLabel'),
+    color: colors.secondaryLabel,
     fontWeight: '500',
   },
 });
