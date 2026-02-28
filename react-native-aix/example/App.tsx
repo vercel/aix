@@ -565,7 +565,7 @@ const paddingVertical = 8;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'ios' ? 60 : 0,
   },
   view: {
     width: 200,
