@@ -15,9 +15,11 @@ import {
   Text,
   Keyboard,
   Pressable,
+  Platform,
   PlatformColor,
   useColorScheme,
-  Image,
+  type ColorValue,
+  type ColorSchemeName,
 } from 'react-native';
 import {
   Aix,
@@ -30,7 +32,7 @@ import {
   useContentInsetHandler,
   type AixInputWrapperOnPasteEvent,
 } from 'aix';
-import { useAppleChat, useMessages } from './src/apple';
+import { useLlmAdapter, useLlmMessages } from './src/llm-adapter';
 import {
   KeyboardProvider,
   useReanimatedKeyboardAnimation,
@@ -55,11 +57,99 @@ type AttachmentsContextType = {
   clearAttachments: () => void;
 };
 
+type ThemeColors = {
+  textPrimary: ColorValue;
+  textSecondary: ColorValue;
+  placeholder: ColorValue;
+  surface: ColorValue;
+  surfaceSecondary: ColorValue;
+  surfaceTertiary: ColorValue;
+  border: ColorValue;
+  borderSubtle: ColorValue;
+  buttonEnabled: ColorValue;
+  buttonEnabledBorder: ColorValue;
+  buttonDisabled: ColorValue;
+  buttonDisabledBorder: ColorValue;
+  userMessageBackground: ColorValue;
+  attachmentBackground: ColorValue;
+};
+
+const lightThemeColors: ThemeColors = {
+  textPrimary: '#000000',
+  textSecondary: '#6E6E73',
+  placeholder: '#8E8E93',
+  surface: '#FFFFFF',
+  surfaceSecondary: '#F2F2F7',
+  surfaceTertiary: '#E5E5EA',
+  border: '#D1D1D6',
+  borderSubtle: '#E5E5EA',
+  buttonEnabled: '#D1D1D6',
+  buttonEnabledBorder: '#C7C7CC',
+  buttonDisabled: '#F2F2F7',
+  buttonDisabledBorder: '#E5E5EA',
+  userMessageBackground: '#F2F2F7',
+  attachmentBackground: '#D1D1D6',
+};
+
+const darkThemeColors: ThemeColors = {
+  textPrimary: '#FFFFFF',
+  textSecondary: '#8E8E93',
+  placeholder: '#8E8E93',
+  surface: '#000000',
+  surfaceSecondary: '#1C1C1E',
+  surfaceTertiary: '#2C2C2E',
+  border: '#3A3A3C',
+  borderSubtle: '#48484A',
+  buttonEnabled: '#48484A',
+  buttonEnabledBorder: '#636366',
+  buttonDisabled: '#2C2C2E',
+  buttonDisabledBorder: '#3A3A3C',
+  userMessageBackground: '#1C1C1E',
+  attachmentBackground: '#48484A',
+};
+
+const iosThemeColors: ThemeColors = {
+  textPrimary: PlatformColor('label'),
+  textSecondary: PlatformColor('secondaryLabel'),
+  placeholder: PlatformColor('placeholderText'),
+  surface: PlatformColor('systemBackground'),
+  surfaceSecondary: PlatformColor('secondarySystemBackground'),
+  surfaceTertiary: PlatformColor('systemGray3'),
+  border: PlatformColor('separator'),
+  borderSubtle: PlatformColor('systemGray5'),
+  buttonEnabled: PlatformColor('systemGray3'),
+  buttonEnabledBorder: PlatformColor('separator'),
+  buttonDisabled: PlatformColor('systemGray6'),
+  buttonDisabledBorder: PlatformColor('systemGray5'),
+  userMessageBackground: PlatformColor('secondarySystemBackground'),
+  attachmentBackground: PlatformColor('systemGray3'),
+};
+
+function getThemeColors(colorScheme: ColorSchemeName): ThemeColors {
+  if (Platform.OS === 'ios') {
+    return iosThemeColors;
+  }
+
+  return colorScheme === 'dark' ? darkThemeColors : lightThemeColors;
+}
+
+function useThemeColors(): ThemeColors {
+  const colorScheme = useColorScheme();
+  return getThemeColors(colorScheme);
+}
+
 const AttachmentsContext = createContext<AttachmentsContextType>({
   attachments: [],
   addAttachments: () => {},
   clearAttachments: () => {},
 });
+
+type AixDropzoneWithRuntimeStyleProps = React.ComponentProps<typeof AixDropzone> & {
+  style?: React.ComponentProps<typeof View>['style'];
+};
+
+const AixDropzoneWithRuntimeStyle =
+  AixDropzone as unknown as React.ComponentType<AixDropzoneWithRuntimeStyleProps>;
 
 function useAttachments() {
   return useContext(AttachmentsContext);
@@ -121,10 +211,12 @@ function LegendListCellRenderer({
 
 function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
+  const colorScheme = useColorScheme();
+  const isAndroidDarkMode = Platform.OS === 'android' && colorScheme === 'dark';
 
-  const { messages, setMessages } = useMessages();
+  const { messages, setMessages } = useLlmMessages();
   const [isNearEnd, setIsNearEnd] = useState(false);
-  const { send } = useAppleChat({ setMessages, messages });
+  const { send } = useLlmAdapter({ setMessages, messages });
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
   );
@@ -236,7 +328,10 @@ function Chat({ children }: { children: React.ReactNode }) {
             console.log('onScrolledNearEndChange', isNearEnd);
             setIsNearEnd(isNearEnd);
           }}
-          style={styles.container}
+          style={[
+            styles.container,
+            isAndroidDarkMode && styles.androidDarkBackground,
+          ]}
           ref={aix}
           additionalContentInsets={{
             bottom: {
@@ -258,7 +353,7 @@ function Chat({ children }: { children: React.ReactNode }) {
           })}
         >
           {children}
-          {examples.scrollview()}
+          {examples.legendList()}
           <AixFooter
             style={styles.footer}
             fixInput
@@ -294,14 +389,15 @@ function Chat({ children }: { children: React.ReactNode }) {
 function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
   const { addAttachments } = useAttachments();
   return (
-    <AixDropzone
+    <AixDropzoneWithRuntimeStyle
+      style={{ flex: 1 }}
       onDrop={events => {
         console.log('onDrop', events);
         addAttachments(events);
       }}
     >
       {children}
-    </AixDropzone>
+    </AixDropzoneWithRuntimeStyle>
   );
 }
 
@@ -319,11 +415,21 @@ function FloatingFooter({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const colors = useThemeColors();
+
   return (
     <KeyboardProvider>
       <Chat>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Chat</Text>
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: colors.surface,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
+          <Text style={[styles.headerText, { color: colors.textPrimary }]}>Chat</Text>
         </View>
       </Chat>
     </KeyboardProvider>
@@ -340,6 +446,7 @@ function Composer({
   isNearEnd: boolean;
 }) {
   const colorScheme = useColorScheme();
+  const colors = getThemeColors(colorScheme);
   const [inputValue, setInputValue] = useState('');
   const { attachments, addAttachments } = useAttachments();
   const inputRef = useRef<TextInput>(null);
@@ -357,7 +464,7 @@ function Composer({
           exiting={buttonAnimation.exiting}
         >
           <Button onPress={onScrollToEnd} disabled={isNearEnd}>
-            <Text style={styles.buttonText}>↓</Text>
+            <Text style={[styles.buttonText, { color: colors.textPrimary }]}>↓</Text>
           </Button>
         </Animated.View>
       )}
@@ -373,7 +480,15 @@ function Composer({
         ]}
       />
       <View style={styles.footerRow}>
-        <View style={styles.inputContainer}>
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+        >
           {attachments.length > 0 ? (
             <ScrollView
               horizontal
@@ -386,7 +501,13 @@ function Composer({
                     entering={FadeIn}
                     exiting={FadeOut}
                     source={{ uri: attachment.filePath }}
-                    style={styles.attachment}
+                    style={[
+                      styles.attachment,
+                      {
+                        backgroundColor: colors.attachmentBackground,
+                        borderColor: colors.border,
+                      },
+                    ]}
                     key={index}
                   />
                 ) : (
@@ -394,9 +515,15 @@ function Composer({
                     entering={FadeIn}
                     exiting={FadeOut}
                     key={index}
-                    style={styles.attachment}
+                    style={[
+                      styles.attachment,
+                      {
+                        backgroundColor: colors.attachmentBackground,
+                        borderColor: colors.border,
+                      },
+                    ]}
                   >
-                    <Text style={styles.attachmentText}>
+                    <Text style={[styles.attachmentText, { color: colors.textSecondary }]}>
                       {attachment.fileExtension?.toUpperCase() ?? 'FILE'}
                     </Text>
                   </Animated.View>
@@ -412,10 +539,10 @@ function Composer({
             style={{ flex: 1 }}
           >
             <TextInput
-              placeholderTextColor={PlatformColor('placeholderText')}
+              placeholderTextColor={colors.placeholder}
               placeholder="Type something..."
               onChangeText={setInputValue}
-              style={styles.input}
+              style={[styles.input, { color: colors.textPrimary }]}
               value={inputValue}
               ref={inputRef}
               multiline
@@ -429,12 +556,12 @@ function Composer({
             styles.button,
             inputValue.length === 0
               ? {
-                  backgroundColor: PlatformColor('systemGray6'),
-                  borderColor: PlatformColor('systemGray5'),
+                  backgroundColor: colors.buttonDisabled,
+                  borderColor: colors.buttonDisabledBorder,
                 }
               : {
-                  backgroundColor: PlatformColor('systemGray3'),
-                  borderColor: PlatformColor('separator'),
+                  backgroundColor: colors.buttonEnabled,
+                  borderColor: colors.buttonEnabledBorder,
                 },
           ]}
           onPress={async () => {
@@ -445,7 +572,7 @@ function Composer({
             });
           }}
         >
-          <Text style={styles.buttonText}>↑</Text>
+          <Text style={[styles.buttonText, { color: colors.textPrimary }]}>↑</Text>
         </Pressable>
       </View>
     </>
@@ -484,6 +611,8 @@ function Button({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const colors = useThemeColors();
+
   return (
     <Pressable
       onPress={onPress}
@@ -492,12 +621,12 @@ function Button({
         styles.button,
         disabled
           ? {
-              backgroundColor: PlatformColor('systemGray6'),
-              borderColor: PlatformColor('systemGray5'),
+              backgroundColor: colors.buttonDisabled,
+              borderColor: colors.buttonDisabledBorder,
             }
           : {
-              backgroundColor: PlatformColor('systemGray3'),
-              borderColor: PlatformColor('separator'),
+              backgroundColor: colors.buttonEnabled,
+              borderColor: colors.buttonEnabledBorder,
             },
       ]}
     >
@@ -507,9 +636,18 @@ function Button({
 }
 
 function UserMessage({ content }: { content: string }) {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.userMessage}>
-      <Text style={[styles.text]}>{content}</Text>
+    <View
+      style={[
+        styles.userMessage,
+        {
+          backgroundColor: colors.userMessageBackground,
+        },
+      ]}
+    >
+      <Text style={[styles.text, { color: colors.textPrimary }]}>{content}</Text>
     </View>
   );
 }
@@ -521,11 +659,14 @@ function AssistantMessage({
   content: string;
   shouldAnimate: boolean;
 }) {
+  const colors = useThemeColors();
+
   return (
     <View>
       <Text
         style={[
           styles.text,
+          { color: colors.textPrimary },
           { paddingHorizontal: gap(4), paddingVertical: gap(2) },
         ]}
       >
@@ -548,7 +689,10 @@ const paddingVertical = 8;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'ios' ? 60 : 0,
+  },
+  androidDarkBackground: {
+    backgroundColor: '#000000',
   },
   view: {
     width: 200,
@@ -559,7 +703,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize,
     lineHeight: lineHeight(fontSize),
-    color: PlatformColor('label'),
   },
   footerRow: {
     alignItems: 'flex-end',
@@ -568,9 +711,7 @@ const styles = StyleSheet.create({
     gap: gap(3),
   },
   inputContainer: {
-    backgroundColor: PlatformColor('systemBackground'),
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
     borderRadius: 24,
     borderCurve: 'continuous',
     minHeight: 44,
@@ -579,13 +720,11 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize,
-    color: PlatformColor('label'),
     paddingVertical: (44 - lineHeight(fontSize)) / 2,
     paddingHorizontal: gap(4),
     minHeight: 44,
   },
   userMessage: {
-    backgroundColor: PlatformColor('secondarySystemBackground'),
     paddingHorizontal: gap(4),
     paddingVertical: gap(2),
     borderRadius: 20,
@@ -608,12 +747,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 24,
-    backgroundColor: PlatformColor('systemGray8'),
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
   },
   buttonText: {
-    color: PlatformColor('label'),
     fontSize: 20,
     fontWeight: '500',
   },
@@ -629,24 +765,19 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: PlatformColor('systemBackground'),
     borderBottomWidth: 1,
-    borderBottomColor: PlatformColor('separator'),
   },
   headerText: {
     fontSize: 18,
     fontWeight: '600',
-    color: PlatformColor('label'),
   },
   attachment: {
-    backgroundColor: PlatformColor('systemGray3'),
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
     height: 80,
     width: 80,
     borderWidth: 1,
-    borderColor: PlatformColor('separator'),
     borderCurve: 'continuous',
   },
   attachmentsContainer: {
@@ -658,7 +789,6 @@ const styles = StyleSheet.create({
   },
   attachmentText: {
     fontSize: 14,
-    color: PlatformColor('secondaryLabel'),
     fontWeight: '500',
   },
 });

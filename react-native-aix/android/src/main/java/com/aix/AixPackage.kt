@@ -16,7 +16,11 @@ public class AixPackage : TurboReactPackage() {
   
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
     val viewManagers = ArrayList<ViewManager<*, *>>()
-    viewManagers.add(HybridAixManager())
+    viewManagers.add(CustomAixManager())
+    viewManagers.add(CustomAixCellViewManager())
+    viewManagers.add(CustomAixComposerManager())
+    viewManagers.add(CustomAixInputWrapperManager())
+    viewManagers.add(CustomAixDropzoneManager())
     return viewManagers
   }
 

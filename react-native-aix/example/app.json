@@ -1,4 +1,11 @@
 {
   "name": "AixExample",
-  "displayName": "AixExample"
+  "displayName": "AixExample",
+  "expo": {
+    "name": "AixExample",
+    "slug": "aix-example",
+    "android": {
+      "package": "com.aixexample"
+    }
+  }
 }
