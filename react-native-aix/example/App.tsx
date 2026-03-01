@@ -204,6 +204,8 @@ function LegendListCellRenderer({
 
 function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
+  const colorScheme = useColorScheme();
+  const isAndroidDarkMode = Platform.OS === 'android' && colorScheme === 'dark';
 
   const { messages, setMessages } = useMessages();
   const [isNearEnd, setIsNearEnd] = useState(false);
@@ -319,7 +321,10 @@ function Chat({ children }: { children: React.ReactNode }) {
             console.log('onScrolledNearEndChange', isNearEnd);
             setIsNearEnd(isNearEnd);
           }}
-          style={styles.container}
+          style={[
+            styles.container,
+            isAndroidDarkMode && styles.androidDarkBackground,
+          ]}
           ref={aix}
           additionalContentInsets={{
             bottom: {
@@ -378,7 +383,6 @@ function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
   const { addAttachments } = useAttachments();
   return (
     <AixDropzone
-      style={{ flex: 1 }}
       onDrop={events => {
         console.log('onDrop', events);
         addAttachments(events);
@@ -678,6 +682,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 60 : 0,
+  },
+  androidDarkBackground: {
+    backgroundColor: '#000000',
   },
   view: {
     width: 200,
