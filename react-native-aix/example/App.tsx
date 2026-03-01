@@ -32,7 +32,7 @@ import {
   useContentInsetHandler,
   type AixInputWrapperOnPasteEvent,
 } from 'aix';
-import { useAppleChat, useMessages } from './src/apple';
+import { useLlmAdapter, useLlmMessages } from './src/llm-adapter';
 import {
   KeyboardProvider,
   useReanimatedKeyboardAnimation,
@@ -214,9 +214,9 @@ function Chat({ children }: { children: React.ReactNode }) {
   const colorScheme = useColorScheme();
   const isAndroidDarkMode = Platform.OS === 'android' && colorScheme === 'dark';
 
-  const { messages, setMessages } = useMessages();
+  const { messages, setMessages } = useLlmMessages();
   const [isNearEnd, setIsNearEnd] = useState(false);
-  const { send } = useAppleChat({ setMessages, messages });
+  const { send } = useLlmAdapter({ setMessages, messages });
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
   );
