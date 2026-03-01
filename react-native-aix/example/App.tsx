@@ -144,6 +144,13 @@ const AttachmentsContext = createContext<AttachmentsContextType>({
   clearAttachments: () => {},
 });
 
+type AixDropzoneWithRuntimeStyleProps = React.ComponentProps<typeof AixDropzone> & {
+  style?: React.ComponentProps<typeof View>['style'];
+};
+
+const AixDropzoneWithRuntimeStyle =
+  AixDropzone as unknown as React.ComponentType<AixDropzoneWithRuntimeStyleProps>;
+
 function useAttachments() {
   return useContext(AttachmentsContext);
 }
@@ -346,7 +353,7 @@ function Chat({ children }: { children: React.ReactNode }) {
           })}
         >
           {children}
-          {examples.scrollview()}
+          {examples.legendList()}
           <AixFooter
             style={styles.footer}
             fixInput
@@ -382,14 +389,15 @@ function Chat({ children }: { children: React.ReactNode }) {
 function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
   const { addAttachments } = useAttachments();
   return (
-    <AixDropzone
+    <AixDropzoneWithRuntimeStyle
+      style={{ flex: 1 }}
       onDrop={events => {
         console.log('onDrop', events);
         addAttachments(events);
       }}
     >
       {children}
-    </AixDropzone>
+    </AixDropzoneWithRuntimeStyle>
   );
 }
 
