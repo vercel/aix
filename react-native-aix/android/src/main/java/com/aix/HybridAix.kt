@@ -12,6 +12,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.views.scroll.ReactScrollView
 import com.facebook.react.views.view.ReactViewGroup
 import com.margelo.nitro.aix.*
+import kotlin.math.min
 import kotlin.math.max
 
 @Keep
@@ -33,6 +34,9 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         override fun onDetachedFromWindow() {
             super.onDetachedFromWindow()
             ViewCompat.setOnApplyWindowInsetsListener(this, null)
+            ViewCompat.setWindowInsetsAnimationCallback(this, null)
+            detachScrollViewListeners()
+            cachedScrollView = null
         }
     }
 
@@ -44,10 +48,13 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
     
     override var keyboardHeight: Float = 0f
     override var keyboardHeightWhenOpen: Float = 0f
+    private var keyboardProgress: Float = 0f
 
     private var composerHeight: Float = 0f
     private val cells = mutableMapOf<Int, HybridAixCellView>()
     private var cachedScrollView: ReactScrollView? = null
+    private var isImeAnimationRunning: Boolean = false
+    private var runningImeAnimationsCount: Int = 0
 
     // Props
     override var shouldStartAtEnd: Boolean = true
@@ -166,6 +173,15 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         return cachedScrollView
     }
 
+    private fun detachScrollViewListeners() {
+        cachedScrollView?.viewTreeObserver?.let { observer ->
+            if (observer.isAlive) {
+                observer.removeOnGlobalLayoutListener(layoutListener)
+                observer.removeOnScrollChangedListener(scrollListener)
+            }
+        }
+    }
+
     private fun findScrollViewRecursive(v: View): ReactScrollView? {
         if (v is ReactScrollView) {
             val id = mainScrollViewID
@@ -252,51 +268,86 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         onScrolledNearEndChange?.invoke(isNearEnd)
     }
 
+    private fun applyKeyboardFrame(imeHeight: Float, imeVisible: Boolean) {
+        val nextKeyboardHeight = if (imeVisible) imeHeight else 0f
+        keyboardHeight = nextKeyboardHeight
+
+        if (imeVisible && imeHeight > keyboardHeightWhenOpen) {
+            keyboardHeightWhenOpen = imeHeight
+        }
+
+        if (!imeVisible && !isImeAnimationRunning) {
+            keyboardHeightWhenOpen = 0f
+        }
+
+        keyboardProgress = if (keyboardHeightWhenOpen > 0f) {
+            min(1f, nextKeyboardHeight / keyboardHeightWhenOpen)
+        } else {
+            0f
+        }
+
+        updateBlankSizeAndScroll()
+        composerView?.view?.translationY = -nextKeyboardHeight
+    }
+
     private fun setupKeyboardInsets() {
+        val imeType = WindowInsetsCompat.Type.ime()
+
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
-            val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom.toFloat()
-            
-            if (imeVisible) {
-                keyboardHeight = imeHeight
-                if (imeHeight > keyboardHeightWhenOpen) {
-                    keyboardHeightWhenOpen = imeHeight
-                }
-            } else {
-                keyboardHeight = 0f
+            if (!isImeAnimationRunning) {
+                val imeHeight = insets.getInsets(imeType).bottom.toFloat()
+                val imeVisible = insets.isVisible(imeType) && imeHeight > 0f
+                applyKeyboardFrame(imeHeight, imeVisible)
             }
-            
-            updateBlankSizeAndScroll()
-            composerView?.view?.translationY = -keyboardHeight // Simulating sticky composer
-            
+
             insets
         }
 
         ViewCompat.setWindowInsetsAnimationCallback(
             view,
-            object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+            object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+                override fun onPrepare(animation: WindowInsetsAnimationCompat) {
+                    super.onPrepare(animation)
+                    if ((animation.typeMask and imeType) == 0) return
+                    runningImeAnimationsCount += 1
+                    isImeAnimationRunning = true
+                }
+
                 override fun onProgress(
                     insets: WindowInsetsCompat,
                     runningAnimations: MutableList<WindowInsetsAnimationCompat>
                 ): WindowInsetsCompat {
-                    val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-                    val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom.toFloat()
-
-                    keyboardHeight = imeHeight
-                    if (imeVisible && imeHeight > keyboardHeightWhenOpen) {
-                        keyboardHeightWhenOpen = imeHeight
+                    val hasImeAnimation = runningAnimations.any { animation ->
+                        (animation.typeMask and imeType) != 0
+                    }
+                    if (!hasImeAnimation) {
+                        return insets
                     }
 
-                    updateBlankSizeAndScroll()
-                    composerView?.view?.translationY = -keyboardHeight
+                    val imeHeight = insets.getInsets(imeType).bottom.toFloat()
+                    val imeVisible = insets.isVisible(imeType) || imeHeight > 0f
+
+                    applyKeyboardFrame(imeHeight, imeVisible)
 
                     return insets
                 }
 
                 override fun onEnd(animation: WindowInsetsAnimationCompat) {
                     super.onEnd(animation)
-                    if (queuedScrollToEnd?.waitForKeyboardToEnd == true) {
-                        flushQueuedScrollToEnd(force = true)
+                    if ((animation.typeMask and imeType) == 0) return
+
+                    runningImeAnimationsCount = max(0, runningImeAnimationsCount - 1)
+                    if (runningImeAnimationsCount == 0) {
+                        isImeAnimationRunning = false
+
+                        val rootInsets = ViewCompat.getRootWindowInsets(view)
+                        val imeHeight = rootInsets?.getInsets(imeType)?.bottom?.toFloat() ?: 0f
+                        val imeVisible = (rootInsets?.isVisible(imeType) == true) && imeHeight > 0f
+                        applyKeyboardFrame(imeHeight, imeVisible)
+
+                        if (queuedScrollToEnd?.waitForKeyboardToEnd == true) {
+                            flushQueuedScrollToEnd(force = true)
+                        }
                     }
                 }
             }
