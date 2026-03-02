@@ -28,6 +28,8 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
 
+            // Initial snapshot once the view is in the window.
+            snapshotViewBottomOffset()
             setupKeyboardInsets()
         }
 
@@ -55,6 +57,15 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
     private var cachedScrollView: ReactScrollView? = null
     private var isImeAnimationRunning: Boolean = false
     private var runningImeAnimationsCount: Int = 0
+
+    /**
+     * Distance from the Aix view's bottom edge to the window bottom (e.g. the
+     * height of a native tab bar sitting below the view).  Snapshotted once in
+     * `onPrepare` before the keyboard animation starts so that `adjustResize`
+     * layout changes don't corrupt the value mid-animation.
+     */
+    private var cachedViewBottomOffset: Float = 0f
+    private val locationBuffer = IntArray(2)
 
     // Props
     override var shouldStartAtEnd: Boolean = true
@@ -224,7 +235,11 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         }
 
         val blankViewHeight = blankView?.view?.height?.toFloat() ?: 0f
-        val additionalBottom = additionalContentInsets?.bottom?.whenKeyboardClosed?.toFloat() ?: 0f // simplified
+        // Interpolate additional bottom inset between keyboard-closed and keyboard-open values
+        val bottomInsets = additionalContentInsets?.bottom
+        val additionalBottomClosed = bottomInsets?.whenKeyboardClosed?.toFloat() ?: 0f
+        val additionalBottomOpen = bottomInsets?.whenKeyboardOpen?.toFloat() ?: 0f
+        val additionalBottom = additionalBottomClosed + (additionalBottomOpen - additionalBottomClosed) * keyboardProgress
         
         val inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight - additionalBottom
         val blankSize = max(0f, inset)
@@ -268,12 +283,37 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         onScrolledNearEndChange?.invoke(isNearEnd)
     }
 
+    /**
+     * Calculate how far the Aix view's bottom edge is from the window bottom.
+     * This accounts for any chrome below the view (e.g. a native tab bar).
+     * Reuses [locationBuffer] to avoid per-call allocation.
+     */
+    private fun measureViewBottomOffset(): Float {
+        view.getLocationInWindow(locationBuffer)
+        val viewBottom = locationBuffer[1] + view.height
+        val windowHeight = view.rootView.height
+        return max(0f, (windowHeight - viewBottom).toFloat())
+    }
+
+    /** Refresh the cached offset — called before keyboard animations and on layout. */
+    private fun snapshotViewBottomOffset() {
+        cachedViewBottomOffset = measureViewBottomOffset()
+    }
+
     private fun applyKeyboardFrame(imeHeight: Float, imeVisible: Boolean) {
-        val nextKeyboardHeight = if (imeVisible) imeHeight else 0f
+        // IME height from WindowInsetsCompat is relative to the window bottom.
+        // When the Aix view is not at the window bottom (e.g. native tab bar
+        // sits below it), we must subtract that offset so the composer lands
+        // flush against the keyboard instead of leaving a gap.
+        // We use a cached value snapshotted *before* the animation to avoid
+        // adjustResize layout changes corrupting the measurement mid-animation.
+        val adjustedImeHeight = max(0f, imeHeight - cachedViewBottomOffset)
+
+        val nextKeyboardHeight = if (imeVisible) adjustedImeHeight else 0f
         keyboardHeight = nextKeyboardHeight
 
-        if (imeVisible && imeHeight > keyboardHeightWhenOpen) {
-            keyboardHeightWhenOpen = imeHeight
+        if (imeVisible && adjustedImeHeight > keyboardHeightWhenOpen) {
+            keyboardHeightWhenOpen = adjustedImeHeight
         }
 
         if (!imeVisible && !isImeAnimationRunning) {
@@ -287,7 +327,15 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         }
 
         updateBlankSizeAndScroll()
-        composerView?.view?.translationY = -nextKeyboardHeight
+
+        // Apply stickToKeyboard offset (matching iOS behaviour in
+        // HybridAixComposer.swift → applyKeyboardTransform).
+        val offset = composerView?.stickToKeyboard?.offset
+        val offsetWhenClosed = offset?.whenKeyboardClosed?.toFloat() ?: 0f
+        val offsetWhenOpen = offset?.whenKeyboardOpen?.toFloat() ?: 0f
+        val currentOffset = offsetWhenClosed + (offsetWhenOpen - offsetWhenClosed) * keyboardProgress
+
+        composerView?.view?.translationY = -(nextKeyboardHeight + currentOffset)
     }
 
     private fun setupKeyboardInsets() {
@@ -295,6 +343,8 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
 
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
             if (!isImeAnimationRunning) {
+                // No animation running — safe to re-measure the view position.
+                snapshotViewBottomOffset()
                 val imeHeight = insets.getInsets(imeType).bottom.toFloat()
                 val imeVisible = insets.isVisible(imeType) && imeHeight > 0f
                 applyKeyboardFrame(imeHeight, imeVisible)
@@ -309,6 +359,10 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
                 override fun onPrepare(animation: WindowInsetsAnimationCompat) {
                     super.onPrepare(animation)
                     if ((animation.typeMask and imeType) == 0) return
+                    // Snapshot the view's position before the system applies
+                    // adjustResize layout changes, so measurements stay stable
+                    // for the duration of the animation.
+                    snapshotViewBottomOffset()
                     runningImeAnimationsCount += 1
                     isImeAnimationRunning = true
                 }
@@ -339,6 +393,9 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
                     runningImeAnimationsCount = max(0, runningImeAnimationsCount - 1)
                     if (runningImeAnimationsCount == 0) {
                         isImeAnimationRunning = false
+
+                        // Re-snapshot now that adjustResize has settled.
+                        snapshotViewBottomOffset()
 
                         val rootInsets = ViewCompat.getRootWindowInsets(view)
                         val imeHeight = rootInsets?.getInsets(imeType)?.bottom?.toFloat() ?: 0f
