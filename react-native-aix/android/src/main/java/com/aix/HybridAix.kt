@@ -246,13 +246,6 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
 
         val totalInsetBottom = blankSize + keyboardHeight + composerHeight + additionalBottom
 
-        scrollView.setPadding(
-            scrollView.paddingLeft,
-            scrollView.paddingTop,
-            scrollView.paddingRight,
-            totalInsetBottom.toInt()
-        )
-        
         val insets = AixContentInsets(
             top = 0.0,
             left = null,
@@ -260,6 +253,18 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
             right = null
         )
         onWillApplyContentInsets?.invoke(insets)
+
+        // If shouldApplyContentInsets is explicitly false, fire callback but skip padding
+        if (shouldApplyContentInsets == false) {
+            return
+        }
+
+        scrollView.setPadding(
+            scrollView.paddingLeft,
+            scrollView.paddingTop,
+            scrollView.paddingRight,
+            totalInsetBottom.toInt()
+        )
     }
 
     private fun scrollToEndInternal(animated: Boolean) {
