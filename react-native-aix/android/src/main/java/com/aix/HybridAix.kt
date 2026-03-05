@@ -67,6 +67,22 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
     private var cachedViewBottomOffset: Float = 0f
     private val locationBuffer = IntArray(2)
 
+    /**
+     * Tracks whether we've performed the initial scroll-to-end.
+     * Mirrors iOS `didScrollToEndInitiallyForId` — keyed by mainScrollViewID
+     * so it resets if the scroll view identity changes.
+     */
+    private var didScrollToEndInitiallyForId: String? = null
+    private val didScrollToEndInitially: Boolean
+        get() = didScrollToEndInitiallyForId == (mainScrollViewID ?: "")
+
+    /**
+     * Set when `reportBlankViewSizeChange` fires during a keyboard animation.
+     * The actual initial scroll is deferred until the animation ends so that
+     * the scroll offset is computed with the final keyboard-adjusted padding.
+     */
+    private var blankViewHasReported: Boolean = false
+
     // Props
     override var shouldStartAtEnd: Boolean = true
     override var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate? = null
@@ -128,10 +144,28 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
     }
 
     override fun reportBlankViewSizeChange(height: Float, index: Int) {
-        updateBlankSizeAndScroll()
-        queuedScrollToEnd?.let { queued ->
-            if (index == queued.index) {
-                flushQueuedScrollToEnd()
+        if (!didScrollToEndInitially) {
+            // First blank-view report: apply insets and scroll to end.
+            // If a keyboard animation is in flight or about to start, the
+            // scroll position may be wrong.  We set a flag so that each
+            // subsequent updateBlankSizeAndScroll (triggered by keyboard
+            // progress) re-scrolls until the keyboard settles.
+            blankViewHasReported = true
+            updateBlankSizeAndScroll()
+            scrollToEndInternal(animated = false)
+            updateScrolledNearEndState()
+            didScrollToEndInitiallyForId = mainScrollViewID ?: ""
+
+            // Clear the re-scroll flag after a short delay.  If a keyboard
+            // animation is in flight, onEnd will clear it first; otherwise
+            // this ensures we stop re-scrolling once the initial layout is done.
+            view.postDelayed({ blankViewHasReported = false }, 500)
+        } else {
+            updateBlankSizeAndScroll()
+            queuedScrollToEnd?.let { queued ->
+                if (index == queued.index) {
+                    flushQueuedScrollToEnd()
+                }
             }
         }
     }
@@ -166,6 +200,11 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
     override fun reportComposerHeightChange(height: Float) {
         if (composerHeight == height) return
         composerHeight = height
+
+        // Before the initial scroll-to-end, just record the height and let
+        // reportBlankViewSizeChange handle the first layout pass (mirrors iOS).
+        if (!didScrollToEndInitially) return
+
         updateBlankSizeAndScroll()
     }
 
@@ -218,9 +257,7 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
 
     private fun updateBlankSizeAndScroll() {
         val scrollView = findScrollView() ?: return
-        val contentContainer = scrollView.getChildAt(0) as? ViewGroup ?: return
 
-        val visibleAreaHeight = scrollView.height - keyboardHeight - composerHeight
         var cellsBeforeBlankViewHeight = 0f
 
         val startIndex = penultimateCellIndex?.toInt() ?: ((blankView?.index?.toInt() ?: 1) - 1)
@@ -235,41 +272,86 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         }
 
         val blankViewHeight = blankView?.view?.height?.toFloat() ?: 0f
-        // Interpolate additional bottom inset between keyboard-closed and keyboard-open values
+
+        // Interpolate additional bottom inset (mirrors iOS additionalContentInsetBottom).
+        // Clamped to >= 0, matching the max(0, ...) on iOS.
         val bottomInsets = additionalContentInsets?.bottom
         val additionalBottomClosed = bottomInsets?.whenKeyboardClosed?.toFloat() ?: 0f
         val additionalBottomOpen = bottomInsets?.whenKeyboardOpen?.toFloat() ?: 0f
-        val additionalBottom = additionalBottomClosed + (additionalBottomOpen - additionalBottomClosed) * keyboardProgress
-        
-        val inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight - additionalBottom
+        val additionalBottom = max(0f, additionalBottomClosed + (additionalBottomOpen - additionalBottomClosed) * keyboardProgress)
+
+        // Interpolate additional top inset (mirrors iOS additionalContentInsetTop).
+        // No clamp — top can legitimately be negative, matching iOS behaviour.
+        val topInsets = additionalContentInsets?.top
+        val additionalTopClosed = topInsets?.whenKeyboardClosed?.toFloat() ?: 0f
+        val additionalTopOpen = topInsets?.whenKeyboardOpen?.toFloat() ?: 0f
+        val additionalTop = additionalTopClosed + (additionalTopOpen - additionalTopClosed) * keyboardProgress
+
+        val visibleAreaHeight = scrollView.height - keyboardHeight - composerHeight - additionalBottom
+        val inset = visibleAreaHeight - blankViewHeight - cellsBeforeBlankViewHeight
         val blankSize = max(0f, inset)
 
         val totalInsetBottom = blankSize + keyboardHeight + composerHeight + additionalBottom
 
+        // Fire the callback before (potentially) applying, matching iOS applyContentInset order.
         val insets = AixContentInsets(
-            top = 0.0,
+            top = additionalTop.toDouble(),
             left = null,
             bottom = totalInsetBottom.toDouble(),
             right = null
         )
         onWillApplyContentInsets?.invoke(insets)
 
-        // If shouldApplyContentInsets is explicitly false, fire callback but skip padding
-        if (shouldApplyContentInsets == false) {
-            return
+        // If shouldApplyContentInsets is explicitly false, skip the actual padding update,
+        // matching iOS behaviour where the callback fires but contentInset is not mutated.
+        if (shouldApplyContentInsets == false) return
+
+        val contentContainer = scrollView.getChildAt(0)
+        val applyInsets = {
+            // Top inset: translate the content container down to create empty space
+            // above the first message.  This mirrors React Native's own approach in
+            // ReactScrollView.setScrollAwayTopPaddingEnabledUnstable — Android's
+            // ScrollView doesn't support negative scroll offsets (unlike iOS
+            // contentInset.top), and Yoga positions the content container at (0,0)
+            // regardless of the parent ScrollView's paddingTop, so translationY on
+            // the content container + extra paddingBottom is the correct pattern.
+            val newTranslationY = additionalTop
+            if (contentContainer != null && contentContainer.translationY != newTranslationY) {
+                contentContainer.translationY = newTranslationY
+            }
+
+            // Bottom padding includes the top-inset offset so the scroll range
+            // accommodates the translated content.  ReactScrollView.getMaxScrollY()
+            // uses (contentHeight - (height - paddingBottom - paddingTop)), so the
+            // extra additionalTop in paddingBottom extends the scroll range to match
+            // the visual content shift.
+            val newPaddingBottom = (totalInsetBottom + additionalTop).toInt()
+            if (scrollView.paddingBottom != newPaddingBottom) {
+                scrollView.setPadding(
+                    scrollView.paddingLeft,
+                    0,
+                    scrollView.paddingRight,
+                    newPaddingBottom
+                )
+            }
         }
 
-        scrollView.setPadding(
-            scrollView.paddingLeft,
-            scrollView.paddingTop,
-            scrollView.paddingRight,
-            totalInsetBottom.toInt()
-        )
+        // Apply with optional delay, matching iOS applyContentInsetDelay behaviour.
+        val delay = applyContentInsetDelay
+        if (delay != null && delay > 0) {
+            scrollView.postDelayed(applyInsets, delay.toLong())
+        } else {
+            applyInsets()
+        }
     }
 
     private fun scrollToEndInternal(animated: Boolean) {
         val scrollView = findScrollView() ?: return
         val contentContainer = scrollView.getChildAt(0) ?: return
+        // Max scroll offset: the content container's layout height (translationY
+        // is visual-only and does not affect layout height) plus paddingBottom
+        // (which already includes additionalTop to compensate for translationY)
+        // minus the scroll view's own height.
         val bottomOffset = max(0, contentContainer.height - scrollView.height + scrollView.paddingBottom)
         if (animated) {
             scrollView.smoothScrollTo(0, bottomOffset)
@@ -331,16 +413,33 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
             0f
         }
 
+        // Before the initial scroll-to-end, just record the keyboard state and
+        // apply insets/composer without the full keyboard animation logic.
+        // Mirrors iOS handleKeyboardDidShow gating on didScrollToEndInitially.
+        if (!didScrollToEndInitially) {
+            updateBlankSizeAndScroll()
+            composerView?.view?.translationY = -(nextKeyboardHeight + computeComposerOffset())
+            return
+        }
+
         updateBlankSizeAndScroll()
 
-        // Apply stickToKeyboard offset (matching iOS behaviour in
-        // HybridAixComposer.swift → applyKeyboardTransform).
+        // If the initial scroll just happened but the keyboard is still
+        // animating, keep the scroll position pinned to the end so the
+        // user sees the last message once the keyboard settles.
+        if (blankViewHasReported) {
+            scrollToEndInternal(animated = false)
+        }
+
+        composerView?.view?.translationY = -(nextKeyboardHeight + computeComposerOffset())
+    }
+
+    /** Compute the interpolated stickToKeyboard offset for the composer. */
+    private fun computeComposerOffset(): Float {
         val offset = composerView?.stickToKeyboard?.offset
         val offsetWhenClosed = offset?.whenKeyboardClosed?.toFloat() ?: 0f
         val offsetWhenOpen = offset?.whenKeyboardOpen?.toFloat() ?: 0f
-        val currentOffset = offsetWhenClosed + (offsetWhenOpen - offsetWhenClosed) * keyboardProgress
-
-        composerView?.view?.translationY = -(nextKeyboardHeight + currentOffset)
+        return offsetWhenClosed + (offsetWhenOpen - offsetWhenClosed) * keyboardProgress
     }
 
     private fun setupKeyboardInsets() {
@@ -406,6 +505,16 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
                         val imeHeight = rootInsets?.getInsets(imeType)?.bottom?.toFloat() ?: 0f
                         val imeVisible = (rootInsets?.isVisible(imeType) == true) && imeHeight > 0f
                         applyKeyboardFrame(imeHeight, imeVisible)
+
+                        // Flush deferred initial scroll now that keyboard has settled
+                        // and paddingBottom reflects the final keyboard height.
+                        if (blankViewHasReported) {
+                            blankViewHasReported = false
+                            if (didScrollToEndInitially) {
+                                scrollToEndInternal(animated = false)
+                                updateScrolledNearEndState()
+                            }
+                        }
 
                         if (queuedScrollToEnd?.waitForKeyboardToEnd == true) {
                             flushQueuedScrollToEnd(force = true)
