@@ -24,6 +24,7 @@ export function Aix(props: React.ComponentProps<typeof native.Aix>) {
   const didScrollInitiallyForId = useRef<string | null>(null)
   useEffect(
     function scrollInitially() {
+      if (!shouldStartAtEnd) return
       const id = resolveSharedValue(mainScrollViewID)
       if (!id) return
       if (didScrollInitiallyForId.current === id) return
@@ -199,7 +200,7 @@ export function Aix(props: React.ComponentProps<typeof native.Aix>) {
       const scrollView = getScrollView(ref.current, mainScrollViewIDValue)
       if (!scrollView) return
 
-      const aixItemToScrollTo = ref.current.querySelector(`[data-aix-item="${scrollToIndexValue}"]`)
+      const aixItemToScrollTo = ref.current.querySelector(`[data-aix-cell="${scrollToIndexValue}"]`)
       if (!aixItemToScrollTo) return
 
       const scrollViewRect = scrollView.getBoundingClientRect()
