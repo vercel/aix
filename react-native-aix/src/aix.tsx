@@ -1,7 +1,9 @@
 'use client'
-import { useCallback, useEffect, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
 import type * as native from './aix.native'
 import type { SharedValue } from 'react-native-reanimated'
+
+const useServerEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export function Aix(props: React.ComponentProps<typeof native.Aix>) {
   const {
@@ -15,15 +17,22 @@ export function Aix(props: React.ComponentProps<typeof native.Aix>) {
     mainScrollViewID,
     shouldApplyContentInsets,
     shouldStartAtEnd,
-    style,
     penultimateCellIndex,
     ...rest
   } = props
 
+  if (typeof window === 'undefined') {
+    console.warn(`
+Aix is not supported on the server.
+
+Consider lazy loading or waiting until the component is mounted to render <Aix />.
+`)
+  }
+
   const ref = useRef<HTMLDivElement>(null)
 
   const didScrollInitiallyForId = useRef<string | null>(null)
-  useEffect(
+  useServerEffect(
     function scrollInitially() {
       if (!shouldStartAtEnd) return
       const id = resolveSharedValue(mainScrollViewID)
@@ -218,7 +227,7 @@ export function Aix(props: React.ComponentProps<typeof native.Aix>) {
     [mainScrollViewID, scrollToIndex],
   )
 
-  return <div {...(rest as any)} ref={ref} />
+  return <div data-aix {...(rest as any)} ref={ref} />
 }
 
 function useStableCallback<T extends (...args: any[]) => any>(callback: T) {
