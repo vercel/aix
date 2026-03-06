@@ -21,15 +21,15 @@ class HybridAixComposer: HybridAixComposerSpec {
             if let ctx = cachedAixContext {
                 applyKeyboardTransform(height: ctx.keyboardHeight, heightWhenOpen: ctx.keyboardHeightWhenOpen, animated: false)
             }
+            // Re-apply text input fixes (content inset adjustment depends on stickToKeyboard)
+            applyTextInputFixes()
         }
     }
 
     var fixInput: Bool? = nil {
         didSet {
             cachedTextInput = nil
-            if fixInput == true {
-                resolveTextInput()
-            }
+            applyTextInputFixes()
         }
     }
 
@@ -141,8 +141,8 @@ class HybridAixComposer: HybridAixComposerSpec {
             applyKeyboardTransform(height: ctx.keyboardHeight, heightWhenOpen: ctx.keyboardHeightWhenOpen, animated: false)
         }
 
-        // Resolve text input once the hierarchy is connected
-        resolveTextInput()
+        // Apply text input fixes once the hierarchy is connected
+        applyTextInputFixes()
     }
 
     /// Called when the view is about to be removed from superview
@@ -179,12 +179,20 @@ class HybridAixComposer: HybridAixComposerSpec {
         return input
     }
 
-    /// Resolve the text input and apply patches
-    private func resolveTextInput() {
-        print("[Aix] resolveTextInput: fixInput=\(fixInput), textInput=\(textInput)")
-        guard fixInput == true, let input = textInput else { return }
+    /// Apply fixes to the text input based on current props
+    private func applyTextInputFixes() {
+        guard let input = textInput else { return }
         guard let scrollView = input as? UIScrollView else { return }
-        print("[Aix] resolveTextInput: scrollView=\(scrollView)")
+
+        // When stickToKeyboard is enabled, the footer uses transforms to position above keyboard.
+        // iOS calculates safe area based on frame (not visual position), so it incorrectly adds
+        // bottom safe area insets. Disable automatic adjustment since we manage positioning.
+        if stickToKeyboard?.enabled == true {
+            scrollView.contentInsetAdjustmentBehavior = .never
+        }
+
+        // Apply fixInput patches
+        guard fixInput == true else { return }
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.bounces = false

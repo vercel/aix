@@ -326,7 +326,7 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     }
 
     private func calculateBlankSize(keyboardHeight: CGFloat, additionalContentInsetBottom: CGFloat) -> CGFloat {
-        guard let scrollView, let blankView else { 
+        guard let scrollView, let blankView else {
             return lastCalculatedBlankSize
         }
 
@@ -646,7 +646,26 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             return
         }
 
-        // Skip when animated scroll is in progress to avoid interfering
+        // Check if this blankView matches the scrollToIndex target
+        // This handles the case where isLast prop updates after cell registration
+        if let target = scrollToIndexTarget, target == index {
+            let isKeyboardTransitioning = startEvent != nil
+            print("[Aix] reportBlankViewSizeChange - scrollToIndex target matches")
+
+            applyAllInsets()
+
+            if isKeyboardTransitioning {
+                print("[Aix] reportBlankViewSizeChange - deferring animated scroll until keyboard animation completes")
+                pendingAnimatedScroll = true
+            } else {
+                scrollToEndInternal(animated: true) { [weak self] in
+                    self?.onDidScrollToIndex?()
+                }
+            }
+            return
+        }
+
+        // Skip regular inset updates when animated scroll is in progress to avoid interfering
         if scrollToIndexTarget != nil {
             print("[Aix] reportBlankViewSizeChange - skipping, scrollToIndex active")
             return
@@ -740,8 +759,27 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         cells.setObject(cell, forKey: NSNumber(value: cell.index))
 
         if cell.isLast {
-            print("[Aix] registerCell - this is blankView, setting and reporting size")
+            print("[Aix] registerCell - this is blankView")
             blankView = cell
+
+            // Check if this blankView matches the scrollToIndex target
+            if let target = scrollToIndexTarget, target == Int(cell.index) {
+                let isKeyboardTransitioning = startEvent != nil
+                print("[Aix] registerCell - scrollToIndex target matches!")
+
+                applyAllInsets()
+
+                if isKeyboardTransitioning {
+                    print("[Aix] registerCell - deferring animated scroll until keyboard animation completes")
+                    pendingAnimatedScroll = true
+                } else {
+                    scrollToEndInternal(animated: true) { [weak self] in
+                        self?.onDidScrollToIndex?()
+                    }
+                }
+                return
+            }
+
             let currentSize = cell.view.bounds.size
             reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
         } else if !didScrollToEndInitially {
