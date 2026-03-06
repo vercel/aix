@@ -1,3 +1,4 @@
+'use client'
 import type { HybridRef } from 'react-native-nitro-modules'
 import type { AixProps, AixMethods } from './views/aix.nitro'
 import { useRef } from 'react'

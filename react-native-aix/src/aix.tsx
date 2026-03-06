@@ -1,3 +1,4 @@
+'use client'
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import type * as native from './aix.native'
 import type { SharedValue } from 'react-native-reanimated'
