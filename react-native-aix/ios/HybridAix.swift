@@ -649,19 +649,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         // Check if this blankView matches the scrollToIndex target
         // This handles the case where isLast prop updates after cell registration
         if let target = scrollToIndexTarget, target == index {
-            let isKeyboardTransitioning = startEvent != nil
             print("[Aix] reportBlankViewSizeChange - scrollToIndex target matches")
-
-            applyAllInsets()
-
-            if isKeyboardTransitioning {
-                print("[Aix] reportBlankViewSizeChange - deferring animated scroll until keyboard animation completes")
-                pendingAnimatedScroll = true
-            } else {
-                scrollToEndInternal(animated: true) { [weak self] in
-                    self?.onDidScrollToIndex?()
-                }
-            }
+            performScrollToIndex()
             return
         }
 
@@ -762,59 +751,40 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             print("[Aix] registerCell - this is blankView")
             blankView = cell
 
-            // Check if this blankView matches the scrollToIndex target
             if let target = scrollToIndexTarget, target == Int(cell.index) {
-                let isKeyboardTransitioning = startEvent != nil
                 print("[Aix] registerCell - scrollToIndex target matches!")
-
-                applyAllInsets()
-
-                if isKeyboardTransitioning {
-                    print("[Aix] registerCell - deferring animated scroll until keyboard animation completes")
-                    pendingAnimatedScroll = true
-                } else {
-                    scrollToEndInternal(animated: true) { [weak self] in
-                        self?.onDidScrollToIndex?()
-                    }
-                }
+                performScrollToIndex()
                 return
             }
 
             let currentSize = cell.view.bounds.size
             reportBlankViewSizeChange(size: currentSize, index: Int(cell.index))
         } else if !didScrollToEndInitially {
-            // During initial mount, check if all cells are now registered
             print("[Aix] registerCell - during initial mount, checking completion")
             tryCompleteInitialLayout()
         } else {
-            // After initial layout, apply insets for blankSize compensation
             print("[Aix] registerCell - post-initial, applying insets")
 
-            // Only perform animated scroll when scrollToIndex is explicitly set.
-            // This happens when a new user message is added (becomes penultimate cell).
             if let target = scrollToIndexTarget, let blankView, target == Int(blankView.index) {
-                let isKeyboardTransitioning = startEvent != nil
                 print("[Aix] registerCell - scrollToIndex target matches")
-
-                applyAllInsets()
-
-                if isKeyboardTransitioning {
-                    // Keyboard is animating - defer our scroll to avoid conflicts
-                    // handleKeyboardDidMove will execute the scroll when keyboard animation ends
-                    print("[Aix] registerCell - deferring animated scroll until keyboard animation completes")
-                    pendingAnimatedScroll = true
-                    // onDidScrollToIndex will be called when keyboard animation completes
-                } else {
-                    // No keyboard animation - scroll immediately
-                    // Call onDidScrollToIndex after animation completes so scrollToIndexTarget
-                    // stays set during animation (used by skip logic in reportCellHeightChange)
-                    scrollToEndInternal(animated: true) { [weak self] in
-                        self?.onDidScrollToIndex?()
-                    }
-                }
+                performScrollToIndex()
             } else if scrollToIndexTarget == nil {
-                // Only apply insets when no animated scroll is active
                 applyAllInsets()
+            }
+        }
+    }
+
+    /// Performs animated scroll to end with proper keyboard transition handling.
+    /// If keyboard is animating, defers scroll until animation completes.
+    private func performScrollToIndex() {
+        applyAllInsets()
+
+        if startEvent != nil {
+            print("[Aix] performScrollToIndex - deferring until keyboard animation completes")
+            pendingAnimatedScroll = true
+        } else {
+            scrollToEndInternal(animated: true) { [weak self] in
+                self?.onDidScrollToIndex?()
             }
         }
     }
