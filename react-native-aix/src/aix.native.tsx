@@ -17,6 +17,7 @@ type AixComponentProps = Omit<
   onWillApplyContentInsets?: (insets: AixContentInsets) => void
   onScrolledNearEndChange?: (isNearEnd: boolean) => void
   onDidScrollToIndex?: () => void
+  debug?: 'all'
 }
 
 export const Aix = forwardRef<AixRef, AixComponentProps>(function Aix(props, ref) {

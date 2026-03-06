@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import type * as native from './aix.native'
 import type { SharedValue } from 'react-native-reanimated'
 
@@ -18,6 +18,7 @@ export function Aix(props: React.ComponentProps<typeof native.Aix>) {
     shouldApplyContentInsets,
     shouldStartAtEnd,
     penultimateCellIndex,
+    debug,
     ...rest
   } = props
 
@@ -32,38 +33,26 @@ Consider lazy loading or waiting until the component is mounted to render <Aix /
   const ref = useRef<HTMLDivElement>(null)
 
   const didScrollInitiallyForId = useRef<string | null>(null)
-  useServerEffect(
-    function scrollInitially() {
-      if (!shouldStartAtEnd) return
-      const id = resolveSharedValue(mainScrollViewID)
-      if (!id) return
-      if (didScrollInitiallyForId.current === id) return
-      if (!ref.current) return
-
-      const scrollView = getScrollView(ref.current, id)
-      if (!scrollView) return
-
-      const blankSize = calculateBlankSize()
-      applyBlankSizeChange(blankSize)
-
-      scrollView.scrollTo({
-        top: scrollView.scrollHeight - blankSize,
-        behavior: 'instant',
-      })
-
-      didScrollInitiallyForId.current = id
-    },
-    [mainScrollViewID],
-  )
 
   const cellHeights = useRef<Record<number, number>>({})
+  const getScroll = useCallback(() => {
+    if (!ref.current) return null
+    const mainScrollViewIDValue = resolveSharedValue(mainScrollViewID)
+    if (!mainScrollViewIDValue) return null
+    const scrollView = getScrollView(ref.current, mainScrollViewIDValue)
+    if (!scrollView) return null
+    return scrollView
+  }, [mainScrollViewID])
 
-  const applyBlankSizeChange = useCallback((blankSize: number) => {
-    const scrollView = getScroll()
-    if (!scrollView) return
+  const applyBlankSizeChange = useCallback(
+    (blankSize: number) => {
+      const scrollView = getScroll()
+      if (!scrollView) return
 
-    scrollView.style.paddingBottom = `${blankSize}px`
-  }, [])
+      scrollView.style.paddingBottom = `${blankSize}px`
+    },
+    [getScroll],
+  )
 
   useEffect(() => {
     const root = ref.current
@@ -125,15 +114,6 @@ Consider lazy loading or waiting until the component is mounted to render <Aix /
 
   const stableOnDidScrollToIndex = useStableCallback(() => onDidScrollToIndex?.())
 
-  const getScroll = useCallback(() => {
-    if (!ref.current) return null
-    const mainScrollViewIDValue = resolveSharedValue(mainScrollViewID)
-    if (!mainScrollViewIDValue) return null
-    const scrollView = getScrollView(ref.current, mainScrollViewIDValue)
-    if (!scrollView) return null
-    return scrollView
-  }, [mainScrollViewID])
-
   const getBlankView = useCallback(() => {
     const scrollView = getScroll()
     if (!scrollView) return null
@@ -193,8 +173,32 @@ Consider lazy loading or waiting until the component is mounted to render <Aix /
       beforeBlankView.totalHeight -
       blankView.view.getBoundingClientRect().height
 
-    return Math.max(0, blankSize)
+    const result = Math.max(0, blankSize)
+    console.log('[Aix] [calculateBlankSize]', result)
+    return result
   }, [getScroll])
+
+  useServerEffect(
+    function scrollInitially() {
+      if (!shouldStartAtEnd) return
+      const id = resolveSharedValue(mainScrollViewID)
+      if (!id) return
+      if (didScrollInitiallyForId.current === id) return
+
+      const scrollView = getScroll()
+      if (!scrollView) return
+
+      const blankSize = calculateBlankSize()
+      applyBlankSizeChange(blankSize)
+
+      // The blank space is represented as padding, so the correct target is the
+      // container's max scrollTop after that padding has been applied.
+      scrollView.scrollTop = Math.max(0, scrollView.scrollHeight - scrollView.clientHeight)
+
+      didScrollInitiallyForId.current = id
+    },
+    [applyBlankSizeChange, calculateBlankSize, getScroll, mainScrollViewID, shouldStartAtEnd],
+  )
 
   useEffect(
     function scroll() {
@@ -225,7 +229,24 @@ Consider lazy loading or waiting until the component is mounted to render <Aix /
     [mainScrollViewID, scrollToIndex],
   )
 
-  return <div data-aix {...(rest as any)} ref={ref} />
+  return (
+    <>
+      <div data-aix {...(rest as any)} ref={ref} />
+      {debug === 'all' && (
+        <div
+          data-aix-debug
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            right: 0,
+            backgroundColor: 'red',
+            zIndex: 1000,
+            padding: 16,
+          }}
+        />
+      )}
+    </>
+  )
 }
 
 function useStableCallback<T extends (...args: any[]) => any>(callback: T) {
