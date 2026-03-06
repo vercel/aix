@@ -155,11 +155,9 @@ Consider lazy loading or waiting until the component is mounted to render <Aix /
     if (!ref.current) return null
 
     const cells = Array.from(ref.current.querySelectorAll(`[data-aix-cell]`))
-    const penultimateIndex = resolveSharedValue(penultimateCellIndex)
+    const penultimateIndex = resolveSharedValue(penultimateCellIndex) ?? index - 1
 
-    if (penultimateIndex == null) return null
-
-    let sinceIndex = penultimateIndex ?? index - 1
+    let sinceIndex = penultimateIndex
 
     let cellsBeforeBlankView: ({ cell: Element } & { height: number })[] = []
 
