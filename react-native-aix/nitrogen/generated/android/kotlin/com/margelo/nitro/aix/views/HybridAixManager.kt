@@ -12,7 +12,7 @@ import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
-import com.aix.*
+import com.margelo.nitro.aix.*
 
 /**
  * Represents the React Native `ViewManager` for the "Aix" Nitro HybridView.

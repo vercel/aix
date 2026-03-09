@@ -20,8 +20,8 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
 
-#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include "JAixScrollOnFooterSizeUpdate.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "JAixAdditionalContentInsetsProp.hpp"
@@ -69,14 +69,14 @@ namespace margelo::nitro::aix {
   }
 
   // Properties
-  bool JHybridAixSpec::getShouldStartAtEnd() {
-    static const auto method = javaClassStatic()->getMethod<jboolean()>("getShouldStartAtEnd");
+  std::optional<double> JHybridAixSpec::getStartAtCellIndex() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JDouble>()>("getStartAtCellIndex");
     auto __result = method(_javaPart);
-    return static_cast<bool>(__result);
+    return __result != nullptr ? std::make_optional(__result->value()) : std::nullopt;
   }
-  void JHybridAixSpec::setShouldStartAtEnd(bool shouldStartAtEnd) {
-    static const auto method = javaClassStatic()->getMethod<void(jboolean /* shouldStartAtEnd */)>("setShouldStartAtEnd");
-    method(_javaPart, shouldStartAtEnd);
+  void JHybridAixSpec::setStartAtCellIndex(std::optional<double> startAtCellIndex) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* startAtCellIndex */)>("setStartAtCellIndex");
+    method(_javaPart, startAtCellIndex.has_value() ? jni::JDouble::valueOf(startAtCellIndex.value()) : nullptr);
   }
   std::optional<AixScrollOnFooterSizeUpdate> JHybridAixSpec::getScrollOnFooterSizeUpdate() {
     static const auto method = javaClassStatic()->getMethod<jni::local_ref<JAixScrollOnFooterSizeUpdate>()>("getScrollOnFooterSizeUpdate");
@@ -215,6 +215,10 @@ namespace margelo::nitro::aix {
   void JHybridAixSpec::scrollToEnd(std::optional<bool> animated) {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToEnd");
     method(_javaPart, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
+  }
+  void JHybridAixSpec::scrollToCellIndex(double index, std::optional<bool> animated) {
+    static const auto method = javaClassStatic()->getMethod<void(double /* index */, jni::alias_ref<jni::JBoolean> /* animated */)>("scrollToCellIndex");
+    method(_javaPart, index, animated.has_value() ? jni::JBoolean::valueOf(animated.value()) : nullptr);
   }
 
 } // namespace margelo::nitro::aix

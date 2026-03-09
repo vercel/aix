@@ -49,7 +49,12 @@ export interface AixContentInsets {
 }
 
 export interface AixProps extends HybridViewProps {
-  shouldStartAtEnd: boolean
+  /**
+   * The cell index to scroll to on initial mount.
+   * Use -1 to start at the last cell (end of content).
+   * Use undefined/null to not scroll on mount.
+   */
+  startAtCellIndex?: number
   /**
    * Control the behavior of scrolling the content when footer size changes.
    *
@@ -159,6 +164,11 @@ export interface AixProps extends HybridViewProps {
 
 export interface AixMethods extends HybridViewMethods {
   scrollToEnd(animated?: boolean): void
+  /**
+   * Scroll to a specific cell index.
+   * Use -1 to scroll to the last cell (end of content).
+   */
+  scrollToCellIndex(index: number, animated?: boolean): void
 }
 
 export type Aix = HybridView<AixProps, AixMethods, { ios: 'swift'; android: 'kotlin' }>

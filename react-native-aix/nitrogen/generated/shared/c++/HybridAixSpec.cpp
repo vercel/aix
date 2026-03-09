@@ -14,8 +14,8 @@ namespace margelo::nitro::aix {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
-      prototype.registerHybridGetter("shouldStartAtEnd", &HybridAixSpec::getShouldStartAtEnd);
-      prototype.registerHybridSetter("shouldStartAtEnd", &HybridAixSpec::setShouldStartAtEnd);
+      prototype.registerHybridGetter("startAtCellIndex", &HybridAixSpec::getStartAtCellIndex);
+      prototype.registerHybridSetter("startAtCellIndex", &HybridAixSpec::setStartAtCellIndex);
       prototype.registerHybridGetter("scrollOnFooterSizeUpdate", &HybridAixSpec::getScrollOnFooterSizeUpdate);
       prototype.registerHybridSetter("scrollOnFooterSizeUpdate", &HybridAixSpec::setScrollOnFooterSizeUpdate);
       prototype.registerHybridGetter("scrollEndReachedThreshold", &HybridAixSpec::getScrollEndReachedThreshold);
@@ -41,6 +41,7 @@ namespace margelo::nitro::aix {
       prototype.registerHybridGetter("onDidScrollToIndex", &HybridAixSpec::getOnDidScrollToIndex);
       prototype.registerHybridSetter("onDidScrollToIndex", &HybridAixSpec::setOnDidScrollToIndex);
       prototype.registerHybridMethod("scrollToEnd", &HybridAixSpec::scrollToEnd);
+      prototype.registerHybridMethod("scrollToCellIndex", &HybridAixSpec::scrollToCellIndex);
     });
   }
 

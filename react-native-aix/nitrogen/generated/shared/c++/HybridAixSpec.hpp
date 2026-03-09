@@ -22,8 +22,8 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsets; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
 
-#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include <string>
@@ -57,8 +57,8 @@ namespace margelo::nitro::aix {
 
     public:
       // Properties
-      virtual bool getShouldStartAtEnd() = 0;
-      virtual void setShouldStartAtEnd(bool shouldStartAtEnd) = 0;
+      virtual std::optional<double> getStartAtCellIndex() = 0;
+      virtual void setStartAtCellIndex(std::optional<double> startAtCellIndex) = 0;
       virtual std::optional<AixScrollOnFooterSizeUpdate> getScrollOnFooterSizeUpdate() = 0;
       virtual void setScrollOnFooterSizeUpdate(const std::optional<AixScrollOnFooterSizeUpdate>& scrollOnFooterSizeUpdate) = 0;
       virtual std::optional<double> getScrollEndReachedThreshold() = 0;
@@ -87,6 +87,7 @@ namespace margelo::nitro::aix {
     public:
       // Methods
       virtual void scrollToEnd(std::optional<bool> animated) = 0;
+      virtual void scrollToCellIndex(double index, std::optional<bool> animated) = 0;
 
     protected:
       // Hybrid Setup

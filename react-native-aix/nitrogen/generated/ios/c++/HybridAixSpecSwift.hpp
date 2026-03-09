@@ -25,8 +25,8 @@ namespace margelo::nitro::aix { struct AixScrollIndicatorInsetValue; }
 // Forward declaration of `AixContentInsets` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixContentInsets; }
 
-#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixAdditionalContentInsets.hpp"
 #include "AixScrollIndicatorInsets.hpp"
@@ -75,11 +75,12 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    inline bool getShouldStartAtEnd() noexcept override {
-      return _swiftPart.getShouldStartAtEnd();
+    inline std::optional<double> getStartAtCellIndex() noexcept override {
+      auto __result = _swiftPart.getStartAtCellIndex();
+      return __result;
     }
-    inline void setShouldStartAtEnd(bool shouldStartAtEnd) noexcept override {
-      _swiftPart.setShouldStartAtEnd(std::forward<decltype(shouldStartAtEnd)>(shouldStartAtEnd));
+    inline void setStartAtCellIndex(std::optional<double> startAtCellIndex) noexcept override {
+      _swiftPart.setStartAtCellIndex(startAtCellIndex);
     }
     inline std::optional<AixScrollOnFooterSizeUpdate> getScrollOnFooterSizeUpdate() noexcept override {
       auto __result = _swiftPart.getScrollOnFooterSizeUpdate();
@@ -170,6 +171,12 @@ namespace margelo::nitro::aix {
     // Methods
     inline void scrollToEnd(std::optional<bool> animated) override {
       auto __result = _swiftPart.scrollToEnd(animated);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void scrollToCellIndex(double index, std::optional<bool> animated) override {
+      auto __result = _swiftPart.scrollToCellIndex(std::forward<decltype(index)>(index), animated);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

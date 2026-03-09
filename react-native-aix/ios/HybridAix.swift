@@ -160,7 +160,34 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             self?.scrollToEndInternal(animated: animated)
         }
     }
-    
+
+    func scrollToCellIndex(index: Double, animated: Bool?) {
+        DispatchQueue.main.async { [weak self] in
+            self?.scrollToIndexInternal(index: Int(index), animated: animated ?? true)
+        }
+    }
+
+    private func scrollToIndexInternal(index: Int, animated: Bool) {
+        // -1 means scroll to end (last cell)
+        if index == -1 {
+            scrollToEndInternal(animated: animated)
+            return
+        }
+
+        guard let scrollView, index >= 0 else { return }
+
+        // Find the cell at the given index
+        guard let cell = getCell(index: index) else {
+            print("[Aix] scrollToIndex - cell not found at index")
+            return
+        }
+
+        // Calculate the cell's position relative to scroll view
+        let cellFrame = cell.view.convert(cell.view.bounds, to: scrollView)
+        let targetY = cellFrame.minY - scrollView.contentInset.top
+
+        scrollView.setContentOffset(CGPoint(x: 0, y: max(0, targetY)), animated: animated)
+    }
 
     private var didScrollToEndInitially: Bool = false
     
@@ -193,7 +220,9 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     private var isAppInBackground = false
     
     // MARK: - Props (from Nitro spec)
-    var shouldStartAtEnd: Bool = true
+    /// The cell index to scroll to on initial mount.
+    /// -1 means scroll to end (last cell). nil means don't scroll.
+    var startAtCellIndex: Double? = nil
     var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate?
     var scrollEndReachedThreshold: Double?
 
@@ -711,9 +740,10 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
             applyAllInsets()
             print("[Aix] tryCompleteInitialLayout - insets applied")
 
-            if shouldStartAtEnd {
-                print("[Aix] tryCompleteInitialLayout - scrolling to end")
-                scrollToEndInternal(animated: false)
+            // startAtCellIndex: -1 = last cell, >= 0 = specific cell, nil = don't scroll
+            if let startIndex = startAtCellIndex {
+                print("[Aix] tryCompleteInitialLayout - scrolling to index")
+                scrollToIndexInternal(index: Int(startIndex), animated: false)
             }
 
             prevIsScrolledNearEnd = getIsScrolledNearEnd(distFromEnd: distFromEnd)

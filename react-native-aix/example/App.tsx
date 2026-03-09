@@ -226,7 +226,7 @@ function Chat({ children }: { children: React.ReactNode }) {
     <AttachmentsProvider>
       <DropzoneWithAttachments>
         <Aix
-          shouldStartAtEnd={true}
+          startAtCellIndex={-1}
           scrollOnFooterSizeUpdate={{
             enabled: true,
             scrolledToEndThreshold: 200,

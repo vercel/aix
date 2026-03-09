@@ -36,8 +36,8 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     throw std::runtime_error("HybridAixState's data doesn't contain any props!");
   }
   const HybridAixProps& props = maybeProps.value();
-  if (props.shouldStartAtEnd.isDirty) {
-    view->setShouldStartAtEnd(props.shouldStartAtEnd.value);
+  if (props.startAtCellIndex.isDirty) {
+    view->setStartAtCellIndex(props.startAtCellIndex.value);
     // TODO: Set isDirty = false
   }
   if (props.scrollOnFooterSizeUpdate.isDirty) {

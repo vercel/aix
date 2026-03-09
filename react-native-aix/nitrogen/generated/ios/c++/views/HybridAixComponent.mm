@@ -71,10 +71,10 @@ using namespace margelo::nitro::aix::views;
   // 2. Update each prop individually
   swiftPart.beforeUpdate();
 
-  // shouldStartAtEnd: boolean
-  if (newViewProps.shouldStartAtEnd.isDirty) {
-    swiftPart.setShouldStartAtEnd(newViewProps.shouldStartAtEnd.value);
-    newViewProps.shouldStartAtEnd.isDirty = false;
+  // startAtCellIndex: optional
+  if (newViewProps.startAtCellIndex.isDirty) {
+    swiftPart.setStartAtCellIndex(newViewProps.startAtCellIndex.value);
+    newViewProps.startAtCellIndex.isDirty = false;
   }
   // scrollOnFooterSizeUpdate: optional
   if (newViewProps.scrollOnFooterSizeUpdate.isDirty) {
