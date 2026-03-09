@@ -14,7 +14,7 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec() {
     override val view: View = View(context)
 
     // Props
-    override var shouldStartAtEnd: Boolean = true
+    override var startAtCellIndex: Double? = null
     override var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate? = null
     override var scrollEndReachedThreshold: Double? = null
     override var additionalContentInsets: AixAdditionalContentInsetsProp? = null
@@ -28,6 +28,10 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec() {
 
     // Methods
     override fun scrollToEnd(animated: Boolean?) {
+        // TODO: Implement for Android
+    }
+
+    override fun scrollToCellIndex(index: Double, animated: Boolean?) {
         // TODO: Implement for Android
     }
 

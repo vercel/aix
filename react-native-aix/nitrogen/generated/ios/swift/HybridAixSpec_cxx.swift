@@ -114,14 +114,20 @@ open class HybridAixSpec_cxx {
   }
 
   // Properties
-  public final var shouldStartAtEnd: Bool {
+  public final var startAtCellIndex: bridge.std__optional_double_ {
     @inline(__always)
     get {
-      return self.__implementation.shouldStartAtEnd
+      return { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = self.__implementation.startAtCellIndex {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
     @inline(__always)
     set {
-      self.__implementation.shouldStartAtEnd = newValue
+      self.__implementation.startAtCellIndex = newValue.value
     }
   }
   
@@ -393,6 +399,24 @@ open class HybridAixSpec_cxx {
   public final func scrollToEnd(animated: bridge.std__optional_bool_) -> bridge.Result_void_ {
     do {
       try self.__implementation.scrollToEnd(animated: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(animated) {
+          let __unwrapped = bridge.get_std__optional_bool_(animated)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }())
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func scrollToCellIndex(index: Double, animated: bridge.std__optional_bool_) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.scrollToCellIndex(index: index, animated: { () -> Bool? in
         if bridge.has_value_std__optional_bool_(animated) {
           let __unwrapped = bridge.get_std__optional_bool_(animated)
           return __unwrapped

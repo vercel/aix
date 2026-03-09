@@ -4,7 +4,7 @@
   "bubblingEventTypes": {},
   "directEventTypes": {},
   "validAttributes": {
-    "shouldStartAtEnd": true,
+    "startAtCellIndex": true,
     "scrollOnFooterSizeUpdate": true,
     "scrollEndReachedThreshold": true,
     "additionalContentInsets": true,

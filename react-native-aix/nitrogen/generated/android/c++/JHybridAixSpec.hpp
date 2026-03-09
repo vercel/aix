@@ -50,8 +50,8 @@ namespace margelo::nitro::aix {
 
   public:
     // Properties
-    bool getShouldStartAtEnd() override;
-    void setShouldStartAtEnd(bool shouldStartAtEnd) override;
+    std::optional<double> getStartAtCellIndex() override;
+    void setStartAtCellIndex(std::optional<double> startAtCellIndex) override;
     std::optional<AixScrollOnFooterSizeUpdate> getScrollOnFooterSizeUpdate() override;
     void setScrollOnFooterSizeUpdate(const std::optional<AixScrollOnFooterSizeUpdate>& scrollOnFooterSizeUpdate) override;
     std::optional<double> getScrollEndReachedThreshold() override;
@@ -80,6 +80,7 @@ namespace margelo::nitro::aix {
   public:
     // Methods
     void scrollToEnd(std::optional<bool> animated) override;
+    void scrollToCellIndex(double index, std::optional<bool> animated) override;
 
   private:
     friend HybridBase;

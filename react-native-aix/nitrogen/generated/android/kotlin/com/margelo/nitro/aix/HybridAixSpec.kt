@@ -46,7 +46,7 @@ abstract class HybridAixSpec: HybridView() {
   @get:Keep
   @set:DoNotStrip
   @set:Keep
-  abstract var shouldStartAtEnd: Boolean
+  abstract var startAtCellIndex: Double?
   
   @get:DoNotStrip
   @get:Keep
@@ -148,6 +148,10 @@ abstract class HybridAixSpec: HybridView() {
   @DoNotStrip
   @Keep
   abstract fun scrollToEnd(animated: Boolean?): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun scrollToCellIndex(index: Double, animated: Boolean?): Unit
 
   private external fun initHybrid(): HybridData
 

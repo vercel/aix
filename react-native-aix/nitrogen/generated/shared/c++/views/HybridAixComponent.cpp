@@ -25,14 +25,14 @@ namespace margelo::nitro::aix::views {
                                  const HybridAixProps& sourceProps,
                                  const react::RawProps& rawProps):
     react::ViewProps(context, sourceProps, rawProps, filterObjectKeys),
-    shouldStartAtEnd([&]() -> CachedProp<bool> {
+    startAtCellIndex([&]() -> CachedProp<std::optional<double>> {
       try {
-        const react::RawValue* rawValue = rawProps.at("shouldStartAtEnd", nullptr, nullptr);
-        if (rawValue == nullptr) return sourceProps.shouldStartAtEnd;
+        const react::RawValue* rawValue = rawProps.at("startAtCellIndex", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.startAtCellIndex;
         const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
-        return CachedProp<bool>::fromRawValue(*runtime, value, sourceProps.shouldStartAtEnd);
+        return CachedProp<std::optional<double>>::fromRawValue(*runtime, value, sourceProps.startAtCellIndex);
       } catch (const std::exception& exc) {
-        throw std::runtime_error(std::string("Aix.shouldStartAtEnd: ") + exc.what());
+        throw std::runtime_error(std::string("Aix.startAtCellIndex: ") + exc.what());
       }
     }()),
     scrollOnFooterSizeUpdate([&]() -> CachedProp<std::optional<AixScrollOnFooterSizeUpdate>> {
@@ -168,7 +168,7 @@ namespace margelo::nitro::aix::views {
 
   HybridAixProps::HybridAixProps(const HybridAixProps& other):
     react::ViewProps(),
-    shouldStartAtEnd(other.shouldStartAtEnd),
+    startAtCellIndex(other.startAtCellIndex),
     scrollOnFooterSizeUpdate(other.scrollOnFooterSizeUpdate),
     scrollEndReachedThreshold(other.scrollEndReachedThreshold),
     additionalContentInsets(other.additionalContentInsets),
@@ -185,7 +185,7 @@ namespace margelo::nitro::aix::views {
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
     switch (hashString(propName)) {
-      case hashString("shouldStartAtEnd"): return true;
+      case hashString("startAtCellIndex"): return true;
       case hashString("scrollOnFooterSizeUpdate"): return true;
       case hashString("scrollEndReachedThreshold"): return true;
       case hashString("additionalContentInsets"): return true;

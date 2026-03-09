@@ -11,7 +11,7 @@ import NitroModules
 /// See ``HybridAixSpec``
 public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   // Properties
-  var shouldStartAtEnd: Bool { get set }
+  var startAtCellIndex: Double? { get set }
   var scrollOnFooterSizeUpdate: AixScrollOnFooterSizeUpdate? { get set }
   var scrollEndReachedThreshold: Double? { get set }
   var additionalContentInsets: AixAdditionalContentInsetsProp? { get set }
@@ -27,6 +27,7 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
 
   // Methods
   func scrollToEnd(animated: Bool?) throws -> Void
+  func scrollToCellIndex(index: Double, animated: Bool?) throws -> Void
 }
 
 public extension HybridAixSpec_protocol {

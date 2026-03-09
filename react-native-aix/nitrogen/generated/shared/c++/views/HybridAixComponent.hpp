@@ -16,8 +16,8 @@
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
 
-#include "AixScrollOnFooterSizeUpdate.hpp"
 #include <optional>
+#include "AixScrollOnFooterSizeUpdate.hpp"
 #include "AixAdditionalContentInsetsProp.hpp"
 #include "AixScrollIndicatorInsets.hpp"
 #include <string>
@@ -47,7 +47,7 @@ namespace margelo::nitro::aix::views {
                    const react::RawProps& rawProps);
 
   public:
-    CachedProp<bool> shouldStartAtEnd;
+    CachedProp<std::optional<double>> startAtCellIndex;
     CachedProp<std::optional<AixScrollOnFooterSizeUpdate>> scrollOnFooterSizeUpdate;
     CachedProp<std::optional<double>> scrollEndReachedThreshold;
     CachedProp<std::optional<AixAdditionalContentInsetsProp>> additionalContentInsets;
