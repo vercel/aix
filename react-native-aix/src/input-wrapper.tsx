@@ -1,17 +1,5 @@
-import type { PropsWithChildren } from 'react'
-import type { ViewProps } from 'react-native'
-import type {
-  AixInputWrapperOnPasteEvent,
-  AixInputWrapperProps,
-} from './views/aix.nitro'
+import type * as native from './input-wrapper.native'
 
-type AixInputWrapperComponentProps = PropsWithChildren<
-  ViewProps &
-    Omit<AixInputWrapperProps, 'onPaste'> & {
-      onPaste?: (events: AixInputWrapperOnPasteEvent[]) => void
-    }
->
-
-export function AixInputWrapper(props: AixInputWrapperComponentProps) {
-  return <>{props.children}</>
+export function AixInputWrapper(props: React.ComponentProps<typeof native.AixInputWrapper>) {
+  return <div {...(props as any)} data-aix-input-wrapper />
 }

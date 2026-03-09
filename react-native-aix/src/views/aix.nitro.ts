@@ -92,12 +92,10 @@ export interface AixProps extends HybridViewProps {
   additionalScrollIndicatorInsets?: AixScrollIndicatorInsets
 
   /**
-   * The nativeID of the scroll view to use.
+   * The native ID of the scroll view to use.
    *
-   * If provided, will search for a scroll view with this accessibilityIdentifier.
-   * If not provided or not found, falls back to the default subview iteration logic.
    */
-  mainScrollViewID?: string
+  mainScrollViewID: string
 
   /**
    * Used to index of the second-to-last message.

@@ -1,25 +1,14 @@
-import { getHostComponent, type HybridRef } from 'react-native-nitro-modules'
-import AixCellViewConfig from '../nitrogen/generated/shared/json/AixCellViewConfig.json'
-import type { AixCellViewProps } from './views/aix.nitro'
-import { useRef } from 'react'
-import type { AixRef } from './aix'
+import type { AixRef } from './aix.ref'
 export * from './fade-in'
 
-export { Aix, type AixRef } from './aix'
+export { Aix } from './aix'
 export { AixFooter } from './footer'
 export { AixInputWrapper } from './input-wrapper'
 export { AixDropzone } from './dropzone'
 export type { AixInputWrapperOnPasteEvent } from './views/aix.nitro'
 export { useContentInsetHandler } from './hooks/useContentInsetHandler'
 export type { AixContentInsets } from './views/aix.nitro'
-
-export const AixCell = getHostComponent<AixCellViewProps, {}>(
-  'AixCellView',
-  () => AixCellViewConfig
-)
-
-export type AixCellViewRef = HybridRef<AixCellViewProps, {}>
-
-export function useAixRef() {
-  return useRef<AixRef | null>(null)
-}
+export type { AixRef }
+export { AixCell } from './cell'
+export type { AixCellRef } from './cell.ref'
+export { useAixRef } from './aix.ref'
