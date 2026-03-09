@@ -135,6 +135,26 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.onScrolledNearEndChange: ") + exc.what());
       }
     }()),
+    scrollToIndex([&]() -> CachedProp<std::optional<double>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("scrollToIndex", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.scrollToIndex;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<double>>::fromRawValue(*runtime, value, sourceProps.scrollToIndex);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.scrollToIndex: ") + exc.what());
+      }
+    }()),
+    onDidScrollToIndex([&]() -> CachedProp<std::optional<std::function<void()>>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("onDidScrollToIndex", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.onDidScrollToIndex;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<std::function<void()>>>::fromRawValue(*runtime, value.asObject(*runtime).getProperty(*runtime, "f"), sourceProps.onDidScrollToIndex);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.onDidScrollToIndex: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridAixSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -159,6 +179,8 @@ namespace margelo::nitro::aix::views {
     applyContentInsetDelay(other.applyContentInsetDelay),
     onWillApplyContentInsets(other.onWillApplyContentInsets),
     onScrolledNearEndChange(other.onScrolledNearEndChange),
+    scrollToIndex(other.scrollToIndex),
+    onDidScrollToIndex(other.onDidScrollToIndex),
     hybridRef(other.hybridRef) { }
 
   bool HybridAixProps::filterObjectKeys(const std::string& propName) {
@@ -174,6 +196,8 @@ namespace margelo::nitro::aix::views {
       case hashString("applyContentInsetDelay"): return true;
       case hashString("onWillApplyContentInsets"): return true;
       case hashString("onScrolledNearEndChange"): return true;
+      case hashString("scrollToIndex"): return true;
+      case hashString("onDidScrollToIndex"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

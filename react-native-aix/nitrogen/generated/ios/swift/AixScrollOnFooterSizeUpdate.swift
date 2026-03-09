@@ -19,8 +19,14 @@ public extension AixScrollOnFooterSizeUpdate {
   /**
    * Create a new instance of `AixScrollOnFooterSizeUpdate`.
    */
-  init(enabled: Bool, scrolledToEndThreshold: Double?, animated: Bool?) {
-    self.init(enabled, { () -> bridge.std__optional_double_ in
+  init(enabled: Bool?, scrolledToEndThreshold: Double?, animated: Bool?) {
+    self.init({ () -> bridge.std__optional_bool_ in
+      if let __unwrappedValue = enabled {
+        return bridge.create_std__optional_bool_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_double_ in
       if let __unwrappedValue = scrolledToEndThreshold {
         return bridge.create_std__optional_double_(__unwrappedValue)
       } else {
@@ -35,14 +41,27 @@ public extension AixScrollOnFooterSizeUpdate {
     }())
   }
 
-  var enabled: Bool {
+  var enabled: Bool? {
     @inline(__always)
     get {
-      return self.__enabled
+      return { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(self.__enabled) {
+          let __unwrapped = bridge.get_std__optional_bool_(self.__enabled)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }()
     }
     @inline(__always)
     set {
-      self.__enabled = newValue
+      self.__enabled = { () -> bridge.std__optional_bool_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_bool_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
     }
   }
   

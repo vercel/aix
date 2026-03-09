@@ -338,6 +338,55 @@ open class HybridAixSpec_cxx {
       }()
     }
   }
+  
+  public final var scrollToIndex: bridge.std__optional_double_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = self.__implementation.scrollToIndex {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.scrollToIndex = newValue.value
+    }
+  }
+  
+  public final var onDidScrollToIndex: bridge.std__optional_std__function_void____ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_std__function_void____ in
+        if let __unwrappedValue = self.__implementation.onDidScrollToIndex {
+          return bridge.create_std__optional_std__function_void____({ () -> bridge.Func_void in
+            let __closureWrapper = Func_void(__unwrappedValue)
+            return bridge.create_Func_void(__closureWrapper.toUnsafe())
+          }())
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.onDidScrollToIndex = { () -> (() -> Void)? in
+        if bridge.has_value_std__optional_std__function_void____(newValue) {
+          let __unwrapped = bridge.get_std__optional_std__function_void____(newValue)
+          return { () -> () -> Void in
+            let __wrappedFunction = bridge.wrap_Func_void(__unwrapped)
+            return { () -> Void in
+              __wrappedFunction.call()
+            }
+          }()
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
 
   // Methods
   @inline(__always)
@@ -346,31 +395,6 @@ open class HybridAixSpec_cxx {
       try self.__implementation.scrollToEnd(animated: { () -> Bool? in
         if bridge.has_value_std__optional_bool_(animated) {
           let __unwrapped = bridge.get_std__optional_bool_(animated)
-          return __unwrapped
-        } else {
-          return nil
-        }
-      }())
-      return bridge.create_Result_void_()
-    } catch (let __error) {
-      let __exceptionPtr = __error.toCpp()
-      return bridge.create_Result_void_(__exceptionPtr)
-    }
-  }
-  
-  @inline(__always)
-  public final func scrollToIndexWhenBlankSizeReady(index: Double, animated: bridge.std__optional_bool_, waitForKeyboardToEnd: bridge.std__optional_bool_) -> bridge.Result_void_ {
-    do {
-      try self.__implementation.scrollToIndexWhenBlankSizeReady(index: index, animated: { () -> Bool? in
-        if bridge.has_value_std__optional_bool_(animated) {
-          let __unwrapped = bridge.get_std__optional_bool_(animated)
-          return __unwrapped
-        } else {
-          return nil
-        }
-      }(), waitForKeyboardToEnd: { () -> Bool? in
-        if bridge.has_value_std__optional_bool_(waitForKeyboardToEnd) {
-          let __unwrapped = bridge.get_std__optional_bool_(waitForKeyboardToEnd)
           return __unwrapped
         } else {
           return nil

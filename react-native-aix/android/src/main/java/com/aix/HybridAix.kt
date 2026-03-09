@@ -31,7 +31,4 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec() {
         // TODO: Implement for Android
     }
 
-    override fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?) {
-        // TODO: Implement for Android
-    }
 }

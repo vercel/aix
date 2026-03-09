@@ -18,10 +18,11 @@ const AixInternal = Animated.createAnimatedComponent(getHostComponent<AixProps, 
 // User-facing props type that accepts regular functions (not wrapped callbacks)
 type AixComponentProps = Omit<
   ComponentProps<typeof AixInternal>,
-  'onWillApplyContentInsets' | 'onScrolledNearEndChange' | 'hybridRef'
+  'onWillApplyContentInsets' | 'onScrolledNearEndChange' | 'onDidScrollToIndex' | 'hybridRef'
 > & {
   onWillApplyContentInsets?: (insets: AixContentInsets) => void
   onScrolledNearEndChange?: (isNearEnd: boolean) => void
+  onDidScrollToIndex?: () => void
 }
 
 export const Aix = forwardRef<AixRef, AixComponentProps>(
@@ -29,6 +30,9 @@ export const Aix = forwardRef<AixRef, AixComponentProps>(
     return (
       <AixInternal
         {...props}
+        // Send -1 as sentinel when undefined to avoid sending null to native,
+        // which crashes the Nitro bridge ("Value is null, expected a number").
+        scrollToIndex={props.scrollToIndex ?? -1}
         scrollOnFooterSizeUpdate={
           props.scrollOnFooterSizeUpdate ?? {
             enabled: true,
@@ -46,6 +50,12 @@ export const Aix = forwardRef<AixRef, AixComponentProps>(
         onScrolledNearEndChange={
           props.onScrolledNearEndChange
             ? callback(props.onScrolledNearEndChange)
+            : undefined
+        }
+        // Wrap onDidScrollToIndex with callback() if provided
+        onDidScrollToIndex={
+          props.onDidScrollToIndex
+            ? callback(props.onDidScrollToIndex)
             : undefined
         }
         hybridRef={

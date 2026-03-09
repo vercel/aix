@@ -123,7 +123,7 @@ function Chat({ children }: { children: React.ReactNode }) {
   const aix = useAixRef();
 
   const { messages, setMessages } = useMessages();
-  const [isNearEnd, setIsNearEnd] = useState(false);
+  const [isNearEnd, setIsNearEnd] = useState(true);
   const { send } = useAppleChat({ setMessages, messages });
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
@@ -256,6 +256,11 @@ function Chat({ children }: { children: React.ReactNode }) {
             shouldApplyContentInsets: false,
             onWillApplyContentInsets: contentInsetHandler,
           })}
+          scrollToIndex={animateMessageIndex ?? -1}
+          onDidScrollToIndex={() => {
+            setAnimateMessageIndex(null);
+            console.log('onDidScrollToIndex');
+          }}
         >
           {children}
           {examples.scrollview()}
@@ -274,13 +279,8 @@ function Chat({ children }: { children: React.ReactNode }) {
               onScrollToEnd={() => aix.current?.scrollToEnd(true)}
               isNearEnd={isNearEnd}
               onSubmit={message => {
-                const nextAssistantMessageIndex = messages.length + 1;
-                aix.current?.scrollToIndexWhenBlankSizeReady(
-                  nextAssistantMessageIndex,
-                  true,
-                  false,
-                );
-                setAnimateMessageIndex(nextAssistantMessageIndex);
+                const newMessageIndex = messages.length + 1;
+                setAnimateMessageIndex(newMessageIndex);
                 send(message);
               }}
             />
@@ -299,6 +299,7 @@ function DropzoneWithAttachments({ children }: { children: React.ReactNode }) {
         console.log('onDrop', events);
         addAttachments(events);
       }}
+      style={{ flex: 1 }}
     >
       {children}
     </AixDropzone>

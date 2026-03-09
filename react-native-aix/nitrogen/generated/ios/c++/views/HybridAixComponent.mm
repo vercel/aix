@@ -126,6 +126,16 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setOnScrolledNearEndChange(newViewProps.onScrolledNearEndChange.value);
     newViewProps.onScrolledNearEndChange.isDirty = false;
   }
+  // scrollToIndex: optional
+  if (newViewProps.scrollToIndex.isDirty) {
+    swiftPart.setScrollToIndex(newViewProps.scrollToIndex.value);
+    newViewProps.scrollToIndex.isDirty = false;
+  }
+  // onDidScrollToIndex: optional
+  if (newViewProps.onDidScrollToIndex.isDirty) {
+    swiftPart.setOnDidScrollToIndex(newViewProps.onDidScrollToIndex.value);
+    newViewProps.onDidScrollToIndex.isDirty = false;
+  }
 
   swiftPart.afterUpdate();
 
