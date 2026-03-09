@@ -202,31 +202,28 @@ Consider lazy loading or waiting until the component is mounted to render <Aix /
 
   useEffect(
     function scroll() {
-      if (!ref.current) return
-      const mainScrollViewIDValue = resolveSharedValue(mainScrollViewID)
-      if (!mainScrollViewIDValue) return
       const scrollToIndexValue = resolveSharedValue(scrollToIndex)
       if (scrollToIndexValue == null) return
       if (scrollToIndexValue < 0) return
 
-      const scrollView = getScrollView(ref.current, mainScrollViewIDValue)
+      const scrollView = getScroll()
       if (!scrollView) return
 
-      const aixItemToScrollTo = ref.current.querySelector(`[data-aix-cell="${scrollToIndexValue}"]`)
-      if (!aixItemToScrollTo) return
+      const blankView = getBlankView()
+      if (!blankView) return
+      if (blankView.index !== scrollToIndexValue) return
 
-      const scrollViewRect = scrollView.getBoundingClientRect()
-      const itemRect = aixItemToScrollTo.getBoundingClientRect()
-      const scrollToPosition = itemRect.top - scrollViewRect.top + scrollView.scrollTop
+      const blankSize = calculateBlankSize()
+      applyBlankSizeChange(blankSize)
 
       scrollView.scrollTo({
-        top: scrollToPosition,
+        top: Math.max(0, scrollView.scrollHeight - scrollView.clientHeight),
         behavior: 'smooth',
       })
 
       stableOnDidScrollToIndex.current?.()
     },
-    [mainScrollViewID, scrollToIndex],
+    [applyBlankSizeChange, calculateBlankSize, getBlankView, getScroll, scrollToIndex],
   )
 
   return (
