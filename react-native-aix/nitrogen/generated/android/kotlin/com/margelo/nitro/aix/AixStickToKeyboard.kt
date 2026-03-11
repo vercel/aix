@@ -19,7 +19,7 @@ import com.facebook.proguard.annotations.DoNotStrip
 data class AixStickToKeyboard(
   @DoNotStrip
   @Keep
-  val enabled: Boolean,
+  val enabled: Boolean?,
   @DoNotStrip
   @Keep
   val offset: AixStickToKeyboardOffset?
@@ -34,7 +34,7 @@ data class AixStickToKeyboard(
     @Keep
     @Suppress("unused")
     @JvmStatic
-    private fun fromCpp(enabled: Boolean, offset: AixStickToKeyboardOffset?): AixStickToKeyboard {
+    private fun fromCpp(enabled: Boolean?, offset: AixStickToKeyboardOffset?): AixStickToKeyboard {
       return AixStickToKeyboard(enabled, offset)
     }
   }

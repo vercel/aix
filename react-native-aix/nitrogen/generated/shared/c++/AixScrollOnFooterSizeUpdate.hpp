@@ -34,13 +34,13 @@ namespace margelo::nitro::aix {
    */
   struct AixScrollOnFooterSizeUpdate {
   public:
-    bool enabled     SWIFT_PRIVATE;
+    std::optional<bool> enabled     SWIFT_PRIVATE;
     std::optional<double> scrolledToEndThreshold     SWIFT_PRIVATE;
     std::optional<bool> animated     SWIFT_PRIVATE;
 
   public:
     AixScrollOnFooterSizeUpdate() = default;
-    explicit AixScrollOnFooterSizeUpdate(bool enabled, std::optional<double> scrolledToEndThreshold, std::optional<bool> animated): enabled(enabled), scrolledToEndThreshold(scrolledToEndThreshold), animated(animated) {}
+    explicit AixScrollOnFooterSizeUpdate(std::optional<bool> enabled, std::optional<double> scrolledToEndThreshold, std::optional<bool> animated): enabled(enabled), scrolledToEndThreshold(scrolledToEndThreshold), animated(animated) {}
   };
 
 } // namespace margelo::nitro::aix
@@ -53,14 +53,14 @@ namespace margelo::nitro {
     static inline margelo::nitro::aix::AixScrollOnFooterSizeUpdate fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::aix::AixScrollOnFooterSizeUpdate(
-        JSIConverter<bool>::fromJSI(runtime, obj.getProperty(runtime, "enabled")),
+        JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, "enabled")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "scrolledToEndThreshold")),
         JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, "animated"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::aix::AixScrollOnFooterSizeUpdate& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "enabled", JSIConverter<bool>::toJSI(runtime, arg.enabled));
+      obj.setProperty(runtime, "enabled", JSIConverter<std::optional<bool>>::toJSI(runtime, arg.enabled));
       obj.setProperty(runtime, "scrolledToEndThreshold", JSIConverter<std::optional<double>>::toJSI(runtime, arg.scrolledToEndThreshold));
       obj.setProperty(runtime, "animated", JSIConverter<std::optional<bool>>::toJSI(runtime, arg.animated));
       return obj;
@@ -73,7 +73,7 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<bool>::canConvert(runtime, obj.getProperty(runtime, "enabled"))) return false;
+      if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, "enabled"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "scrolledToEndThreshold"))) return false;
       if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, "animated"))) return false;
       return true;

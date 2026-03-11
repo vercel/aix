@@ -80,6 +80,14 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setOnScrolledNearEndChange(props.onScrolledNearEndChange.value);
     // TODO: Set isDirty = false
   }
+  if (props.scrollToIndex.isDirty) {
+    view->setScrollToIndex(props.scrollToIndex.value);
+    // TODO: Set isDirty = false
+  }
+  if (props.onDidScrollToIndex.isDirty) {
+    view->setOnDidScrollToIndex(props.onDidScrollToIndex.value);
+    // TODO: Set isDirty = false
+  }
 
   // Update hybridRef if it changed
   if (props.hybridRef.isDirty) {

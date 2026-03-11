@@ -5,6 +5,7 @@ alt="aix" width="1600" height="900" />
 
 UI Primitives for building AI apps in React Native.
 
+> [!WARNING]
 > aix is currently in alpha preview. The API is likely to change.
 
 ## Features
@@ -121,27 +122,35 @@ export function ChatScreen({ messages }) {
 ### Send a message
 
 When sending a message, you will likely want to scroll to it after it gets added
-to the list.
-
-Simply call `aix.current?.scrollToIndexWhenBlankSizeReady(index)` in your submit
-handler.
+to the list. Use the `scrollToIndex` prop to declaratively trigger an animated
+scroll, and `onDidScrollToIndex` to reset the state when the scroll completes.
 
 The `index` you pass should correspond to the newest message in the list. For AI
-chats, this is typically the next assistant message index.
+chats, this is typically the next assistant message index. Use a nullish value (`null | undefined`) to indicate
+no scroll target.
 
 ```tsx
 import { Keyboard } from 'react-native'
-import { useAixRef } from 'aix'
+import { useState } from 'react'
 
 function Chat() {
-  const aix = useAixRef()
+  const [scrollToIndex, setScrollToIndex] = useState<number | null>(null)
 
   const onSubmit = () => {
-    aix.current?.scrollToIndexWhenBlankSizeReady(messages.length + 1, true)
+    const newMessageIndex = messages.length + 1
+    setScrollToIndex(newMessageIndex)
+    sendMessage(message)
     requestAnimationFrame(Keyboard.dismiss)
   }
 
-  return <Aix ref={aix}>{/* ... */}</Aix>
+  return (
+    <Aix
+      scrollToIndex={scrollToIndex}
+      onDidScrollToIndex={() => setScrollToIndex(null)}
+    >
+      {/* ... */}
+    </Aix>
+  )
 }
 ```
 
@@ -197,6 +206,8 @@ scrolling for chat interfaces.
 | `additionalScrollIndicatorInsets` | `object`                       | -                                                                 | Additional insets for the scroll indicator, added to existing safe area insets. Applied to `verticalScrollIndicatorInsets` on iOS.                                                                                                                                 |
 | `mainScrollViewID`                | `string`                       | -                                                                 | The `nativeID` of the scroll view to use. If provided, will search for a scroll view with this `accessibilityIdentifier`.                                                                                                                                          |
 | `penultimateCellIndex`            | `number`                       | -                                                                 | The index of the second-to-last message (typically the last user message in AI chat apps). Used to determine which message will be scrolled into view. Useful when you have custom message types like timestamps in your list.                                     |
+| `scrollToIndex`                   | `number`                       | -                                                                 | When set, triggers an animated scroll to this cell index. Use a nullish value (`null` or `undefined`) to indicate no scroll target. After the scroll completes, `onDidScrollToIndex` is called. Reset after receiving the callback. |
+| `onDidScrollToIndex`              | `() => void`                   | -                                                                 | Called when the animated scroll to `scrollToIndex` completes. Use this to clear the `scrollToIndex` state.                                                                                                                                                         |
 
 #### Ref Methods
 
@@ -207,19 +218,14 @@ const aix = useAixRef()
 
 // Scroll to the end of the content
 aix.current?.scrollToEnd(animated)
-
-// Scroll to a specific index when the blank size is ready
-aix.current?.scrollToIndexWhenBlankSizeReady(
-  index,
-  animated,
-  waitForKeyboardToEnd
-)
 ```
 
-| Method                            | Parameters                                                          | Description                                                                |
-| --------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `scrollToEnd`                     | `animated?: boolean`                                                | Scrolls to the end of the content.                                         |
-| `scrollToIndexWhenBlankSizeReady` | `index: number, animated?: boolean, waitForKeyboardToEnd?: boolean` | Scrolls to a specific cell index once the blank size calculation is ready. |
+| Method        | Parameters           | Description                        |
+| ------------- | -------------------- | ---------------------------------- |
+| `scrollToEnd` | `animated?: boolean` | Scrolls to the end of the content. |
+
+> **Note:** For scrolling to a specific message index, prefer using the
+> declarative `scrollToIndex` prop instead of imperative methods.
 
 ---
 
@@ -258,30 +264,7 @@ Accepts all standard React Native `View` props.
   <Composer />
 </AixFooter>
 ```
-
 ---
-
-### `useAixRef`
-
-A hook that returns a ref to access imperative methods on the `Aix` component.
-
-```tsx
-import { useAixRef } from 'aix'
-
-function Chat({ messages }) {
-  const aix = useAixRef()
-  const send = useSendMessage()
-
-  const handleSend = () => {
-    // Scroll to end after sending a message
-    send(message)
-    aix.current?.scrollToIndexWhenBlankSizeReady(messages.length + 1, true)
-    requestAnimationFrame(Keyboard.dismiss)
-  }
-
-  return <Aix ref={aix}>{/* ... */}</Aix>
-}
-```
 
 ### Rules
 

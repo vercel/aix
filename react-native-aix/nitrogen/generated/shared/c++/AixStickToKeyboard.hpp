@@ -26,8 +26,8 @@
 // Forward declaration of `AixStickToKeyboardOffset` to properly resolve imports.
 namespace margelo::nitro::aix { struct AixStickToKeyboardOffset; }
 
-#include "AixStickToKeyboardOffset.hpp"
 #include <optional>
+#include "AixStickToKeyboardOffset.hpp"
 
 namespace margelo::nitro::aix {
 
@@ -36,12 +36,12 @@ namespace margelo::nitro::aix {
    */
   struct AixStickToKeyboard {
   public:
-    bool enabled     SWIFT_PRIVATE;
+    std::optional<bool> enabled     SWIFT_PRIVATE;
     std::optional<AixStickToKeyboardOffset> offset     SWIFT_PRIVATE;
 
   public:
     AixStickToKeyboard() = default;
-    explicit AixStickToKeyboard(bool enabled, std::optional<AixStickToKeyboardOffset> offset): enabled(enabled), offset(offset) {}
+    explicit AixStickToKeyboard(std::optional<bool> enabled, std::optional<AixStickToKeyboardOffset> offset): enabled(enabled), offset(offset) {}
   };
 
 } // namespace margelo::nitro::aix
@@ -54,13 +54,13 @@ namespace margelo::nitro {
     static inline margelo::nitro::aix::AixStickToKeyboard fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::aix::AixStickToKeyboard(
-        JSIConverter<bool>::fromJSI(runtime, obj.getProperty(runtime, "enabled")),
+        JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, "enabled")),
         JSIConverter<std::optional<margelo::nitro::aix::AixStickToKeyboardOffset>>::fromJSI(runtime, obj.getProperty(runtime, "offset"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::aix::AixStickToKeyboard& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "enabled", JSIConverter<bool>::toJSI(runtime, arg.enabled));
+      obj.setProperty(runtime, "enabled", JSIConverter<std::optional<bool>>::toJSI(runtime, arg.enabled));
       obj.setProperty(runtime, "offset", JSIConverter<std::optional<margelo::nitro::aix::AixStickToKeyboardOffset>>::toJSI(runtime, arg.offset));
       return obj;
     }
@@ -72,7 +72,7 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<bool>::canConvert(runtime, obj.getProperty(runtime, "enabled"))) return false;
+      if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, "enabled"))) return false;
       if (!JSIConverter<std::optional<margelo::nitro::aix::AixStickToKeyboardOffset>>::canConvert(runtime, obj.getProperty(runtime, "offset"))) return false;
       return true;
     }

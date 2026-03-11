@@ -136,13 +136,6 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec(), AixContext {
         }
     }
 
-    override fun scrollToIndexWhenBlankSizeReady(index: Double, animated: Boolean?, waitForKeyboardToEnd: Boolean?) {
-        queuedScrollToEnd = QueuedScrollToEnd(index.toInt(), animated ?: true, waitForKeyboardToEnd ?: false)
-        view.post {
-            flushQueuedScrollToEnd()
-        }
-    }
-
     override fun reportBlankViewSizeChange(height: Float, index: Int) {
         if (!didScrollToEndInitially) {
             // First blank-view report: apply insets and scroll to end.

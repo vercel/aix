@@ -31,14 +31,14 @@ namespace margelo::nitro::aix {
     [[nodiscard]]
     AixScrollOnFooterSizeUpdate toCpp() const {
       static const auto clazz = javaClassStatic();
-      static const auto fieldEnabled = clazz->getField<jboolean>("enabled");
-      jboolean enabled = this->getFieldValue(fieldEnabled);
+      static const auto fieldEnabled = clazz->getField<jni::JBoolean>("enabled");
+      jni::local_ref<jni::JBoolean> enabled = this->getFieldValue(fieldEnabled);
       static const auto fieldScrolledToEndThreshold = clazz->getField<jni::JDouble>("scrolledToEndThreshold");
       jni::local_ref<jni::JDouble> scrolledToEndThreshold = this->getFieldValue(fieldScrolledToEndThreshold);
       static const auto fieldAnimated = clazz->getField<jni::JBoolean>("animated");
       jni::local_ref<jni::JBoolean> animated = this->getFieldValue(fieldAnimated);
       return AixScrollOnFooterSizeUpdate(
-        static_cast<bool>(enabled),
+        enabled != nullptr ? std::make_optional(static_cast<bool>(enabled->value())) : std::nullopt,
         scrolledToEndThreshold != nullptr ? std::make_optional(scrolledToEndThreshold->value()) : std::nullopt,
         animated != nullptr ? std::make_optional(static_cast<bool>(animated->value())) : std::nullopt
       );
@@ -50,12 +50,12 @@ namespace margelo::nitro::aix {
      */
     [[maybe_unused]]
     static jni::local_ref<JAixScrollOnFooterSizeUpdate::javaobject> fromCpp(const AixScrollOnFooterSizeUpdate& value) {
-      using JSignature = JAixScrollOnFooterSizeUpdate(jboolean, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JBoolean>);
+      using JSignature = JAixScrollOnFooterSizeUpdate(jni::alias_ref<jni::JBoolean>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JBoolean>);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
         clazz,
-        value.enabled,
+        value.enabled.has_value() ? jni::JBoolean::valueOf(value.enabled.value()) : nullptr,
         value.scrolledToEndThreshold.has_value() ? jni::JDouble::valueOf(value.scrolledToEndThreshold.value()) : nullptr,
         value.animated.has_value() ? jni::JBoolean::valueOf(value.animated.value()) : nullptr
       );

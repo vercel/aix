@@ -19,7 +19,7 @@ import com.facebook.proguard.annotations.DoNotStrip
 data class AixScrollOnFooterSizeUpdate(
   @DoNotStrip
   @Keep
-  val enabled: Boolean,
+  val enabled: Boolean?,
   @DoNotStrip
   @Keep
   val scrolledToEndThreshold: Double?,
@@ -37,7 +37,7 @@ data class AixScrollOnFooterSizeUpdate(
     @Keep
     @Suppress("unused")
     @JvmStatic
-    private fun fromCpp(enabled: Boolean, scrolledToEndThreshold: Double?, animated: Boolean?): AixScrollOnFooterSizeUpdate {
+    private fun fromCpp(enabled: Boolean?, scrolledToEndThreshold: Double?, animated: Boolean?): AixScrollOnFooterSizeUpdate {
       return AixScrollOnFooterSizeUpdate(enabled, scrolledToEndThreshold, animated)
     }
   }
