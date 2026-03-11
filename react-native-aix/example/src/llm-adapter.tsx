@@ -10,7 +10,7 @@ type UIMessage = {
   content: string;
 };
 
-export function useAppleChat({
+export function useLlmAdapter({
   setMessages,
   messages,
 }: {
@@ -127,7 +127,7 @@ const defaultMessages: UIMessage[] = [
   },
 ];
 
-export function useMessages() {
+export function useLlmMessages() {
   let [messages, setMessages] = useState<UIMessage[]>(defaultMessages);
 
   if (messages.at(-1)?.role === 'user') {
