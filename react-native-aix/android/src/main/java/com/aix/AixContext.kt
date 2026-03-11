@@ -10,6 +10,7 @@ interface AixContext {
     val keyboardHeightWhenOpen: Float
 
     fun reportBlankViewSizeChange(height: Float, index: Int)
+    fun reportCellHeightChange(index: Int, height: Float)
     fun registerCell(cell: HybridAixCellView)
     fun unregisterCell(cell: HybridAixCellView)
     fun registerComposerView(composerView: HybridAixComposer)

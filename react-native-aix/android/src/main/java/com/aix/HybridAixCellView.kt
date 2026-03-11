@@ -33,8 +33,12 @@ class HybridAixCellView(val context: ThemedReactContext): HybridAixCellViewSpec(
 
         override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
             super.onSizeChanged(w, h, oldw, oldh)
+            val ctx = getAixContext()
             if (isLast) {
-                getAixContext()?.reportBlankViewSizeChange(h.toFloat(), index.toInt())
+                ctx?.reportBlankViewSizeChange(h.toFloat(), index.toInt())
+            } else if (oldh > 0) {
+                // Non-blank cell changed height after initial layout (e.g. streaming)
+                ctx?.reportCellHeightChange(index.toInt(), h.toFloat())
             }
         }
     }
