@@ -215,7 +215,7 @@ function Chat({ children }: { children: React.ReactNode }) {
   const isAndroidDarkMode = Platform.OS === 'android' && colorScheme === 'dark';
 
   const { messages, setMessages } = useLlmMessages();
-  const [isNearEnd, setIsNearEnd] = useState(false);
+  const [isNearEnd, setIsNearEnd] = useState(true);
   const { send } = useLlmAdapter({ setMessages, messages });
   const [animateMessageIndex, setAnimateMessageIndex] = useState<number | null>(
     null,
