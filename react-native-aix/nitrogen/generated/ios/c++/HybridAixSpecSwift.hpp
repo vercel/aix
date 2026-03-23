@@ -158,6 +158,13 @@ namespace margelo::nitro::aix {
     inline void setScrollToIndex(std::optional<double> scrollToIndex) noexcept override {
       _swiftPart.setScrollToIndex(scrollToIndex);
     }
+    inline std::optional<double> getScrollToOffset() noexcept override {
+      auto __result = _swiftPart.getScrollToOffset();
+      return __result;
+    }
+    inline void setScrollToOffset(std::optional<double> scrollToOffset) noexcept override {
+      _swiftPart.setScrollToOffset(scrollToOffset);
+    }
     inline std::optional<std::function<void()>> getOnDidScrollToIndex() noexcept override {
       auto __result = _swiftPart.getOnDidScrollToIndex();
       return __result;

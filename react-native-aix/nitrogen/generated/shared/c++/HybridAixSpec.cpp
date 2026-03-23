@@ -38,6 +38,8 @@ namespace margelo::nitro::aix {
       prototype.registerHybridSetter("onScrolledNearEndChange", &HybridAixSpec::setOnScrolledNearEndChange);
       prototype.registerHybridGetter("scrollToIndex", &HybridAixSpec::getScrollToIndex);
       prototype.registerHybridSetter("scrollToIndex", &HybridAixSpec::setScrollToIndex);
+      prototype.registerHybridGetter("scrollToOffset", &HybridAixSpec::getScrollToOffset);
+      prototype.registerHybridSetter("scrollToOffset", &HybridAixSpec::setScrollToOffset);
       prototype.registerHybridGetter("onDidScrollToIndex", &HybridAixSpec::getOnDidScrollToIndex);
       prototype.registerHybridSetter("onDidScrollToIndex", &HybridAixSpec::setOnDidScrollToIndex);
       prototype.registerHybridMethod("scrollToEnd", &HybridAixSpec::scrollToEnd);

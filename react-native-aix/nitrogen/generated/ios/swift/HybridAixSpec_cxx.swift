@@ -356,6 +356,23 @@ open class HybridAixSpec_cxx {
     }
   }
   
+  public final var scrollToOffset: bridge.std__optional_double_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = self.__implementation.scrollToOffset {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.scrollToOffset = newValue.value
+    }
+  }
+  
   public final var onDidScrollToIndex: bridge.std__optional_std__function_void____ {
     @inline(__always)
     get {

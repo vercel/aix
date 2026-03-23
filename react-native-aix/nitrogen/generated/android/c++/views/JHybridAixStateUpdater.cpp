@@ -84,6 +84,10 @@ void JHybridAixStateUpdater::updateViewProps(jni::alias_ref<jni::JClass> /* clas
     view->setScrollToIndex(props.scrollToIndex.value);
     // TODO: Set isDirty = false
   }
+  if (props.scrollToOffset.isDirty) {
+    view->setScrollToOffset(props.scrollToOffset.value);
+    // TODO: Set isDirty = false
+  }
   if (props.onDidScrollToIndex.isDirty) {
     view->setOnDidScrollToIndex(props.onDidScrollToIndex.value);
     // TODO: Set isDirty = false

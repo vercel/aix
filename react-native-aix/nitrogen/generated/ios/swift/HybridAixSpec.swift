@@ -23,6 +23,7 @@ public protocol HybridAixSpec_protocol: HybridObject, HybridView {
   var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? { get set }
   var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? { get set }
   var scrollToIndex: Double? { get set }
+  var scrollToOffset: Double? { get set }
   var onDidScrollToIndex: (() -> Void)? { get set }
 
   // Methods

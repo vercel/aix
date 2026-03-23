@@ -131,6 +131,11 @@ using namespace margelo::nitro::aix::views;
     swiftPart.setScrollToIndex(newViewProps.scrollToIndex.value);
     newViewProps.scrollToIndex.isDirty = false;
   }
+  // scrollToOffset: optional
+  if (newViewProps.scrollToOffset.isDirty) {
+    swiftPart.setScrollToOffset(newViewProps.scrollToOffset.value);
+    newViewProps.scrollToOffset.isDirty = false;
+  }
   // onDidScrollToIndex: optional
   if (newViewProps.onDidScrollToIndex.isDirty) {
     swiftPart.setOnDidScrollToIndex(newViewProps.onDidScrollToIndex.value);

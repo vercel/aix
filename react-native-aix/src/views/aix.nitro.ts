@@ -131,9 +131,9 @@ export interface AixProps extends HybridViewProps {
   onScrolledNearEndChange?: (isNearEnd: boolean) => void
 
   /**
-   * When set, the scroll to this blank view index will be animated.
+   * When set with a valid index (>= 0), scrolls to that cell index with animation.
    * After the animated scroll completes, onDidScrollToIndex is called.
-   * Set to undefined after receiving onDidScrollToIndex callback.
+   * Use -1 or undefined to indicate no scroll target.
    *
    * Usage:
    * ```tsx
@@ -151,8 +151,12 @@ export interface AixProps extends HybridViewProps {
    */
   scrollToIndex?: number
   /**
+   * Optional offset to add to the scroll position when scrolling to an index.
+   */
+  scrollToOffset?: number
+  /**
    * Called when the animated scroll to `scrollToIndex` completes.
-   * Use this to clear the `scrollToIndex` prop.
+   * Use this to clear the scroll target.
    */
   onDidScrollToIndex?: () => void
 }

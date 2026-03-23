@@ -25,6 +25,9 @@ class HybridAix(val context: ThemedReactContext): HybridAixSpec() {
     override var applyContentInsetDelay: Double? = null
     override var onWillApplyContentInsets: ((insets: AixContentInsets) -> Unit)? = null
     override var onScrolledNearEndChange: ((isNearEnd: Boolean) -> Unit)? = null
+    override var scrollToIndex: Double? = null
+    override var scrollToOffset: Double? = null
+    override var onDidScrollToIndex: (() -> Unit)? = null
 
     // Methods
     override fun scrollToEnd(animated: Boolean?) {

@@ -81,6 +81,8 @@ namespace margelo::nitro::aix {
       virtual void setOnScrolledNearEndChange(const std::optional<std::function<void(bool /* isNearEnd */)>>& onScrolledNearEndChange) = 0;
       virtual std::optional<double> getScrollToIndex() = 0;
       virtual void setScrollToIndex(std::optional<double> scrollToIndex) = 0;
+      virtual std::optional<double> getScrollToOffset() = 0;
+      virtual void setScrollToOffset(std::optional<double> scrollToOffset) = 0;
       virtual std::optional<std::function<void()>> getOnDidScrollToIndex() = 0;
       virtual void setOnDidScrollToIndex(const std::optional<std::function<void()>>& onDidScrollToIndex) = 0;
 
