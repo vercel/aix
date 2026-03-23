@@ -16,6 +16,7 @@
     "onWillApplyContentInsets": true,
     "onScrolledNearEndChange": true,
     "scrollToIndex": true,
+    "scrollToOffset": true,
     "onDidScrollToIndex": true,
     "hybridRef": true
   }

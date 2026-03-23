@@ -59,7 +59,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "Aix",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixSpec::javaobject> object("com/aix/HybridAix");
+        static DefaultConstructableObject<JHybridAixSpec::javaobject> object("com/margelo/nitro/aix/HybridAix");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
@@ -67,7 +67,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "AixCellView",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixCellViewSpec::javaobject> object("com/aix/HybridAixCellView");
+        static DefaultConstructableObject<JHybridAixCellViewSpec::javaobject> object("com/margelo/nitro/aix/HybridAixCellView");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
@@ -75,7 +75,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "AixComposer",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixComposerSpec::javaobject> object("com/aix/HybridAixComposer");
+        static DefaultConstructableObject<JHybridAixComposerSpec::javaobject> object("com/margelo/nitro/aix/HybridAixComposer");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
@@ -83,7 +83,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "AixInputWrapper",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixInputWrapperSpec::javaobject> object("com/aix/HybridAixInputWrapper");
+        static DefaultConstructableObject<JHybridAixInputWrapperSpec::javaobject> object("com/margelo/nitro/aix/HybridAixInputWrapper");
         auto instance = object.create();
         return instance->cthis()->shared();
       }
@@ -91,7 +91,7 @@ int initialize(JavaVM* vm) {
     HybridObjectRegistry::registerHybridObjectConstructor(
       "AixDropzone",
       []() -> std::shared_ptr<HybridObject> {
-        static DefaultConstructableObject<JHybridAixDropzoneSpec::javaobject> object("com/aix/HybridAixDropzone");
+        static DefaultConstructableObject<JHybridAixDropzoneSpec::javaobject> object("com/margelo/nitro/aix/HybridAixDropzone");
         auto instance = object.create();
         return instance->cthis()->shared();
       }

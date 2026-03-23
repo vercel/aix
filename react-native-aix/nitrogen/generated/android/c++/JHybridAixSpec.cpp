@@ -193,6 +193,15 @@ namespace margelo::nitro::aix {
     static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* scrollToIndex */)>("setScrollToIndex");
     method(_javaPart, scrollToIndex.has_value() ? jni::JDouble::valueOf(scrollToIndex.value()) : nullptr);
   }
+  std::optional<double> JHybridAixSpec::getScrollToOffset() {
+    static const auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JDouble>()>("getScrollToOffset");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(__result->value()) : std::nullopt;
+  }
+  void JHybridAixSpec::setScrollToOffset(std::optional<double> scrollToOffset) {
+    static const auto method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JDouble> /* scrollToOffset */)>("setScrollToOffset");
+    method(_javaPart, scrollToOffset.has_value() ? jni::JDouble::valueOf(scrollToOffset.value()) : nullptr);
+  }
   std::optional<std::function<void()>> JHybridAixSpec::getOnDidScrollToIndex() {
     static const auto method = javaClassStatic()->getMethod<jni::local_ref<JFunc_void::javaobject>()>("getOnDidScrollToIndex_cxx");
     auto __result = method(_javaPart);

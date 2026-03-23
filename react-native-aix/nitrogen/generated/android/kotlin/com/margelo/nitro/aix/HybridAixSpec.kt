@@ -130,6 +130,12 @@ abstract class HybridAixSpec: HybridView() {
   @set:Keep
   abstract var scrollToIndex: Double?
   
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var scrollToOffset: Double?
+  
   abstract var onDidScrollToIndex: (() -> Unit)?
   
   private var onDidScrollToIndex_cxx: Func_void?

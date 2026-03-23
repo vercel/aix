@@ -117,16 +117,22 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
     var onWillApplyContentInsets: ((_ insets: AixContentInsets) -> Void)? = nil
     var onScrolledNearEndChange: ((_ isNearEnd: Bool) -> Void)? = nil
 
-    /// When set to a valid index (>= 0), the scroll to this blank view index will be animated.
+    /// When set with a valid index (>= 0), scrolls to that cell index with animation.
     /// After the animated scroll completes, onDidScrollToIndex is called.
-    /// -1 is the sentinel value meaning "no scroll target" (sent from React to avoid null).
     var scrollToIndex: Double? = nil
+    /// Optional offset to add to the scroll position when scrolling to an index.
+    var scrollToOffset: Double? = nil
     var onDidScrollToIndex: (() -> Void)? = nil
 
     /// Returns the valid scrollToIndex target, or nil if unset / sentinel (-1).
     private var scrollToIndexTarget: Int? {
-        guard let scrollToIndex, Int(scrollToIndex) >= 0 else { return nil }
-        return Int(scrollToIndex)
+        guard let index = scrollToIndex, Int(index) >= 0 else { return nil }
+        return Int(index)
+    }
+
+    /// Returns the scroll offset as CGFloat, defaulting to 0.
+    private var scrollToOffsetValue: CGFloat {
+        return CGFloat(scrollToOffset ?? 0)
     }
 
     var additionalContentInsets: AixAdditionalContentInsetsProp?
@@ -362,7 +368,8 @@ class HybridAix: HybridAixSpec, AixContext, KeyboardNotificationsDelegate {
         let visibleArea = scrollView.bounds.height - keyboardHeight - composerHeight - additionalContentInsetBottom
 
         // Space needed to push penultimate cell to top
-        let blankSize = visibleArea - cellsHeight - blankViewHeight
+        // Subtract scrollToOffsetValue since we scroll less far when offset is negative
+        let blankSize = visibleArea - cellsHeight - blankViewHeight + scrollToOffsetValue
 
         lastCalculatedBlankSize = blankSize
         return blankSize

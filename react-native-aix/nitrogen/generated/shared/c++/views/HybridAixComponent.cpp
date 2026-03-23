@@ -145,6 +145,16 @@ namespace margelo::nitro::aix::views {
         throw std::runtime_error(std::string("Aix.scrollToIndex: ") + exc.what());
       }
     }()),
+    scrollToOffset([&]() -> CachedProp<std::optional<double>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("scrollToOffset", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.scrollToOffset;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<double>>::fromRawValue(*runtime, value, sourceProps.scrollToOffset);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("Aix.scrollToOffset: ") + exc.what());
+      }
+    }()),
     onDidScrollToIndex([&]() -> CachedProp<std::optional<std::function<void()>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("onDidScrollToIndex", nullptr, nullptr);
@@ -180,6 +190,7 @@ namespace margelo::nitro::aix::views {
     onWillApplyContentInsets(other.onWillApplyContentInsets),
     onScrolledNearEndChange(other.onScrolledNearEndChange),
     scrollToIndex(other.scrollToIndex),
+    scrollToOffset(other.scrollToOffset),
     onDidScrollToIndex(other.onDidScrollToIndex),
     hybridRef(other.hybridRef) { }
 
@@ -197,6 +208,7 @@ namespace margelo::nitro::aix::views {
       case hashString("onWillApplyContentInsets"): return true;
       case hashString("onScrolledNearEndChange"): return true;
       case hashString("scrollToIndex"): return true;
+      case hashString("scrollToOffset"): return true;
       case hashString("onDidScrollToIndex"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
