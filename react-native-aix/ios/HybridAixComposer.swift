@@ -7,6 +7,10 @@
 
 import Foundation
 import UIKit
+import ObjectiveC.runtime
+
+private var fixInputEnabledKey: UInt8 = 0
+private var textStorageDelegateKey: UInt8 = 0
 
 /// HybridAixComposer wraps the chat composer input
 /// It registers itself with the AixContext so the context can track composer height
@@ -29,6 +33,7 @@ class HybridAixComposer: HybridAixComposerSpec {
     var fixInput: Bool? = nil {
         didSet {
             cachedTextInput = nil
+            fixesApplied = false
             applyTextInputFixes()
         }
     }
@@ -101,6 +106,9 @@ class HybridAixComposer: HybridAixComposerSpec {
 
     /// Gesture target for pan-to-focus
     private var panGestureTarget: GestureTarget?
+
+    /// Track if fixes have been applied to avoid duplicate setup
+    private var fixesApplied: Bool = false
 
     // MARK: - Initialization
 
@@ -193,12 +201,16 @@ class HybridAixComposer: HybridAixComposerSpec {
 
         // Apply fixInput patches
         guard fixInput == true else { return }
+        guard !fixesApplied else { return }
+        fixesApplied = true
+
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.bounces = false
         scrollView.alwaysBounceVertical = false
         scrollView.alwaysBounceHorizontal = false
         scrollView.keyboardDismissMode = .interactive
+
         let target = GestureTarget { [weak self] gesture in
             self?.handlePanToFocus(gesture)
         }
@@ -206,6 +218,19 @@ class HybridAixComposer: HybridAixComposerSpec {
         let panGesture = UIPanGestureRecognizer(target: target, action: #selector(GestureTarget.handleGesture(_:)))
         panGesture.delegate = target
         scrollView.addGestureRecognizer(panGesture)
+
+        // Attach text storage delegate to strip U+FFFC (object replacement character from dictation)
+        if let textView = input as? UITextView {
+            attachTextStorageDelegate(to: textView)
+        }
+    }
+
+    /// Attach a delegate to the text storage to strip U+FFFC on text changes
+    private func attachTextStorageDelegate(to textView: UITextView) {
+        let delegate = ObjectReplacementCharacterStripper()
+        // Keep a strong reference via associated object
+        objc_setAssociatedObject(textView, &textStorageDelegateKey, delegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        textView.textStorage.delegate = delegate
     }
 
     /// Handle pan to focus the text input
@@ -247,5 +272,43 @@ class HybridAixComposer: HybridAixComposerSpec {
     // MARK: - Deinitialization
     deinit {
         cachedAixContext?.unregisterComposerView(self)
+    }
+}
+
+// MARK: - Object Replacement Character Stripper
+
+/// NSTextStorageDelegate that strips U+FFFC (object replacement character) from text.
+/// iOS inserts this character during dictation even when no words are recognized,
+/// causing phantom height changes in multiline inputs.
+private final class ObjectReplacementCharacterStripper: NSObject, NSTextStorageDelegate {
+    func textStorage(
+        _ textStorage: NSTextStorage,
+        willProcessEditing editedMask: NSTextStorage.EditActions,
+        range editedRange: NSRange,
+        changeInLength delta: Int
+    ) {
+        // Only process when text was edited (not just attributes)
+        guard editedMask.contains(.editedCharacters) else { return }
+        guard textStorage.string.contains("\u{FFFC}") else { return }
+
+        // Find all occurrences and remove from back to front to preserve indices
+        let string = textStorage.string as NSString
+        var ranges: [NSRange] = []
+        var searchRange = NSRange(location: 0, length: string.length)
+
+        while searchRange.location < string.length {
+            let foundRange = string.range(of: "\u{FFFC}", options: [], range: searchRange)
+            if foundRange.location == NSNotFound { break }
+            ranges.append(foundRange)
+            searchRange = NSRange(
+                location: foundRange.location + foundRange.length,
+                length: string.length - (foundRange.location + foundRange.length)
+            )
+        }
+
+        // Remove from back to front
+        for range in ranges.reversed() {
+            textStorage.replaceCharacters(in: range, with: "")
+        }
     }
 }
